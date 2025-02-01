@@ -1,0 +1,28 @@
+#only
+{
+    color: aqua;
+}
+
+.song
+{
+    color: #1f1e33;
+}
+
+.jungle
+{
+    color: rgb(234, 230, 9);
+    background-color: rgb(7, 130, 7);
+    font-family:'Times New Roman', Times, serif;
+}
+
+h1
+{
+    color: rgb(45, 167, 224);
+    text-shadow: 3px 3px 1px black;
+    margin: 0 auto;/*居中设置*/
+}
+
+html {
+    background-color:aliceblue;
+  }
+  
