@@ -15,14 +15,14 @@ let myHeading = document.querySelector("h1");
 function setUserName() {
   const myName = prompt("Please enter your name.");
   if (!myName) {
-    setUserName();
+    //setUserName();
   } else {
     localStorage.setItem("name", myName);
     myHeading.textContent = `Ciallo～(∠・ω< )⌒★, ${myName}`;
   }
 }
 
-
+//main function:
 if (!localStorage.getItem("name")) {
   setUserName();
 } else {
