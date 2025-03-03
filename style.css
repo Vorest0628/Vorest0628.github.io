@@ -15,6 +15,12 @@
     font-family:'Times New Roman', Times, serif;
 }
 
+.underline
+{
+    color: indigo;
+    border-bottom: solid;
+}
+
 h1
 {
     color: rgb(45, 167, 224);
@@ -25,4 +31,4 @@ h1
 html {
     background-color:aliceblue;
   }
-  
+
