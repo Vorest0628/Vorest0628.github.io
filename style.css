@@ -1,49 +1,343 @@
-#only
-{
-    color: aqua;
-}
+/* 基础样式重置: 清除浏览器默认样式，确保跨浏览器一致性 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* 盒模型: 使宽高包含padding和border，简化尺寸计算 */
+    /* content-box使宽高以内容计算，不包含padding和border */
+  }
+  
+  /* 根元素样式: 设置全局字体和背景，在body外围的颜色 */
+  html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 字体堆叠: 提供多个备选字体确保兼容性 */
+    font-size: 16px; /* 基准字体大小: 为rem单位提供参考值 */
+    background: 
+      url('image/background-bottom.jpg') no-repeat bottom center fixed;
 
-.song
-{
-    color: #1f1e33;
-}
+    background-size: 
+      100% 100%;  /* 图片宽度100%，高度自适应 */
+        
+    background-attachment: fixed;
+  }
 
-.jungle
-{
-    color: rgb(234, 230, 9);
-    background-color: rgb(7, 130, 7);
-    font-family:'Times New Roman', Times, serif;
-}
+  body {
+    /* 移除之前的背景色，使html的背景可见 */
+    background-color: transparent;
+  
+    /* 添加一些透明度，增强内容可读性 */
+    margin: 0;
+    padding: 0;
+    line-height: 1.6; /* 行高: 提高文本可读性 */
+  }
+  
+  /* 容器布局: 使用CSS Grid创建页面的主要布局结构 */
+  .container {
+    max-width: 1200px; /* 最大宽度: 限制在大屏幕上的展开宽度 */
+    margin: 0 auto; /* 水平居中: 通过自动左右边距实现容器居中 */
+    display: grid; /* 这里设置展示模式，Grid布局: 创建二维网格布局系统 */
+    grid-template-areas: /* 网格区域命名: 直观地定义布局结构 */
+      "header header"
+      "nav nav"
+      "main sidebar"
+      "footer footer";
+    grid-template-columns: 3fr 1fr; /* 分数单位: 使用fr单位灵活分配空间，main占3份，sidebar占1份 */
+    grid-gap: 20px; /* 网格间距: 在网格单元之间添加统一间距 */
+    padding: 20px;
+  }
+  
+  /* 页眉样式: 使用grid-area将元素放置在指定的网格区域 */
+  .main-header {
+    grid-area: header; /* Grid区域: 将元素放入名为header的网格区域 */
+    background-image: linear-gradient(105deg,rgb(45, 167, 224),powderblue);
+    color: white;
+    padding: 20px;
+    border-radius: 5px; /* 圆角: 使用圆角美化元素边缘 */
+    display: flex; /* Flexbox: 在头部区域内使用一维弹性布局 */
+    justify-content: space-between; /* Flex对齐: 水平分布两端对齐 */
+    align-items: center; /* Flex对齐: 垂直居中对齐 */
+  }
+  
+  .logo h1 {
+    text-shadow: 3px 3px 1px black; /* 文本阴影: 添加立体效果 */
+    margin: 0;
+  }
+  
+  /* ID选择器: 使用ID选择器定位唯一元素 (高优先级) */
+  #only {
+    color: aqua; /* 颜色名称: 使用预定义的颜色名称 */
+    margin: 0;
+  }
+  
+  /* 导航栏样式: 结合Grid定位和Flexbox内部布局 */
+  .main-nav {
+    grid-area: nav;
+    background-color: whitesmoke;
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: 5px solid skyblue;
+    position: sticky;
+    top:5px;
+  }
+  
+  /* 导航列表: 使用Flexbox创建水平导航菜单 */
+  .main-nav ul {
+    list-style: none; /* 列表样式: 移除默认的列表符号 */
+    display: flex;
+    gap: 20px; /* Flexbox间距: 使用gap属性设置Flex项目间距 */
+    flex-wrap: wrap;
+    justify-content: space-between; /* 两端对齐 */
+    align-items: center;
+  }
 
-.underline
-{
-    color: indigo;
-    border-bottom: solid;
-}
+  /* 导航链接: 样式化导航元素 */
+  .main-nav ul li a {
+    color: powderblue;
+    text-decoration: none; /* 文本装饰: 移除链接下划线 */
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.5s; /* 过渡效果: 平滑背景色变化 */
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    width: 100px;
+  }
 
-h1
-{
-    color: rgb(45, 167, 224);
-    text-shadow: 3px 3px 1px black;
-    margin: 0 auto;/*居中设置*/
-}
+  /* 让导航链接形成一组 */
+  .main-nav ul li:not(:last-child) {
+    display: flex; /* 创建一个flex容器 */
+  }
 
-html {
-    background-color:aliceblue;
-}
+  /* 包含搜索框的列表项 */
+  .main-nav ul li:last-child {
+    margin-left: auto; /* 自动将此项推到右侧 */
+  }
+  
+  /* 伪类选择器: 定义链接悬停状态的样式 */
+  .main-nav ul li a:hover {
+    background-color: powderblue;
+    color: whitesmoke;
+    width: 130px;
+  }
+  
+  .search{
+    padding-top: 10px;
+  }
 
-a:link {
+  /* 搜索表单: 使用Flexbox布局搜索框和按钮 */
+  .search-form {
+    display: flex;
+    gap: 10px;
+  }
+  
+  /* 属性选择器: 选择特定type属性值的input元素 */
+  .search-form input[type="search"] {
+    padding: 5px;
+    border: none;
+    border-radius: 3px;
+  }
+  
+  .search-form input[type="submit"] {
+    background-color: skyblue;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer; /* 光标样式: 指示可点击元素 */
+  }
+  
+  /* 内容包装器: 使用display:contents让子元素直接参与父元素的Grid布局 */
+  .content-wrapper {
+    display: contents; /* 内容显示: 让容器不产生盒子，其子元素直接由父Grid控制 */
+  }
+  
+  /* 主要内容区样式: 设置在Grid布局中的main区域 */
+  .main-content {
+    grid-area: main;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* 盒阴影: 使用RGBA颜色添加半透明阴影 */
+  }
+  
+  /* 图像居中: 使用块级显示和边距控制图像位置 */
+  .main-content img {
+    display: block; /* 显示方式: 将内联图像变为块级元素 */
+    margin: 20px auto; /* 外边距: 上下20px，左右自动计算实现水平居中 */
+    max-width: 100%; /* 最大宽度: 确保图像不会溢出容器 */
+  }
+  
+  .main-content h2 {
+    margin-top: 20px;
+    color: #333;
+  }
+  
+  /* 侧边栏样式: 设置在Grid布局中的sidebar区域 */
+  .sidebar {
+    grid-area: sidebar;
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  /* 侧边栏标题: 添加底部边框强调标题 */
+  .sidebar h2 {
+    color: #333;
+    border-bottom: 2px solid #ddd; /* 边框: 只在底部添加边框 */
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+  
+  /* 侧边栏列表: 自定义列表样式 */
+  .sidebar ul {
+    list-style: none;
+    padding-left: 10px; /* 内边距: 添加左侧内边距提高可读性 */
+  }
+  
+  .sidebar ul li {
+    margin-bottom: 8px; /* 下边距: 增加列表项之间的间距 */
+  }
+  
+  /* 小部件: 在侧边栏中创建独立的内容块 */
+  .widget {
+    margin-top: 30px;
+  }
+  
+  .widget h3 {
+    color: #444;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+  
+  /* 标签云: 使用Flexbox创建灵活换行的标签布局 */
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap; /* Flex换行: 允许项目在空间不足时换行 */
+    gap: 8px;
+  }
+  
+  .tag-cloud a {
+    background-color: #eee;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.9rem; /* rem单位: 相对于根元素字体大小的单位，便于响应式缩放 */
+    text-decoration: none;
+    color: #666;
+  }
+  
+  .tag-cloud a:hover {
+    background-color: #ddd;
+  }
+  
+  /* 页脚样式: 设置在Grid布局中的footer区域 */
+  .main-footer {
+    grid-area: footer;
+    background-color: white;
+    color: skyblue;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center; /* 文本对齐: 居中对齐页脚内容 */
+  }
+  
+  /* 页脚导航: 使用Flexbox创建水平居中的链接列表 */
+  .footer-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center; /* Flex对齐: 水平居中对齐 */
+    gap: 20px;
+    margin-bottom: 15px;
+    
+  }
+  
+  .footer-nav ul li a {
+    color: skyblue;
+    text-decoration: none;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .footer-nav ul li a:hover {
+    background-color: aqua;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.5s; /* 过渡效果: 平滑背景色变化 */
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
+  
+
+
+
+
+  /* 保留原样式: 类选择器应用特定样式 */
+  .song {
+    color: #1f1e33; /* 十六进制颜色: 使用简洁的颜色表示法 */
+  }
+  
+  .Times {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 120%;
+  }
+  
+  .intro-underline {
+    border-bottom: solid; /* 简写属性: 简化的边框设置 */
+    font-size: 150%;
+    text-align: center;
+  }
+  
+  /* 链接状态: 使用伪类选择器定义链接的不同状态 */
+  a:link {
     color: skyblue;
     font-weight: bold;
-}
-
-a:visited {
-    color: rebeccapurple;
+  }
+  
+  a:visited {
+    color: rebeccapurple; /* 已访问状态: 改变已访问链接的颜色 */
     font-weight: bold;
-}
-  
-a:hover {
-    color:powderblue;
-}
+  }
+    
+  a:hover {
+    color: powderblue; /* 悬停状态: 鼠标悬停时的颜色变化 */
+  }
   
 
+
+
+
+
+  /* 响应式设计: 使用媒体查询根据屏幕宽度调整布局 */
+  @media (max-width: 768px) { /* 媒体查询: 当视口宽度不超过768px时应用以下规则 */
+    /* 重新定义Grid布局: 在小屏幕上改为单列布局 */
+    .container {
+      grid-template-areas:
+        "header"
+        "nav"
+        "main"
+        "sidebar"
+        "footer";
+      grid-template-columns: 1fr; /* 单列布局: 只使用一个弹性单位占满宽度 */
+    }
+    
+    /* 导航栏调整: 改为垂直布局 */
+    .main-nav {
+      flex-direction: column; /* Flex方向: 改变主轴方向为垂直 */
+      gap: 15px;
+    }
+    
+    /* 导航菜单调整: 允许项目换行 */
+    .main-nav ul {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    /* 搜索表单调整: 扩展宽度占满容器 */
+    .search-form {
+      width: 100%;
+    }
+    
+    /* 搜索输入框调整: 使用弹性增长占用更多空间 */
+    .search-form input[type="search"] {
+      flex-grow: 1; /* Flex增长: 允许元素占用剩余空间 */
+    }
+  }

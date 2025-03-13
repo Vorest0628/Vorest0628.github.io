@@ -2,100 +2,144 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <!-- 响应式设计基础: viewport元标签确保页面在不同设备上正确缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Engingeering:</title>
-    <style>
-      body{
-        background-color: beige;
-        margin: 20px 20px 20px 20px;/*边框外部显示的宽度*/
-        padding: 20px 100px 20px 100px;/*边框内部显示的字*/
-        border: 5px solid black;/*body 四周的一个 5 像素宽的纯黑色边框。*/
-      }
-      p{
-        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-      img{
-        display: block;
-        margin: 0 auto;
-      }
-    </style>
+    <!-- 外部CSS引入，实现样式与结构分离的最佳实践 -->
     <link href="style.css" rel="stylesheet" />
     <link rel="icon" href="image/00005.png" />
-
   </head>
   <body>
-    <header>
-      <p id="only">Nihility for universe,but pleasure for self.</p>
-    </header>
-    
-    <nav>
-      <!-- 本站统一的导航栏 -->
-      <ul>
-        <li><a href="#">主页</a></li>
-        <li><a href="#">博客</a></li>
-        <li><a href="#">歌单</a></li>
-        <li><a href="#">评论</a></li>
-        <li><a href="#">友情链接</a></li>
-        <!-- 共 n 个导航栏项目，省略…… -->
-      </ul>
+    <!-- 容器div: 作为Grid布局的根元素，控制整体页面布局结构 -->
+    <div class="container">
+      <!-- 语义化标签header: 定义页面的顶部区域 -->
+      <header class="main-header">
+        <!-- Flexbox布局: 在header内部使用flex实现logo和标语的水平布局 -->
+        <div class="logo">
+          <h1>Vorest</h1>
+        </div>
+        <button>Change user</button>
+      </header>
+      
+      <!-- 语义化标签nav: 定义导航区域，提高可访问性和SEO友好度 -->
+      <nav class="main-nav">
+        <!-- 无序列表: 导航菜单的标准HTML结构 -->
+        <ul>
+          <li><a href="#">主页</a></li>
+          <li><a href="#">博客</a></li>
+          <li><a href="#">歌单</a></li>
+          <li><a href="#">评论</a></li>
+          <li><a href="#">友情链接</a></li>
+          <li>
+            <span class="search">
+            <!-- 表单元素: 创建搜索功能的HTML5表单 -->
+            <form class="search-form">
+              <input type="search" name="q" placeholder="要搜索的内容" />
+              <!-- 提交按钮: 触发表单提交的交互元素 -->
+              <input type="submit" value="搜索" />
+            </form>
+            </span>
+          </li>
+        </ul>
+      </nav>
 
-      <form>
-        <!-- 搜索栏是站点内导航的一个非线性的方式。 -->
-        <input type="search" name="q" placeholder="要搜索的内容" />
-        <input type="submit" value="搜索" />
-      </form>
-    </nav>
-
-    <main>
-      <button>Change user</button>
-      <h1>   </h1>
-      <h2><div class="underline"><em>About me:</em></div></h2>
-      <ul>
-        <li>introduction</li>
-        <li>electronic music</li>
-        <li>rhythm game</li>
-        <li>ACG</li>
-      </ul>
-      <img src="image/00007.png" width="200" alt="myself">
-      <hr>
-      <p>
-      <span class="jungle">My name is <strong>Vorest</strong>,with the meaning of <em>void and forest</em>.</span><br>
-      You can also call me Nanase Shirakawa（白川ななせ/白川七濑）,This is my Japanese name.<br>
-      I'm a Chinese student from a normal university in Shanghai,major in AI.My hobby is electronic music,rhythm game and ACG. </p>
-      <h2>About electronic music:</h2>    
-      <p>I prefer trance, artcore, etc., and I'm willing to hearing more music from you.</p>
-      <h2>About rhythm game:</h2>
-      <h3>main:</h3>
-      <p><span class="song">Arcaea(ptt 12.50), BanGDream, Paradigm:Reboot;</span></p> <!-- span允许特定文本修改样式，此段为注释-->
-      <h3>Also play:</h3>
-      <p>MaiMai, O.N.G.E.K.I;</p>
-      <h2>About ACG:</h2>
-      <p>A lot anyway.(lazy to illustrate,LOL)</p>
-      <h3>Favourite cartoon:</h3>
-      <p>Mahou Shoujo Madoka Magica</p>
-    
-      <article>
-        <!-- 此处包含一个 article（一篇文章），内容略…… -->
-      </article>
-    </main>
-
-    <aside>
-      <h2>Relevant website here:</h2>
-      <ul>
-        <li><a href="https://space.bilibili.com/276555959">
-        Bilibili:</a></li>
-        <li><a href="https://github.com/Vorest0628">Github:</a> 
-        </li>
-      </p>
-      </ul>
+      <!-- 布局技巧: 内容包装器div用于更好地控制grid布局中的内容区域 -->
+      <div class="content-wrapper">
+        <!-- 语义化标签main: 定义页面的主要内容区域 -->
+        <main class="main-content">
+          
+          <!-- 组合选择器应用: h2和div.underline结合实现特殊样式 -->
+          <h2><div class="intro-underline"><em>About me:</em></div></h2>
+          <ul>
+            <li>introduction</li>
+            <li>electronic music</li>
+            <li>rhythm game</li>
+            <li>ACG</li>
+          </ul>
+          <!-- 图片居中: 通过CSS控制实现图片的水平居中 -->
+          <img src="image/00007.png" width="200" alt="myself">
+          <hr>
+          <!-- 行内样式span: 为特定文本应用不同样式而不破坏段落结构 -->
+          <p>
+            <span class="Times">My name is <strong>Vorest</strong>, with the meaning of <em>void and forest</em>.</span><br>
+            <!-- 换行标签: 在不创建新段落的情况下实现文本换行 -->
+            You can also call me Nanase Shirakawa（白川ななせ/白川七濑）, This is my Japanese name.<br>
+            I'm a Chinese student from a normal university in Shanghai, major in AI. My hobby is electronic music, rhythm game and ACG.
+          </p>
+          
+          <!-- 内容区域的结构化: 使用标题h2-h3创建内容层次结构 -->
+          <h2>About electronic music:</h2>    
+          <p>I prefer trance, artcore, etc., and I'm willing to hearing more music from you.</p>
+          
+          <h2>About rhythm game:</h2>
+          <h3>main:</h3>
+          <p><span class="song">Arcaea(ptt 12.50), BanGDream, Paradigm:Reboot;</span></p>
+          <h3>Also play:</h3>
+          <p>MaiMai, O.N.G.E.K.I;</p>
+          
+          <h2>About ACG:</h2>
+          <p>A lot anyway.(lazy to illustrate,LOL)</p>
+          <h3>Favourite cartoon:</h3>
+          <p>Mahou Shoujo Madoka Magica</p>
         
-    </aside>
-    
-    <footer>
-      <p>©Copyright 2025 by Vorest0628. All rights reversed.</p>
-    </footer>
+          <!-- 语义化标签article: 表示一个独立的内容块，可用于博客文章等 -->
+          <article>
+            <!-- 文章内容区域 -->
+          </article>
+        </main>
 
+        <!-- 语义化标签aside: 定义侧边栏，用于放置次要或相关内容 -->
+        <aside class="sidebar">
+          <div class="sidebar-content">
+            <h2>Relevant website here:</h2>
+            <ul>
+              <!-- 外部链接: 使用a标签创建到其他网站的链接 -->
+              <li><a href="https://space.bilibili.com/276555959">Bilibili</a></li>
+              <li><a href="https://github.com/Vorest0628">Github</a></li>
+            </ul>
+            
+            <!-- 侧边栏组件: 使用div.widget创建可重用的侧边栏内容模块 -->
+            <div class="widget">
+              <h3>最近文章</h3>
+              <ul>
+                <li><a href="#">文章一</a></li>
+                <li><a href="#">文章二</a></li>
+                <li><a href="#">文章三</a></li>
+              </ul>
+            </div>
+            
+            <!-- 标签云组件: 使用Flexbox创建灵活的标签布局 -->
+            <div class="widget">
+              <h3>标签云</h3>
+              <div class="tag-cloud">
+                <a href="#">音乐</a>
+                <a href="#">游戏</a>
+                <a href="#">编程</a>
+                <a href="#">ACG</a>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+      
+      <!-- 语义化标签footer: 定义页面底部区域 -->
+      <footer class="main-footer">
+        <div class="footer-content">
+          <!-- 页脚导航: 使用Flexbox布局实现水平菜单 -->
+          <div class="footer-nav">
+            <ul>
+              <li><a href="#">关于</a></li>
+              <li><a href="#">图库</a></li>
+              <li><a href="#">文档库</a></li>
+              <li><a href="#">联系我</a></li>
+            </ul>
+          </div>
+          <p>©Copyright 2025 by Vorest0628. All rights reversed.</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- JavaScript引入: 在页面底部引入JS文件减少加载阻塞 -->
     <script src="scripts/main.js"></script>
-
-
   </body>
 </html>
