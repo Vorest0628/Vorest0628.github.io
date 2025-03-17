@@ -11,12 +11,15 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 字体堆叠: 提供多个备选字体确保兼容性 */
     font-size: 16px; /* 基准字体大小: 为rem单位提供参考值 */
     background: 
+    linear-gradient(to bottom, rgba(125, 185, 232, 0.7), rgba(30, 87, 153, 0.7)),
       url('image/background-bottom.jpg') no-repeat bottom center fixed;
 
     background-size: 
-      100% 100%;  /* 图片宽度100%，高度自适应 */
+      100% 100%,  /* 图片宽度100%，高度自适应 */
+      100% auto;
         
     background-attachment: fixed;
+    min-height: 100vh;
   }
 
   body {
