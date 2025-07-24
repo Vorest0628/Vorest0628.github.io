@@ -1,0 +1,55 @@
+# 环境配置文件
+backend/setting.env
+frontend/setting.env
+*.env
+*.env.local
+*.env.development
+*.env.production
+
+# 依赖目录
+node_modules/
+*/node_modules/
+
+# 构建输出
+dist/
+build/
+*/dist/
+*/build/
+
+# 日志文件
+*.log
+logs/
+
+# 上传文件
+backend/uploads/
+frontend/public/uploads/
+
+# IDE配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+
+# 数据库文件
+*.db
+*.sqlite
+
+# 测试覆盖率
+coverage/
+*/coverage/
+
+# 缓存文件
+.cache/
+.parcel-cache/
+
+# 备份文件
+*.bak
+*.backup 
