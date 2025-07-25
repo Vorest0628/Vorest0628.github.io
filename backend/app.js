@@ -134,8 +134,7 @@ const mongooseOptions = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
-  bufferMaxEntries: 0,
-  bufferCommands: true,  // 改为true，允许缓冲命令
+  bufferCommands: true,  // 允许缓冲命令
   useNewUrlParser: true,
   useUnifiedTopology: true
 }
