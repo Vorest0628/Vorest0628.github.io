@@ -70,8 +70,19 @@ app.get('/api/health', (req, res) => {
 })
 
 // 数据库连接状态中间件
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
+    console.log('⚠️ 数据库连接未就绪，尝试重连...')
+    try {
+      await connectDB()
+      if (mongoose.connection.readyState === 1) {
+        console.log('✅ 数据库重连成功')
+        return next()
+      }
+    } catch (error) {
+      console.error('❌ 数据库重连失败:', error.message)
+    }
+    
     return res.status(503).json({
       success: false,
       message: '数据库连接未就绪，请稍后重试',
@@ -147,18 +158,29 @@ const mongooseOptions = {
   bufferCommands: true  // 允许缓冲命令
 }
 
-mongoose.connect(MONGODB_URI, mongooseOptions)
-  .then(() => {
+// 在Vercel环境中，我们需要确保数据库连接在每次函数调用时都可用
+const connectDB = async () => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ 数据库已连接')
+      return
+    }
+    
+    console.log('🔗 尝试连接数据库...')
+    await mongoose.connect(MONGODB_URI, mongooseOptions)
     console.log('✅ 数据库连接成功')
     console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
-  })
-  .catch(err => {
+  } catch (err) {
     console.error('❌ 数据库连接失败:', err.message)
     console.error('🔍 完整错误:', err)
     if (isVercel) {
       console.error('🔍 请检查MongoDB Atlas网络访问设置')
     }
-  })
+  }
+}
+
+// 立即连接数据库
+connectDB()
 
 // Vercel适配：只在非Vercel环境中启动服务器
 if (!isVercel) {
