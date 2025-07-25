@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => {
   
   return {
     plugins: [vue()],
+    
+    // GitHub Pages 部署配置
+    base: mode === 'production' ? '/Vorest0628.github.io/' : '/',
+    
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src')
@@ -27,6 +31,23 @@ export default defineConfig(({ mode }) => {
       'process.env': {}
     },
     // 确保环境变量被正确加载
-    envPrefix: 'VITE_'
+    envPrefix: 'VITE_',
+    
+    // 构建优化
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      sourcemap: false,
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // 分离第三方库
+            vendor: ['vue', 'vue-router', 'pinia'],
+            particles: ['particles.js']
+          }
+        }
+      }
+    }
   }
 })
