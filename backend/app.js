@@ -4,19 +4,60 @@ const cors = require('cors')
 const path = require('path')
 const { errorHandler } = require('./utils/error')
 
+// 检查是否在Vercel环境中
+const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+
 // 配置dotenv读取setting.env文件
-require('dotenv').config({ path: path.join(__dirname, 'setting.env') })
+if (!isVercel) {
+  require('dotenv').config({ path: path.join(__dirname, 'setting.env') })
+}
 
 // 创建Express应用实例
 const app = express()
 
-// 中间件配置
-app.use(cors()) // 启用CORS
-app.use(express.json()) // 解析JSON请求体
-app.use(express.urlencoded({ extended: true })) // 解析URL编码的请求体
+// 调试信息
+console.log('🔍 环境检查:')
+console.log('NODE_ENV:', process.env.NODE_ENV)
+console.log('VERCEL:', process.env.VERCEL)
+console.log('isVercel:', isVercel)
 
-// 静态文件服务
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+// 中间件配置
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'https://vorest0628.github.io',
+  credentials: true
+}))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+// 静态文件服务 - 在Vercel中禁用
+if (!isVercel) {
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+} else {
+  console.log('⚠️ Vercel环境禁用静态文件服务')
+}
+
+// 根路径处理
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Vorest个人网站后端API服务',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    isVercel: isVercel,
+    timestamp: new Date().toISOString()
+  })
+})
+
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: '服务器运行正常',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    isVercel: isVercel
+  })
+})
 
 // 路由配置
 app.use('/api/auth', require('./routes/authRoutes'))
@@ -30,21 +71,12 @@ app.use('/api/search', require('./routes/searchRoutes'))
 app.use('/api/stats', require('./routes/stats'))
 app.use('/api/admin', require('./routes/adminRoutes'))
 
-// 健康检查端点
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: '服务器运行正常',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  })
-})
-
 // 404处理
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: '接口不存在'
+    message: '接口不存在',
+    path: req.originalUrl
   })
 })
 
@@ -55,26 +87,36 @@ app.use(errorHandler)
 const MONGODB_URI = process.env.MONGODB_URI
 if (!MONGODB_URI) {
   console.error('❌ 错误: MONGODB_URI 未在环境变量中设置')
+  if (isVercel) {
+    console.error('🔍 请检查Vercel环境变量配置')
+  }
   process.exit(1)
 }
 
+console.log('🔗 尝试连接数据库...')
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('✅ 数据库连接成功')
-    console.log('📍 连接地址:', MONGODB_URI)
+    console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
   })
   .catch(err => {
     console.error('❌ 数据库连接失败:', err.message)
-    console.log('💡 请确保 MongoDB 服务正在运行')
-    process.exit(1)
+    console.error('🔍 完整错误:', err)
+    if (isVercel) {
+      console.error('🔍 请检查MongoDB Atlas网络访问设置')
+    }
   })
 
-// 启动服务器
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`🚀 服务器运行在端口 ${PORT}`)
-  console.log(`📖 API文档: http://localhost:${PORT}/api/health`)
-  console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
-})
+// Vercel适配：只在非Vercel环境中启动服务器
+if (!isVercel) {
+  const PORT = process.env.PORT || 3000
+  app.listen(PORT, () => {
+    console.log(`🚀 服务器运行在端口 ${PORT}`)
+    console.log(`📖 API文档: http://localhost:${PORT}/api/health`)
+    console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
+  })
+} else {
+  console.log('✅ Vercel环境配置完成，等待函数调用...')
+}
 
 module.exports = app
