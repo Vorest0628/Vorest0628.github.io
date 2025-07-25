@@ -23,6 +23,8 @@ console.log('isVercel:', isVercel)
 console.log('MONGODB_URI存在:', !!process.env.MONGODB_URI)
 console.log('MONGODB_URI长度:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0)
 console.log('MONGODB_URI前缀:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'undefined')
+console.log('MONGODB_URI完整值:', process.env.MONGODB_URI)
+console.log('所有环境变量:', Object.keys(process.env).filter(key => key.includes('MONGODB') || key.includes('VERCEL')))
 
 // 中间件配置
 app.use(cors({
@@ -121,13 +123,18 @@ app.use((err, req, res, next) => {
 })
 
 // 数据库连接
-const MONGODB_URI = process.env.MONGODB_URI
+let MONGODB_URI = process.env.MONGODB_URI
+
+// 如果环境变量中没有，使用硬编码的URI（仅用于调试）
 if (!MONGODB_URI) {
-  console.error('❌ 错误: MONGODB_URI 未在环境变量中设置')
+  console.error('❌ 警告: MONGODB_URI 未在环境变量中设置')
   if (isVercel) {
-    console.error('🔍 请检查Vercel环境变量配置')
+    console.error('🔍 使用硬编码URI进行测试')
+    MONGODB_URI = 'mongodb+srv://geodgechen:T8TggI3IbnIGXPvu@cluster0.27eleqn.mongodb.net/my_website?retryWrites=true&w=majority'
+  } else {
+    console.error('🔍 请检查环境变量配置')
+    process.exit(1)
   }
-  process.exit(1)
 }
 
 console.log('🔗 尝试连接数据库...')
