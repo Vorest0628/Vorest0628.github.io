@@ -169,22 +169,35 @@ const mongooseOptions = {
 }
 
 // 在Vercel环境中，我们需要确保数据库连接在每次函数调用时都可用
-const connectDB = async () => {
+const connectDB = async (retryCount = 0) => {
   try {
     if (mongoose.connection.readyState === 1) {
       console.log('✅ 数据库已连接')
       return
     }
     
-    console.log('🔗 尝试连接数据库...')
+    console.log(`🔗 尝试连接数据库... (第${retryCount + 1}次)`)
     await mongoose.connect(MONGODB_URI, mongooseOptions)
     console.log('✅ 数据库连接成功')
     console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
   } catch (err) {
     console.error('❌ 数据库连接失败:', err.message)
     console.error('🔍 完整错误:', err)
+    
     if (isVercel) {
-      console.error('🔍 请检查MongoDB Atlas网络访问设置')
+      if (err.message.includes('whitelist') || err.message.includes('IP')) {
+        console.error('🔍 网络访问问题：请检查MongoDB Atlas IP白名单设置')
+        console.error('🔍 建议添加 0.0.0.0/0 到IP访问列表')
+      } else {
+        console.error('🔍 请检查MongoDB Atlas网络访问设置')
+      }
+    }
+    
+    // 如果是网络问题，尝试重连
+    if (retryCount < 2 && (err.message.includes('whitelist') || err.message.includes('IP'))) {
+      console.log('🔄 等待3秒后重试...')
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      return connectDB(retryCount + 1)
     }
   }
 }
