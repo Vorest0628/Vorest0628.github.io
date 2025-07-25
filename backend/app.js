@@ -20,6 +20,9 @@ console.log('🔍 环境检查:')
 console.log('NODE_ENV:', process.env.NODE_ENV)
 console.log('VERCEL:', process.env.VERCEL)
 console.log('isVercel:', isVercel)
+console.log('MONGODB_URI存在:', !!process.env.MONGODB_URI)
+console.log('MONGODB_URI长度:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0)
+console.log('MONGODB_URI前缀:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'undefined')
 
 // 中间件配置
 app.use(cors({
