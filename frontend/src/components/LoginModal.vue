@@ -196,8 +196,6 @@
       <!-- 提示信息 -->
       <div class="auth-tips">
         <div v-if="isLoginMode">
-          <p><i class="fas fa-info-circle"></i> 提示：默认管理员账户</p>
-          <p>用户名：admin，密码：admin123456</p>
         </div>
         <div v-else>
           <p><i class="fas fa-info-circle"></i> 注册后自动登录</p>

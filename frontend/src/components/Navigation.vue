@@ -12,7 +12,6 @@
       <li><router-link to="/blog" @click="debugRoute('/blog')">博客</router-link></li>
       <li><router-link to="/comments" @click="debugRoute('/comments')">评论</router-link></li>
       <li><router-link to="/friends" @click="debugRoute('/friends')">友情链接</router-link></li>
-      <li><router-link to="/particles-demo" @click="debugRoute('/particles-demo')">粒子演示</router-link></li>
 
       <!-- 搜索框 -->
       <li class="search">

@@ -47,11 +47,6 @@ const NotFound = () => import('../views/NotFound.vue').catch(err => {
   return import('../views/NotFound.vue')
 })
 
-const ParticlesDemo = () => import('../views/ParticlesDemo.vue').catch(err => {
-  console.error('ParticlesDemo组件加载失败:', err)
-  return import('../views/ParticlesDemo.vue')
-})
-
 
 
 const routes = [
@@ -141,15 +136,6 @@ const routes = [
         component: () => import('../views/SearchView.vue'),
         meta: {
           title: '搜索结果',
-          keepAlive: false
-        }
-      },
-      {
-        path: '/particles-demo',
-        name: 'particles-demo',
-        component: ParticlesDemo,
-        meta: {
-          title: '粒子效果演示',
           keepAlive: false
         }
       },
