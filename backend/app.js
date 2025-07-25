@@ -9,7 +9,7 @@ const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'product
 
 // 配置dotenv读取setting.env文件
 if (!isVercel) {
-  require('dotenv').config({ path: path.join(__dirname, 'setting.env') })
+require('dotenv').config({ path: path.join(__dirname, 'setting.env') })
 }
 
 // 创建Express应用实例
@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // 静态文件服务 - 在Vercel中禁用
 if (!isVercel) {
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 } else {
   console.log('⚠️ Vercel环境禁用静态文件服务')
 }
@@ -157,8 +157,8 @@ if (!MONGODB_URI) {
     MONGODB_URI = 'mongodb+srv://Henry:QnnhVROtHpXmTpRr@cluster0.27eleqn.mongodb.net/my_website?retryWrites=true&w=majority'
   } else {
     console.error('🔍 请检查环境变量配置')
-    process.exit(1)
-  }
+  process.exit(1)
+}
 }
 
 // 调试：显示连接字符串（隐藏密码）
@@ -201,7 +201,7 @@ const connectDB = async (retryCount = 0) => {
     }
     
     if (mongoose.connection.readyState === 1) {
-      console.log('✅ 数据库连接成功')
+    console.log('✅ 数据库连接成功')
       console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
     } else {
       throw new Error('连接超时')
@@ -233,12 +233,12 @@ connectDB()
 
 // Vercel适配：只在非Vercel环境中启动服务器
 if (!isVercel) {
-  const PORT = process.env.PORT || 3000
-  app.listen(PORT, () => {
-    console.log(`🚀 服务器运行在端口 ${PORT}`)
-    console.log(`📖 API文档: http://localhost:${PORT}/api/health`)
-    console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
-  })
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`🚀 服务器运行在端口 ${PORT}`)
+  console.log(`📖 API文档: http://localhost:${PORT}/api/health`)
+  console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
+})
 } else {
   console.log('✅ Vercel环境配置完成，等待函数调用...')
   

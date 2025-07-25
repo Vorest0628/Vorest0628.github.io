@@ -7,28 +7,28 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   return {
-    plugins: [vue()],
+  plugins: [vue()],
     
     // GitHub Pages 部署配置
     base: mode === 'production' ? '/' : '/',
     
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, 'src')
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '/api')
       }
-    },
-    server: {
-      port: 5173,
-      proxy: {
-        '/api': {
-          target: 'http://localhost:3000',
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/api/, '/api')
-        }
-      }
-    },
-    define: {
-      'process.env': {}
+    }
+  },
+  define: {
+    'process.env': {}
     },
     // 确保环境变量被正确加载
     envPrefix: 'VITE_',
