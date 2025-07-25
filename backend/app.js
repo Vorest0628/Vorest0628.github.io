@@ -144,9 +144,7 @@ const mongooseOptions = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
-  bufferCommands: true,  // 允许缓冲命令
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  bufferCommands: true  // 允许缓冲命令
 }
 
 mongoose.connect(MONGODB_URI, mongooseOptions)
