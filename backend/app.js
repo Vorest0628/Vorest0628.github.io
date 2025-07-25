@@ -23,7 +23,12 @@ console.log('isVercel:', isVercel)
 
 // 中间件配置
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://vorest0628.github.io',
+  origin: [
+    'https://vorest0628.github.io',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5174'
+  ],
   credentials: true
 }))
 app.use(express.json())
@@ -81,7 +86,24 @@ app.use('*', (req, res) => {
 })
 
 // 错误处理中间件
-app.use(errorHandler)
+app.use((err, req, res, next) => {
+  console.error('❌ 服务器错误:', err)
+  console.error('📍 请求路径:', req.path)
+  console.error('🔍 错误详情:', err.stack)
+  
+  // 如果是Vercel环境，返回更详细的错误信息
+  if (isVercel) {
+    res.status(500).json({
+      success: false,
+      message: '服务器内部错误',
+      error: err.message,
+      stack: err.stack,
+      path: req.path
+    })
+  } else {
+    errorHandler(err, req, res, next)
+  }
+})
 
 // 数据库连接
 const MONGODB_URI = process.env.MONGODB_URI
