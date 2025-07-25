@@ -330,6 +330,7 @@ VITE_APP_TITLE=Vorest's Personal Website
 
 ⭐ **如果这个项目对你有帮助，请给它一个星标！**
 
-![项目预览](preview.png)
 
-> 💡 这是一个完整的全栈项目，适合学习和实际部署使用 
+> 💡 这是一个完整的全栈项目，适合学习和实际部署使用 #   T r i g g e r   p r o d u c t i o n   d e p l o y m e n t 
+ 
+ 

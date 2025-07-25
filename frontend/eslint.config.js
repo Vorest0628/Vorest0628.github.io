@@ -1,36 +1,35 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
+import { resolve } from 'path'
 
-export default defineConfig(({ command, mode }) => {
-  // 加载环境变量
-  const env = loadEnv(mode, process.cwd(), ['VUE_APP_'])
+export default defineConfig({
+  plugins: [vue()],
   
-  // 如果存在 setting.env 文件，也加载它
-  const settingEnv = loadEnv(mode, process.cwd(), ['VUE_APP_'], 'setting.env')
+  // GitHub Pages 部署配置
+  base: '/my-website/',  // 替换为你的仓库名
   
-  return {
-    plugins: [vue()],
-    resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
+  // 构建优化
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 分离第三方库
+          vendor: ['vue', 'vue-router', 'pinia'],
+          particles: ['particles.js'],
+          ui: ['element-plus']
+        }
       }
-    },
-    envPrefix: 'VUE_APP_',
-    server: {
-      port: 5173,
-      host: true
-    },
-    define: {
-      // 注入环境变量
-      ...Object.keys(env).reduce((prev, key) => {
-        prev[`process.env.${key}`] = JSON.stringify(env[key])
-        return prev
-      }, {}),
-      ...Object.keys(settingEnv).reduce((prev, key) => {
-        prev[`process.env.${key}`] = JSON.stringify(settingEnv[key])
-        return prev
-      }, {})
+    }
+  },
+  
+  // 路径别名
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
     }
   }
 })
