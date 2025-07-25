@@ -141,11 +141,21 @@ if (!MONGODB_URI) {
   console.error('❌ 警告: MONGODB_URI 未在环境变量中设置')
   if (isVercel) {
     console.error('🔍 使用硬编码URI进行测试')
-    MONGODB_URI = 'mongodb+srv://geodgechen:T8TggI3IbnIGXPvu@cluster0.27eleqn.mongodb.net/my_website?retryWrites=true&w=majority'
+    MONGODB_URI = 'mongodb+srv://Henry:QnnhVROtHpXmTpRr@cluster0.27eleqn.mongodb.net/my_website?retryWrites=true&w=majority'
   } else {
     console.error('🔍 请检查环境变量配置')
     process.exit(1)
   }
+}
+
+// 调试：显示连接字符串（隐藏密码）
+console.log('🔍 连接字符串检查:')
+const uriParts = MONGODB_URI.split('@')
+if (uriParts.length === 2) {
+  const authPart = uriParts[0].replace('mongodb+srv://', '')
+  const [username] = authPart.split(':')
+  console.log('用户名:', username)
+  console.log('集群地址:', uriParts[1].split('/')[0])
 }
 
 console.log('🔗 尝试连接数据库...')
