@@ -49,12 +49,10 @@
         <h3>标签云</h3>
         <div class="tag-cloud">
           <a href="#" @click.prevent="searchTag('音乐')">音乐</a>
-          <a href="#" @click.prevent="searchTag('游戏')">游戏</a>
           <a href="#" @click.prevent="searchTag('编程')">编程</a>
           <a href="#" @click.prevent="searchTag('ACG')">ACG</a>
-          <a href="#" @click.prevent="searchTag('Vue3')">Vue3</a>
+          <a href="#" @click.prevent="searchTag('Vue3')">前端</a>
           <a href="#" @click.prevent="searchTag('AI')">AI</a>
-          <a href="#" @click.prevent="searchTag('Arcaea')">Arcaea</a>
         </div>
       </div>
 

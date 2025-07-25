@@ -98,6 +98,10 @@ const currentYear = computed(() => new Date().getFullYear())
   color: #666;
 }
 
+.social-links a:visited i {
+  color:inherit;
+}
+
 /* 版权信息 */
 .footer-content {
   max-width: 600px;

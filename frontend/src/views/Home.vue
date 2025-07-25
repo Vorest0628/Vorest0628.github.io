@@ -297,7 +297,7 @@ onUnmounted(() => {
 <style scoped>
 .home {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: linear-gradient(105deg,rgb(45, 167, 224),powderblue);
   color: #333;
 }
 

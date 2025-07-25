@@ -1,5 +1,5 @@
 <!-- 
-  Gallery页面组件 - 现代化Apple风格图库
+  Gallery页面组件 - 现代化风格图库
   功能：
   1. 现代化响应式网格布局
   2. 图片分类和标签过滤
@@ -354,7 +354,7 @@ onUnmounted(() => {
 
 <style scoped>
 .modern-gallery {
-  min-height: 100vh;
+  min-height: 100%;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
 }
@@ -368,7 +368,7 @@ onUnmounted(() => {
 .gallery-header h1 {
   font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(105deg,rgb(45, 167, 224),powderblue);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -427,12 +427,12 @@ onUnmounted(() => {
 
 .filter-pill:hover {
   background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  color: rgb(45, 167, 224);
   transform: translateY(-2px);
 }
 
 .filter-pill.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(105deg,rgb(45, 167, 224),powderblue);
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   transform: translateY(-2px);
