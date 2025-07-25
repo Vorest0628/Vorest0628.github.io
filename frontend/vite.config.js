@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     plugins: [vue()],
     
     // GitHub Pages 部署配置
-    base: mode === 'production' ? '/Vorest0628.github.io/' : '/',
+    base: mode === 'production' ? '/' : '/',
     
     resolve: {
       alias: {
