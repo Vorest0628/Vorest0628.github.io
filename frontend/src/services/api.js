@@ -1,10 +1,18 @@
 import axios from 'axios'
 
+// 调试环境变量
+console.log('🔍 环境变量检查:')
+console.log('VITE_APP_API_URL:', import.meta.env.VITE_APP_API_URL)
+console.log('NODE_ENV:', import.meta.env.NODE_ENV)
+console.log('MODE:', import.meta.env.MODE)
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_URL || 'http://localhost:3000/api',
-  timeout: 10000
+  baseURL: 'https://vorest0628-github-io.vercel.app/api',
+  timeout: 30000  // 增加到30秒
 })
+
+console.log('🚀 API baseURL:', api.defaults.baseURL)
 
 // 请求拦截器：添加认证令牌和请求日志
 api.interceptors.request.use(

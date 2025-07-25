@@ -94,7 +94,19 @@ if (!MONGODB_URI) {
 }
 
 console.log('🔗 尝试连接数据库...')
-mongoose.connect(MONGODB_URI)
+
+// 优化MongoDB连接配置
+const mongooseOptions = {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  bufferMaxEntries: 0,
+  bufferCommands: false,
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}
+
+mongoose.connect(MONGODB_URI, mongooseOptions)
   .then(() => {
     console.log('✅ 数据库连接成功')
     console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
@@ -117,6 +129,13 @@ if (!isVercel) {
   })
 } else {
   console.log('✅ Vercel环境配置完成，等待函数调用...')
+  
+  // 在Vercel环境中保持数据库连接
+  process.on('SIGTERM', async () => {
+    console.log('🔄 收到SIGTERM信号，关闭数据库连接...')
+    await mongoose.connection.close()
+    process.exit(0)
+  })
 }
 
 module.exports = app
