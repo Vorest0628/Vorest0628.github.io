@@ -64,6 +64,18 @@ app.get('/api/health', (req, res) => {
   })
 })
 
+// 数据库连接状态中间件
+app.use((req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      success: false,
+      message: '数据库连接未就绪，请稍后重试',
+      readyState: mongoose.connection.readyState
+    })
+  }
+  next()
+})
+
 // 路由配置
 app.use('/api/auth', require('./routes/authRoutes'))
 app.use('/api/user', require('./routes/userRoutes'))
@@ -123,7 +135,7 @@ const mongooseOptions = {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
   bufferMaxEntries: 0,
-  bufferCommands: false,
+  bufferCommands: true,  // 改为true，允许缓冲命令
   useNewUrlParser: true,
   useUnifiedTopology: true
 }
