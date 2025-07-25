@@ -73,11 +73,24 @@ app.get('/api/health', (req, res) => {
 app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     console.log('⚠️ 数据库连接未就绪，尝试重连...')
+    console.log('🔍 当前连接状态:', mongoose.connection.readyState)
+    
     try {
       await connectDB()
+      
+      // 等待连接完全建立
+      let retries = 0
+      while (mongoose.connection.readyState !== 1 && retries < 10) {
+        console.log(`⏳ 等待连接就绪... (${retries + 1}/10)`)
+        await new Promise(resolve => setTimeout(resolve, 500))
+        retries++
+      }
+      
       if (mongoose.connection.readyState === 1) {
         console.log('✅ 数据库重连成功')
         return next()
+      } else {
+        console.error('❌ 数据库连接超时')
       }
     } catch (error) {
       console.error('❌ 数据库重连失败:', error.message)
@@ -178,8 +191,21 @@ const connectDB = async (retryCount = 0) => {
     
     console.log(`🔗 尝试连接数据库... (第${retryCount + 1}次)`)
     await mongoose.connect(MONGODB_URI, mongooseOptions)
-    console.log('✅ 数据库连接成功')
-    console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
+    
+    // 等待连接完全建立
+    let waitRetries = 0
+    while (mongoose.connection.readyState !== 1 && waitRetries < 20) {
+      console.log(`⏳ 等待连接就绪... (${waitRetries + 1}/20)`)
+      await new Promise(resolve => setTimeout(resolve, 250))
+      waitRetries++
+    }
+    
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ 数据库连接成功')
+      console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
+    } else {
+      throw new Error('连接超时')
+    }
   } catch (err) {
     console.error('❌ 数据库连接失败:', err.message)
     console.error('🔍 完整错误:', err)
