@@ -10,23 +10,38 @@ const Gallery = require('../models/Gallery')
 const FriendLink = require('../models/FriendLink')
 const Comment = require('../models/Comment')
 const { ApiError } = require('../utils/error')
+const adminController = require('../controllers/adminController')
+const { ensureAdminAccount } = require('../scripts/ensureAdminAccount')
 
-// 验证管理员权限
-router.get('/verify', auth, checkRole('admin'), async (req, res, next) => {
+// 公开的管理员账号检查端点（用于Vercel部署后检查）
+router.post('/check-admin-account', async (req, res) => {
   try {
+    console.log('🔍 手动触发管理员账号检查...');
+    console.log('📋 环境变量状态:');
+    console.log('   DEFAULT_ADMIN_ENABLED:', process.env.DEFAULT_ADMIN_ENABLED);
+    console.log('   DEFAULT_ADMIN_USERNAME:', process.env.DEFAULT_ADMIN_USERNAME);
+    console.log('   DEFAULT_ADMIN_EMAIL:', process.env.DEFAULT_ADMIN_EMAIL);
+    console.log('   DEFAULT_ADMIN_PASSWORD:', process.env.DEFAULT_ADMIN_PASSWORD ? '***已设置***' : '未设置');
+    
+    await ensureAdminAccount();
+    
     res.json({
       success: true,
-      message: '管理员权限验证成功',
-      user: {
-        id: req.user.id,
-        username: req.user.username,
-        role: req.user.role
-      }
-    })
+      message: '管理员账号检查完成',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    next(error)
+    console.error('❌ 管理员账号检查失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '管理员账号检查失败',
+      error: error.message
+    });
   }
-})
+});
+
+// 管理员专用路由 - 需要管理员权限
+router.use(auth, checkRole('admin')) // 应用认证和管理员权限检查
 
 /**
  * 管理员专用路由
