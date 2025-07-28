@@ -10,7 +10,6 @@ const Gallery = require('../models/Gallery')
 const FriendLink = require('../models/FriendLink')
 const Comment = require('../models/Comment')
 const { ApiError } = require('../utils/error')
-const adminController = require('../controllers/adminController')
 const { ensureAdminAccount } = require('../scripts/ensureAdminAccount')
 
 // 公开的管理员账号检查端点（用于Vercel部署后检查）
