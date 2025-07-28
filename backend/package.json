@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "ensure-admin": "node scripts/ensureAdminAccount.js"
   },
   "dependencies": {
     "@vercel/blob": "^1.1.1",
