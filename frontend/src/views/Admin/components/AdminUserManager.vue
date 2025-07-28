@@ -330,8 +330,8 @@ const saveUser = async () => {
     const response = await adminApi.updateUserRole(currentUser.id, userData)
     if (response.success) {
       alert('用户更新成功!')
-      await getUsers()
-      closeModal()
+    await getUsers()
+    closeModal()
     }
   } catch (error) {
     console.error('保存失败:', error)
@@ -346,8 +346,8 @@ const deleteUser = async (id) => {
   try {
     const response = await adminApi.deleteUser(id)
     if (response.success) {
-      await getUsers()
-      alert('用户删除成功!')
+    await getUsers()
+    alert('用户删除成功!')
     }
   } catch (error) {
     console.error('删除失败:', error)

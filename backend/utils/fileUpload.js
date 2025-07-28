@@ -19,42 +19,11 @@ const ensureDirectory = (dir) => {
 
 // 通用文件上传配置
 const createUpload = (uploadPath, allowedTypes, maxSize = 10 * 1024 * 1024) => {
-  // 在Vercel环境中，使用内存存储而不是磁盘存储
-  if (isVercel) {
-    console.log('⚠️ Vercel环境使用内存存储，文件上传功能受限')
-    return multer({
-      storage: multer.memoryStorage(),
-      limits: {
-        fileSize: maxSize
-      },
-      fileFilter: (req, file, cb) => {
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
-        const mimetype = allowedTypes.test(file.mimetype)
-        
-        if (mimetype && extname) {
-          return cb(null, true)
-        } else {
-          cb(new Error('文件类型不支持'))
-        }
-      }
-    })
-  }
-  
-  // 确保上传目录存在
-  ensureDirectory(uploadPath)
-  
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadPath)
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
-    }
-  })
-
+  // 对于Vercel部署，始终使用内存存储配合Blob存储
+  // 本地开发也可以使用内存存储，因为现在所有文件都会上传到Vercel Blob
+  console.log('📝 使用内存存储配合Vercel Blob，解决文件持久化问题')
   return multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: {
       fileSize: maxSize
     },

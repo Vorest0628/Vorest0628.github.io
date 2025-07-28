@@ -1,9 +1,8 @@
+const { put, del } = require('@vercel/blob');
+const sharp = require('sharp');
 const Gallery = require('../models/Gallery');
 const { ApiError, catchAsync } = require('../utils/error');
 const { imageUpload } = require('../utils/fileUpload');
-const path = require('path');
-const fs = require('fs');
-const sharp = require('sharp');
 
 // PUBLIC: Get image list with filters
 exports.getImages = catchAsync(async (req, res) => {
@@ -70,37 +69,42 @@ exports.getImage = catchAsync(async (req, res) => {
 // ADMIN: Upload a new image
 exports.uploadImage = catchAsync(async (req, res) => {
   const upload = imageUpload.single('image');
-  
+
   upload(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ success: false, message: `上传失败: ${err.message}` });
     }
-    
+
     if (!req.file) {
       return res.status(400).json({ success: false, message: '请选择要上传的图片' });
     }
-    
+
     try {
       const { title, description, category, isPublic, status } = req.body;
-      const secondaryTags = req.body.secondaryTags 
-        ? JSON.parse(req.body.secondaryTags) // Expecting a JSON string array
-        : [];
-      
-      const imageInfo = await sharp(req.file.path).metadata();
-      
-      const thumbnailDir = path.join(__dirname, '..', 'uploads', 'gallery', 'thumbnails');
-      if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir, { recursive: true });
-      const thumbnailPath = path.join(thumbnailDir, path.basename(req.file.path));
-      
-      await sharp(req.file.path)
-        .resize(400) 
-        .toFile(thumbnailPath);
-      
+      const secondaryTags = req.body.secondaryTags ? JSON.parse(req.body.secondaryTags) : [];
+      const fileBuffer = req.file.buffer;
+      const originalName = req.file.originalname;
+
+      // 1. Process and upload the full-size image
+      const imageInfo = await sharp(fileBuffer).metadata();
+      const fullSizeBlob = await put(`gallery/full/${Date.now()}-${originalName}`, fileBuffer, {
+        access: 'public',
+        contentType: req.file.mimetype,
+      });
+
+      // 2. Create, process, and upload the thumbnail
+      const thumbnailBuffer = await sharp(fileBuffer).resize(400).toBuffer();
+      const thumbnailBlob = await put(`gallery/thumbnails/${Date.now()}-${originalName}`, thumbnailBuffer, {
+        access: 'public',
+        contentType: req.file.mimetype,
+      });
+
+      // 3. Create a new document in the database with Blob URLs
       const newImage = await Gallery.create({
         title,
         description,
-        thumbnail: `uploads/gallery/thumbnails/${path.basename(req.file.path)}`,
-        fullSize: req.file.path,
+        thumbnail: thumbnailBlob.url, // Store Vercel Blob URL
+        fullSize: fullSizeBlob.url,   // Store Vercel Blob URL
         category,
         secondaryTags,
         isPublic: isPublic === 'true',
@@ -109,14 +113,15 @@ exports.uploadImage = catchAsync(async (req, res) => {
         height: imageInfo.height,
         date: new Date()
       });
-      
+
       res.status(201).json({ success: true, data: newImage, message: '图片上传成功' });
     } catch (error) {
-      if (req.file) fs.unlinkSync(req.file.path);
-      res.status(500).json({ success: false, message: `图片处理失败: ${error.message}` });
+      console.error('Image processing or upload failed:', error);
+      res.status(500).json({ success: false, message: `图片处理或上传失败: ${error.message}` });
     }
   });
 });
+
 
 // ADMIN: Update image details
 exports.updateImage = catchAsync(async (req, res) => {
@@ -141,19 +146,25 @@ exports.updateImage = catchAsync(async (req, res) => {
 exports.deleteImage = catchAsync(async (req, res) => {
   const image = await Gallery.findById(req.params.id);
   if (!image) throw new ApiError('找不到该图片', 404);
-  
+
   try {
-    if (image.fullSize && fs.existsSync(image.fullSize)) fs.unlinkSync(image.fullSize);
-    const thumbPath = path.join(__dirname, '..', image.thumbnail);
-    if (image.thumbnail && fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
+    // Delete images from Vercel Blob storage
+    if (image.fullSize) {
+      await del(image.fullSize);
+    }
+    if (image.thumbnail) {
+      await del(image.thumbnail);
+    }
   } catch (err) {
-    console.error('删除文件失败:', err);
+    // Log the error but don't block the database deletion
+    console.error('从Vercel Blob删除文件失败:', err);
   }
-  
+
   await Gallery.findByIdAndDelete(req.params.id);
-  
+
   res.status(200).json({ success: true, message: '图片删除成功' });
 });
+
 
 // PUBLIC: Get all unique tags
 exports.getUniqueTags = catchAsync(async (req, res) => {

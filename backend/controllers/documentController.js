@@ -1,5 +1,7 @@
+const { put, del } = require('@vercel/blob');
 const Document = require('../models/Document')
-const { ApiError } = require('../utils/error')
+const { ApiError, catchAsync } = require('../utils/error')
+const { documentUpload } = require('../utils/fileUpload')
 
 // 获取文档列表
 exports.getDocuments = async (req, res, next) => {
@@ -194,24 +196,31 @@ exports.updateDocument = async (req, res, next) => {
 }
 
 // 删除文档
-exports.deleteDocument = async (req, res, next) => {
-  try {
-    const document = await Document.findById(req.params.id)
+exports.deleteDocument = catchAsync(async (req, res) => {
+  const document = await Document.findById(req.params.id);
 
-    if (!document) {
-      throw new ApiError(404, '文档不存在')
-    }
-
-    await Document.findByIdAndDelete(req.params.id)
-
-    res.json({
-      success: true,
-      message: '文档删除成功'
-    })
-  } catch (error) {
-    next(error)
+  if (!document) {
+    throw new ApiError(404, '文档不存在');
   }
-}
+
+  try {
+    // 如果文档存储在Vercel Blob中，删除Blob文件
+    if (document.filePath && document.filePath.startsWith('https://')) {
+      await del(document.filePath);
+      console.log('✅ 已删除Vercel Blob文件:', document.filePath);
+    }
+  } catch (err) {
+    // 记录错误但不阻止数据库删除
+    console.error('从Vercel Blob删除文件失败:', err);
+  }
+
+  await Document.findByIdAndDelete(req.params.id);
+
+  res.json({
+    success: true,
+    message: '文档删除成功'
+  });
+});
 
 // 获取所有分类和标签
 exports.getCategories = async (req, res, next) => {
@@ -499,61 +508,58 @@ exports.previewDocument = async (req, res, next) => {
 }
 
 // 下载文档
-exports.downloadDocument = async (req, res, next) => {
-  try {
-    const document = await Document.findById(req.params.id);
+exports.downloadDocument = catchAsync(async (req, res) => {
+  const document = await Document.findById(req.params.id);
 
-    if (!document) {
-      throw new ApiError(404, '文档不存在');
-    }
-
-    // 检查用户权限
-    const isAdmin = req.user && req.user.role === 'admin';
-    if (!isAdmin && (document.status !== 'published')) {
-      throw new ApiError(403, '您没有权限下载此文档');
-    }
-
-
-
-    const path = require('path')
-    const fs = require('fs')
-    
-    // 构建文件路径
-    let filePath
-    if (document.filePath.startsWith('/uploads/')) {
-      // 如果路径以/uploads/开头，去掉开头的斜杠
-      filePath = path.join(__dirname, '..', document.filePath.substring(1))
-    } else if (document.filePath.startsWith('uploads/')) {
-      // 如果路径以uploads/开头
-      filePath = path.join(__dirname, '..', document.filePath)
-    } else {
-      // 其他情况，假设是相对于uploads目录
-      filePath = path.join(__dirname, '..', 'uploads', 'documents', document.filePath)
-    }
-    
-    console.log('📁 下载文档文件路径:', document.filePath)
-    console.log('📁 构建的完整路径:', filePath)
-    
-    // 检查文件是否存在
-    if (!fs.existsSync(filePath)) {
-      console.error('❌ 文件不存在:', filePath)
-      throw new ApiError(404, '文件不存在')
-    }
-
-    // 更新下载次数
-    document.downloadCount += 1
-    await document.save()
-
-    // 设置下载响应头
-    const fileName = `${document.title}.${document.type.toLowerCase()}`
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`)
-    
-    // 发送文件
-    res.sendFile(filePath)
-  } catch (error) {
-    next(error)
+  if (!document) {
+    throw new ApiError(404, '文档不存在');
   }
-}
+
+  // 检查用户权限
+  const isAdmin = req.user && req.user.role === 'admin';
+  if (!isAdmin && (document.status !== 'published')) {
+    throw new ApiError(403, '您没有权限下载此文档');
+  }
+
+  // 更新下载次数
+  document.downloadCount += 1;
+  await document.save();
+
+  // 如果文档存储在Vercel Blob中，直接重定向到Blob URL
+  if (document.filePath && document.filePath.startsWith('https://')) {
+    console.log('📁 重定向到Vercel Blob:', document.filePath);
+    return res.redirect(document.filePath);
+  }
+
+  // 兼容旧的本地文件系统路径（如果有的话）
+  const path = require('path');
+  const fs = require('fs');
+  
+  let filePath;
+  if (document.filePath.startsWith('/uploads/')) {
+    filePath = path.join(__dirname, '..', document.filePath.substring(1));
+  } else if (document.filePath.startsWith('uploads/')) {
+    filePath = path.join(__dirname, '..', document.filePath);
+  } else {
+    filePath = path.join(__dirname, '..', 'uploads', 'documents', document.filePath);
+  }
+  
+  console.log('📁 下载文档文件路径:', document.filePath);
+  console.log('📁 构建的完整路径:', filePath);
+  
+  // 检查文件是否存在
+  if (!fs.existsSync(filePath)) {
+    console.error('❌ 文件不存在:', filePath);
+    throw new ApiError(404, '文件不存在');
+  }
+
+  // 设置下载响应头
+  const fileName = `${document.title}.${document.type.toLowerCase()}`;
+  res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+  
+  // 发送文件
+  res.sendFile(filePath);
+});
 
 // 记录文档访问
 exports.recordView = async (req, res, next) => {
@@ -607,80 +613,85 @@ exports.toggleDocumentPublic = async (req, res, next) => {
 }
 
 // 上传文档
-exports.uploadDocument = async (req, res, next) => {
-  try {
-    // 检查是否有文件上传
+exports.uploadDocument = catchAsync(async (req, res) => {
+  const upload = documentUpload.single('document');
+
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: `上传失败: ${err.message}` });
+    }
+
     if (!req.file) {
-      throw new ApiError(400, '请选择要上传的文件')
+      return res.status(400).json({ success: false, message: '请选择要上传的文件' });
     }
 
-    const { title, description, category, secondaryTags, type, status = 'draft' } = req.body
-    
-    // 验证必填字段
-    if (!title || title.trim().length === 0) {
-      throw new ApiError(400, '文档标题不能为空')
-    }
-
-    if (!category) {
-      throw new ApiError(400, '请选择文档分类')
-    }
-
-    // 处理二级标签
-    let parsedSecondaryTags = []
-    if (secondaryTags) {
-      try {
-        parsedSecondaryTags = typeof secondaryTags === 'string'
-          ? JSON.parse(secondaryTags)
-          : secondaryTags
-      } catch (e) {
-        parsedSecondaryTags = []
+    try {
+      const { title, description, category, secondaryTags, type, status = 'draft' } = req.body;
+      
+      // 验证必填字段
+      if (!title || title.trim().length === 0) {
+        return res.status(400).json({ success: false, message: '文档标题不能为空' });
       }
-    }
 
-    // 获取文件信息
-    const filePath = req.file.path.replace(/\\/g, '/') // 统一路径分隔符
-    const fileSize = req.file.size
-    const fileType = type || req.file.originalname.split('.').pop().toUpperCase()
-
-    // 创建文档记录
-    const document = await Document.create({
-      title: title.trim(),
-      description: description?.trim() || '',
-      filePath: filePath,
-      fileSize: fileSize,
-      type: fileType,
-      category: category,
-      secondaryTags: parsedSecondaryTags,
-      author: req.user.username || 'Admin',
-      status: status,
-      isPublic: true, // 默认设置为公开，不依赖于status
-      downloadCount: 0,
-      views: 0
-    })
-
-    console.log('文档上传成功:', {
-      id: document._id,
-      title: document.title,
-      filePath: document.filePath,
-      fileSize: document.fileSize,
-      type: document.type
-    })
-
-    res.status(201).json({
-      success: true,
-      data: document,
-      message: '文档上传成功'
-    })
-  } catch (error) {
-    // 如果创建文档失败，删除已上传的文件
-    if (req.file && req.file.path) {
-      const fs = require('fs')
-      try {
-        fs.unlinkSync(req.file.path)
-      } catch (deleteError) {
-        console.error('删除文件失败:', deleteError)
+      if (!category) {
+        return res.status(400).json({ success: false, message: '请选择文档分类' });
       }
+
+      // 处理二级标签
+      let parsedSecondaryTags = [];
+      if (secondaryTags) {
+        try {
+          parsedSecondaryTags = typeof secondaryTags === 'string'
+            ? JSON.parse(secondaryTags)
+            : secondaryTags;
+        } catch (e) {
+          parsedSecondaryTags = [];
+        }
+      }
+
+      const fileBuffer = req.file.buffer;
+      const originalName = req.file.originalname;
+      const fileType = type || originalName.split('.').pop().toUpperCase();
+
+      // 上传文件到 Vercel Blob
+      const blob = await put(`documents/${Date.now()}-${originalName}`, fileBuffer, {
+        access: 'public',
+        contentType: req.file.mimetype,
+      });
+
+      // 创建文档记录
+      const document = await Document.create({
+        title: title.trim(),
+        description: description?.trim() || '',
+        filePath: blob.url, // 使用 Vercel Blob URL
+        downloadUrl: blob.url, // 添加下载URL
+        fileSize: req.file.size,
+        type: fileType,
+        category: category,
+        secondaryTags: parsedSecondaryTags,
+        author: req.user.username || 'Admin',
+        status: status,
+        isPublic: true,
+        downloadCount: 0,
+        views: 0
+      });
+
+      console.log('文档上传成功:', {
+        id: document._id,
+        title: document.title,
+        filePath: document.filePath,
+        fileSize: document.fileSize,
+        type: document.type
+      });
+
+      res.status(201).json({
+        success: true,
+        data: document,
+        message: '文档上传成功'
+      });
+    } catch (error) {
+      console.error('Document processing or upload failed:', error);
+      res.status(500).json({ success: false, message: `文档处理或上传失败: ${error.message}` });
     }
-    next(error)
-  }
-}
+  });
+});
