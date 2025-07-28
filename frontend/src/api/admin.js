@@ -210,7 +210,7 @@ export const adminApi = {
    * @returns {Promise} 返回上传结果
    */
   uploadDocumentFile(formData) {
-    return apiService.post('/admin/documents/upload', formData, {
+    return apiService.post('/documents/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   },

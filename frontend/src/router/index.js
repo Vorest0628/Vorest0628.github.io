@@ -47,6 +47,11 @@ const NotFound = () => import('../views/NotFound.vue').catch(err => {
   return import('../views/NotFound.vue')
 })
 
+const README = () => import('../views/README.vue').catch(err => {
+  console.error('README组件加载失败:', err)
+  return import('../views/README.vue')
+})
+
 
 
 const routes = [
@@ -128,6 +133,15 @@ const routes = [
         meta: {
           title: '友情链接',
           keepAlive: true
+        }
+      },
+      {
+        path: '/readme',
+        name: 'readme',
+        component: README,
+        meta: {
+          title: '使用指南',
+          keepAlive: false
         }
       },
       {

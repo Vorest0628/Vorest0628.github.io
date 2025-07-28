@@ -359,20 +359,52 @@ exports.previewDocument = async (req, res, next) => {
     const fs = require('fs')
     const documentConverter = require('../utils/documentConverter')
     
-    // 构建文件路径
+    // 检查是否是Vercel Blob URL
+    if (document.filePath.startsWith('https://')) {
+      console.log('📁 文档存储在Vercel Blob:', document.filePath)
+      
+      // 对于Vercel Blob存储的文档，直接重定向到Blob URL
+      const fileExtension = path.extname(document.filePath).toLowerCase()
+      
+      // 根据文件类型设置响应头
+      switch (fileExtension) {
+        case '.pdf':
+          res.setHeader('Content-Type', 'application/pdf')
+          break
+        case '.txt':
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+          break
+        case '.md':
+          res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
+          break
+        case '.docx':
+          // 对于DOCX文件，提供下载而不是预览
+          res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.title)}.docx"`)
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+          break
+        case '.pptx':
+          res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.title)}.pptx"`)
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+          break
+        default:
+          res.setHeader('Content-Type', 'application/octet-stream')
+      }
+      
+      // 重定向到Vercel Blob URL
+      return res.redirect(document.filePath)
+    }
+    
+    // 本地文件处理（向后兼容）
     let filePath
     if (document.filePath.startsWith('/uploads/')) {
-      // 如果路径以/uploads/开头，去掉开头的斜杠
       filePath = path.join(__dirname, '..', document.filePath.substring(1))
     } else if (document.filePath.startsWith('uploads/')) {
-      // 如果路径以uploads/开头
       filePath = path.join(__dirname, '..', document.filePath)
     } else {
-      // 其他情况，假设是相对于uploads目录
       filePath = path.join(__dirname, '..', 'uploads', 'documents', document.filePath)
     }
     
-    console.log('📁 文档文件路径:', document.filePath)
+    console.log('📁 本地文档文件路径:', document.filePath)
     console.log('📁 构建的完整路径:', filePath)
     
     // 检查文件是否存在

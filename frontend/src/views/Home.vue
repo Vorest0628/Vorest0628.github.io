@@ -45,15 +45,32 @@
         </div>
 
         <!-- 置顶博客 -->
-        <div v-if="pinnedBlogs.length > 0" class="pinned-category">
+        <div class="pinned-category">
           <h3 class="category-title">📝 置顶博客</h3>
           <div class="pinned-cards">
-                         <div 
-               v-for="blog in pinnedBlogs" 
-               :key="blog._id" 
-               class="pinned-card blog-card"
-               @click="navigateToBlog(blog)"
-             >
+            <!-- 特殊博客：使用指南 -->
+            <div 
+              class="pinned-card blog-card special-blog"
+              @click="navigateToReadme"
+            >
+              <div class="card-icon">📖</div>
+              <div class="card-content">
+                <h4 class="card-title">📖 网站使用指南</h4>
+                <p class="card-meta">
+                  <span class="card-date">永久置顶</span>
+                  <span class="card-category">使用指南</span>
+                </p>
+                <p class="card-excerpt">详细的使用说明和常见问题解答，帮助您更好地使用网站功能</p>
+              </div>
+            </div>
+            
+            <!-- 其他置顶博客 -->
+            <div 
+              v-for="blog in pinnedBlogs" 
+              :key="blog._id" 
+              class="pinned-card blog-card"
+              @click="navigateToBlog(blog)"
+            >
               <div class="card-icon">✍️</div>
               <div class="card-content">
                 <h4 class="card-title">{{ blog.title }}</h4>
@@ -244,6 +261,11 @@ const navigateToBlog = (blog) => {
   router.push(`/blog/${id}`)
 }
 
+// 跳转到README页面
+const navigateToReadme = () => {
+  router.push('/readme')
+}
+
 // 跳转到文档库并搜索文档
 const navigateToDocument = (doc) => {
   router.push({
@@ -404,6 +426,46 @@ onUnmounted(() => {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   border-color: #667eea;
+}
+
+/* 特殊博客样式 */
+.pinned-card.special-blog {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 2px solid #5a67d8;
+  position: relative;
+  overflow: hidden;
+}
+
+.pinned-card.special-blog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.pinned-card.special-blog:hover::before {
+  left: 100%;
+}
+
+.pinned-card.special-blog .card-title,
+.pinned-card.special-blog .card-meta,
+.pinned-card.special-blog .card-excerpt {
+  color: white;
+}
+
+.pinned-card.special-blog .card-meta span {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.pinned-card.special-blog:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
 }
 
 .card-icon {
