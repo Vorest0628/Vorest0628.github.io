@@ -29,11 +29,17 @@ const createUpload = (uploadPath, allowedTypes, maxSize = 10 * 1024 * 1024) => {
     },
     fileFilter: (req, file, cb) => {
       const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
-      const mimetype = allowedTypes.test(file.mimetype)
       
-      if (mimetype && extname) {
+      // 对于某些文件类型，MIME类型可能不准确，所以主要检查扩展名
+      // 特别是 .md 和 .txt 文件
+      if (extname) {
         return cb(null, true)
       } else {
+        console.log('❌ 文件类型验证失败:', {
+          filename: file.originalname,
+          mimetype: file.mimetype,
+          extension: path.extname(file.originalname).toLowerCase()
+        })
         cb(new Error('文件类型不支持'))
       }
     }
@@ -50,7 +56,7 @@ const imageUpload = createUpload(
 // 文档上传配置
 const documentUpload = createUpload(
   'uploads/documents/',
-  /pdf|doc|docx|ppt|pptx|xls|xlsx|txt/,
+  /pdf|doc|docx|ppt|pptx|xls|xlsx|txt|md/,
   50 * 1024 * 1024 // 50MB
 )
 

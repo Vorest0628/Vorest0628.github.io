@@ -378,13 +378,95 @@ exports.previewDocument = async (req, res, next) => {
           res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
           break
         case '.docx':
-          // 对于DOCX文件，提供下载而不是预览
-          res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.title)}.docx"`)
-          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-          break
         case '.pptx':
-          res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.title)}.pptx"`)
-          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+          // 对于DOCX和PPTX文件，返回提示信息
+          const fileType = fileExtension === '.docx' ? 'DOCX' : 'PPTX'
+          const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <title>${document.title} - 预览提示</title>
+              <style>
+                body {
+                  font-family: 'Microsoft YaHei', Arial, sans-serif;
+                  margin: 0;
+                  padding: 40px;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+                .preview-container {
+                  background: white;
+                  padding: 40px;
+                  border-radius: 15px;
+                  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                  text-align: center;
+                  max-width: 600px;
+                  width: 100%;
+                }
+                .icon {
+                  font-size: 4rem;
+                  margin-bottom: 20px;
+                }
+                h1 {
+                  color: #2c3e50;
+                  margin-bottom: 20px;
+                  font-size: 1.8rem;
+                }
+                .message {
+                  color: #666;
+                  line-height: 1.6;
+                  margin-bottom: 30px;
+                  font-size: 1.1rem;
+                }
+                .download-btn {
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  color: white;
+                  border: none;
+                  padding: 12px 30px;
+                  border-radius: 8px;
+                  font-size: 1rem;
+                  cursor: pointer;
+                  text-decoration: none;
+                  display: inline-block;
+                  transition: transform 0.3s ease;
+                }
+                .download-btn:hover {
+                  transform: translateY(-2px);
+                }
+                .dev-note {
+                  background: #e8f4fd;
+                  border: 1px solid #3498db;
+                  border-radius: 8px;
+                  padding: 15px;
+                  margin-top: 20px;
+                  color: #2c3e50;
+                  font-size: 0.9rem;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="preview-container">
+                <div class="icon">📄</div>
+                <h1>${document.title}</h1>
+                <div class="message">
+                  由于技术原因，${fileType}格式文档暂不支持在线预览，请点击下载按钮下载查看。
+                </div>
+                <a href="/api/documents/${document._id}/download" class="download-btn">
+                  📥 下载文档
+                </a>
+                <div class="dev-note">
+                  <strong>开发者提示：</strong>本地开发环境下，LibreOffice可直接用于文档转换预览。
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+          res.setHeader('Content-Type', 'text/html; charset=utf-8')
+          return res.send(htmlContent)
           break
         default:
           res.setHeader('Content-Type', 'application/octet-stream')

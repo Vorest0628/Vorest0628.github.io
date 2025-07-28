@@ -24,6 +24,7 @@
         <option value="PPT">PPT</option>
         <option value="XLSX">XLSX</option>
         <option value="TXT">TXT</option>
+        <option value="MD">MD</option>
       </select>
       <input
         v-model="searchQuery"
