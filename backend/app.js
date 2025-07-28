@@ -231,43 +231,6 @@ const connectDB = async (retryCount = 0) => {
 // 立即连接数据库
 connectDB()
 
-// 在数据库连接成功后检查管理员账号
-const { ensureAdminAccount } = require('./scripts/ensureAdminAccount');
-
-// 检查管理员账号的函数
-const checkAdminAccount = async () => {
-  console.log('🔍 开始检查管理员账号...');
-  console.log('📋 环境变量状态:');
-  console.log('   DEFAULT_ADMIN_ENABLED:', process.env.DEFAULT_ADMIN_ENABLED);
-  console.log('   DEFAULT_ADMIN_USERNAME:', process.env.DEFAULT_ADMIN_USERNAME);
-  console.log('   DEFAULT_ADMIN_EMAIL:', process.env.DEFAULT_ADMIN_EMAIL);
-  console.log('   DEFAULT_ADMIN_PASSWORD:', process.env.DEFAULT_ADMIN_PASSWORD ? '***已设置***' : '未设置');
-  
-  try {
-    if (mongoose.connection.readyState === 1) {
-      console.log('✅ 数据库已连接，开始检查管理员账号');
-      await ensureAdminAccount();
-    } else {
-      console.log('⚠️ 数据库未连接，跳过管理员账号检查');
-      console.log('   数据库状态:', mongoose.connection.readyState);
-    }
-  } catch (error) {
-    console.error('❌ 管理员账号检查失败:', error.message);
-    console.error('   完整错误:', error);
-  }
-};
-
-// 延迟检查管理员账号，确保数据库连接完成
-setTimeout(checkAdminAccount, 3000); // 等待3秒确保数据库连接完成
-
-// 在Vercel环境中，也监听数据库连接事件
-if (isVercel) {
-  mongoose.connection.once('connected', () => {
-    console.log('🔄 Vercel环境：数据库连接成功，检查管理员账号');
-    setTimeout(checkAdminAccount, 1000); // 连接成功后等待1秒再检查
-  });
-}
-
 // Vercel适配：只在非Vercel环境中启动服务器
 if (!isVercel) {
 const PORT = process.env.PORT || 3000

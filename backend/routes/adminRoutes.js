@@ -10,197 +10,23 @@ const Gallery = require('../models/Gallery')
 const FriendLink = require('../models/FriendLink')
 const Comment = require('../models/Comment')
 const { ApiError } = require('../utils/error')
-const { ensureAdminAccount } = require('../scripts/ensureAdminAccount')
 
-// 公开的管理员账号检查端点（用于Vercel部署后检查）
-router.post('/check-admin-account', async (req, res) => {
+// 验证管理员权限
+router.get('/verify', auth, checkRole('admin'), async (req, res, next) => {
   try {
-    console.log('🔍 手动触发管理员账号检查...');
-    console.log('📋 环境变量状态:');
-    console.log('   DEFAULT_ADMIN_ENABLED:', process.env.DEFAULT_ADMIN_ENABLED);
-    console.log('   DEFAULT_ADMIN_USERNAME:', process.env.DEFAULT_ADMIN_USERNAME);
-    console.log('   DEFAULT_ADMIN_EMAIL:', process.env.DEFAULT_ADMIN_EMAIL);
-    console.log('   DEFAULT_ADMIN_PASSWORD:', process.env.DEFAULT_ADMIN_PASSWORD ? '***已设置***' : '未设置');
-    
-    // 运行详细的调试检查
-    const User = require('../models/User');
-    const bcrypt = require('bcryptjs');
-    
-    const adminUsername = process.env.DEFAULT_ADMIN_USERNAME || 'admin';
-    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com';
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'admin123456';
-    
-    console.log(`\n🔍 查找管理员账号: ${adminUsername}`);
-    
-    // 查找用户（包含密码字段）
-    const adminUser = await User.findOne({ username: adminUsername }).select('+password');
-    
-    let result = {
+    res.json({
       success: true,
-      message: '管理员账号检查完成',
-      timestamp: new Date().toISOString(),
-      details: {}
-    };
-    
-    if (!adminUser) {
-      console.log(`❌ 未找到用户: ${adminUsername}`);
-      result.details.userFound = false;
-      result.details.username = adminUsername;
-      
-      // 尝试通过邮箱查找
-      console.log(`\n🔍 尝试通过邮箱查找: ${adminEmail}`);
-      const emailUser = await User.findOne({ email: adminEmail }).select('+password');
-      
-      if (!emailUser) {
-        console.log(`❌ 也未找到邮箱用户: ${adminEmail}`);
-        result.details.emailUserFound = false;
-        result.details.email = adminEmail;
-        
-        // 列出所有用户
-        console.log('\n📊 数据库中的所有用户:');
-        const allUsers = await User.find({}).select('username email role isActive');
-        result.details.allUsers = allUsers.map(user => ({
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive
-        }));
-        
-        if (allUsers.length === 0) {
-          console.log('   ❌ 数据库中没有用户');
-        } else {
-          allUsers.forEach((user, index) => {
-            console.log(`   ${index + 1}. ${user.username} (${user.email}) - ${user.role} - ${user.isActive ? '激活' : '禁用'}`);
-          });
-        }
-        
-        // 如果启用了默认管理员，尝试创建
-        if (process.env.DEFAULT_ADMIN_ENABLED === 'true') {
-          console.log('\n🆕 尝试创建管理员账号...');
-          try {
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(adminPassword, salt);
-            
-            const newAdmin = await User.create({
-              username: adminUsername,
-              email: adminEmail,
-              password: hashedPassword,
-              role: 'admin',
-              isActive: true
-            });
-            
-            console.log('✅ 管理员账号创建成功！');
-            result.details.adminCreated = true;
-            result.details.newAdmin = {
-              username: newAdmin.username,
-              email: newAdmin.email,
-              role: newAdmin.role,
-              isActive: newAdmin.isActive
-            };
-            
-            // 测试密码验证
-            const testResult = await newAdmin.comparePassword(adminPassword);
-            console.log(`   密码验证测试: ${testResult ? '✅ 成功' : '❌ 失败'}`);
-            result.details.passwordTest = testResult;
-            
-          } catch (error) {
-            console.error('❌ 创建管理员账号失败:', error.message);
-            result.details.adminCreated = false;
-            result.details.createError = error.message;
-          }
-        }
-      } else {
-        console.log(`✅ 找到邮箱用户: ${emailUser.username}`);
-        result.details.emailUserFound = true;
-        result.details.foundUser = {
-          username: emailUser.username,
-          email: emailUser.email,
-          role: emailUser.role,
-          isActive: emailUser.isActive
-        };
-        
-        // 测试密码验证
-        console.log('\n🔐 测试密码验证...');
-        try {
-          const isPasswordCorrect = await emailUser.comparePassword(adminPassword);
-          console.log(`   密码验证: ${isPasswordCorrect ? '✅ 成功' : '❌ 失败'}`);
-          result.details.passwordTest = isPasswordCorrect;
-          
-          if (!isPasswordCorrect) {
-            console.log('\n🔄 密码验证失败，尝试重置密码...');
-            const salt = await bcrypt.genSalt(10);
-            const newHash = await bcrypt.hash(adminPassword, salt);
-            
-            emailUser.password = newHash;
-            await emailUser.save();
-            
-            console.log('✅ 密码已重置');
-            result.details.passwordReset = true;
-            
-            // 再次测试
-            const newTest = await emailUser.comparePassword(adminPassword);
-            console.log(`   重置后验证: ${newTest ? '✅ 成功' : '❌ 失败'}`);
-            result.details.passwordTestAfterReset = newTest;
-          }
-          
-        } catch (error) {
-          console.error('❌ 密码验证错误:', error.message);
-          result.details.passwordError = error.message;
-        }
+      message: '管理员权限验证成功',
+      user: {
+        id: req.user.id,
+        username: req.user.username,
+        role: req.user.role
       }
-    } else {
-      console.log(`✅ 找到用户: ${adminUser.username}`);
-      result.details.userFound = true;
-      result.details.foundUser = {
-        username: adminUser.username,
-        email: adminUser.email,
-        role: adminUser.role,
-        isActive: adminUser.isActive
-      };
-      
-      // 测试密码验证
-      console.log('\n🔐 测试密码验证...');
-      try {
-        const isPasswordCorrect = await adminUser.comparePassword(adminPassword);
-        console.log(`   密码验证: ${isPasswordCorrect ? '✅ 成功' : '❌ 失败'}`);
-        result.details.passwordTest = isPasswordCorrect;
-        
-        if (!isPasswordCorrect) {
-          console.log('\n🔄 密码验证失败，尝试重置密码...');
-          const salt = await bcrypt.genSalt(10);
-          const newHash = await bcrypt.hash(adminPassword, salt);
-          
-          adminUser.password = newHash;
-          await adminUser.save();
-          
-          console.log('✅ 密码已重置');
-          result.details.passwordReset = true;
-          
-          // 再次测试
-          const newTest = await adminUser.comparePassword(adminPassword);
-          console.log(`   重置后验证: ${newTest ? '✅ 成功' : '❌ 失败'}`);
-          result.details.passwordTestAfterReset = newTest;
-        }
-        
-      } catch (error) {
-        console.error('❌ 密码验证错误:', error.message);
-        result.details.passwordError = error.message;
-      }
-    }
-    
-    res.json(result);
+    })
   } catch (error) {
-    console.error('❌ 管理员账号检查失败:', error);
-    res.status(500).json({
-      success: false,
-      message: '管理员账号检查失败',
-      error: error.message
-    });
+    next(error)
   }
-});
-
-// 管理员专用路由 - 需要管理员权限
-router.use(auth, checkRole('admin')) // 应用认证和管理员权限检查
+})
 
 /**
  * 管理员专用路由
