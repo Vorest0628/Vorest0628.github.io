@@ -378,9 +378,267 @@ exports.previewDocument = async (req, res, next) => {
           res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
           break
         case '.docx':
+          // 对于DOCX文件，尝试提取文本和图片进行弱化预览
+          try {
+            console.log('🔍 开始DOCX弱化预览:', document.title)
+            
+            // 从Vercel Blob下载文件到临时位置
+            const https = require('https')
+            const tempDir = path.join(__dirname, '..', 'temp')
+            if (!fs.existsSync(tempDir)) {
+              fs.mkdirSync(tempDir, { recursive: true })
+            }
+            
+            const tempFilePath = path.join(tempDir, `${document._id}_${Date.now()}.docx`)
+            
+            // 下载文件
+            await new Promise((resolve, reject) => {
+              const file = fs.createWriteStream(tempFilePath)
+              https.get(document.filePath, (response) => {
+                response.pipe(file)
+                file.on('finish', () => {
+                  file.close()
+                  resolve()
+                })
+              }).on('error', reject)
+            })
+            
+            // 使用mammoth提取文本和图片
+            const mammoth = require('mammoth')
+            const result = await mammoth.convertToHtml({ path: tempFilePath })
+            
+            // 清理临时文件
+            fs.unlinkSync(tempFilePath)
+            
+            // 创建预览页面
+            const htmlContent = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <title>${document.title} - 文档预览</title>
+                <style>
+                  body {
+                    font-family: 'Microsoft YaHei', Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background: #f5f5f5;
+                  }
+                  .header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                  }
+                  .header h1 {
+                    margin: 0;
+                    font-size: 1.8rem;
+                  }
+                  .header .meta {
+                    margin-top: 10px;
+                    opacity: 0.9;
+                    font-size: 0.9rem;
+                  }
+                  .preview-notice {
+                    background: #fff3cd;
+                    border: 1px solid #ffeaa7;
+                    color: #856404;
+                    padding: 15px;
+                    margin: 20px;
+                    border-radius: 8px;
+                    text-align: center;
+                  }
+                  .content-container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 40px;
+                    margin: 20px auto;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    line-height: 1.6;
+                  }
+                  .content-container img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  }
+                  .content-container h1, .content-container h2, .content-container h3 {
+                    color: #2c3e50;
+                    border-bottom: 2px solid #3498db;
+                    padding-bottom: 10px;
+                    margin-top: 30px;
+                  }
+                  .content-container p {
+                    margin-bottom: 15px;
+                    color: #333;
+                  }
+                  .download-section {
+                    text-align: center;
+                    margin: 30px 0;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                  }
+                  .download-btn {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    text-decoration: none;
+                    display: inline-block;
+                    transition: transform 0.3s ease;
+                  }
+                  .download-btn:hover {
+                    transform: translateY(-2px);
+                  }
+                  .limitations {
+                    background: #e8f4fd;
+                    border: 1px solid #3498db;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-top: 20px;
+                    color: #2c3e50;
+                    font-size: 0.9rem;
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <h1>${document.title}</h1>
+                  <div class="meta">
+                    文档类型: ${document.type} | 作者: ${document.author} | 大小: ${document.formattedSize || '未知'}
+                  </div>
+                </div>
+                
+                <div class="preview-notice">
+                  📄 <strong>弱化预览模式</strong> - 此预览仅显示文档的文本内容和图片，可能无法完全还原原始格式。
+                </div>
+                
+                <div class="content-container">
+                  ${result.value}
+                </div>
+                
+                <div class="download-section">
+                  <a href="/api/documents/${document._id}/download" class="download-btn">
+                    📥 下载完整文档
+                  </a>
+                </div>
+                
+                <div class="limitations">
+                  <strong>预览限制说明：</strong>
+                  <ul>
+                    <li>仅显示文本内容和图片</li>
+                    <li>表格、复杂格式可能显示异常</li>
+                    <li>字体、颜色等样式可能丢失</li>
+                    <li>建议下载原文档以获得完整体验</li>
+                  </ul>
+                </div>
+              </body>
+              </html>
+            `
+            res.setHeader('Content-Type', 'text/html; charset=utf-8')
+            return res.send(htmlContent)
+            
+          } catch (error) {
+            console.error('DOCX弱化预览失败:', error)
+            // 如果弱化预览失败，回退到原来的提示页面
+            const htmlContent = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <title>${document.title} - 预览提示</title>
+                <style>
+                  body {
+                    font-family: 'Microsoft YaHei', Arial, sans-serif;
+                    margin: 0;
+                    padding: 40px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  }
+                  .preview-container {
+                    background: white;
+                    padding: 40px;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    text-align: center;
+                    max-width: 600px;
+                    width: 100%;
+                  }
+                  .icon {
+                    font-size: 4rem;
+                    margin-bottom: 20px;
+                  }
+                  h1 {
+                    color: #2c3e50;
+                    margin-bottom: 20px;
+                    font-size: 1.8rem;
+                  }
+                  .message {
+                    color: #666;
+                    line-height: 1.6;
+                    margin-bottom: 30px;
+                    font-size: 1.1rem;
+                  }
+                  .download-btn {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    text-decoration: none;
+                    display: inline-block;
+                    transition: transform 0.3s ease;
+                  }
+                  .download-btn:hover {
+                    transform: translateY(-2px);
+                  }
+                  .dev-note {
+                    background: #e8f4fd;
+                    border: 1px solid #3498db;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-top: 20px;
+                    color: #2c3e50;
+                    font-size: 0.9rem;
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="preview-container">
+                  <div class="icon">📄</div>
+                  <h1>${document.title}</h1>
+                  <div class="message">
+                    由于技术原因，DOCX格式文档暂不支持在线预览，请点击下载按钮下载查看。
+                  </div>
+                  <a href="/api/documents/${document._id}/download" class="download-btn">
+                    📥 下载文档
+                  </a>
+                  <div class="dev-note">
+                    <strong>开发者提示：</strong>本地开发环境下，LibreOffice可直接用于文档转换预览。
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+            res.setHeader('Content-Type', 'text/html; charset=utf-8')
+            return res.send(htmlContent)
+          }
+          break
         case '.pptx':
-          // 对于DOCX和PPTX文件，返回提示信息
-          const fileType = fileExtension === '.docx' ? 'DOCX' : 'PPTX'
+          // 对于PPTX文件，返回提示信息
           const htmlContent = `
             <!DOCTYPE html>
             <html>
@@ -453,7 +711,7 @@ exports.previewDocument = async (req, res, next) => {
                 <div class="icon">📄</div>
                 <h1>${document.title}</h1>
                 <div class="message">
-                  由于技术原因，${fileType}格式文档暂不支持在线预览，请点击下载按钮下载查看。
+                  由于技术原因，PPTX格式文档暂不支持在线预览，请点击下载按钮下载查看。
                 </div>
                 <a href="/api/documents/${document._id}/download" class="download-btn">
                   📥 下载文档
