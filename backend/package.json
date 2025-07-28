@@ -5,9 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "init": "node scripts/initDatabase.js",
-    "migrate-to-blob": "node scripts/migrateToVercelBlob.js"
+    "dev": "nodemon app.js"
   },
   "dependencies": {
     "@vercel/blob": "^1.1.1",

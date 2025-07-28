@@ -231,6 +231,22 @@ const connectDB = async (retryCount = 0) => {
 // 立即连接数据库
 connectDB()
 
+// 在数据库连接成功后检查管理员账号
+const { ensureAdminAccount } = require('./scripts/ensureAdminAccount');
+
+// 延迟检查管理员账号，确保数据库连接完成
+setTimeout(async () => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await ensureAdminAccount();
+    } else {
+      console.log('⚠️ 数据库未连接，跳过管理员账号检查');
+    }
+  } catch (error) {
+    console.error('❌ 管理员账号检查失败:', error.message);
+  }
+}, 2000); // 等待2秒确保数据库连接完成
+
 // Vercel适配：只在非Vercel环境中启动服务器
 if (!isVercel) {
 const PORT = process.env.PORT || 3000
