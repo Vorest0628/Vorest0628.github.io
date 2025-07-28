@@ -62,6 +62,10 @@ userSchema.pre('save', async function(next) {
 
 // 验证密码的方法
 userSchema.methods.comparePassword = async function(candidatePassword) {
+  // 确保密码字段存在
+  if (!this.password) {
+    throw new Error('密码字段不存在，请使用 .select("+password") 查询用户');
+  }
   return await bcrypt.compare(candidatePassword, this.password)
 }
 

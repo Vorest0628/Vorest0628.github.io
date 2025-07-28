@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "ensure-admin": "node scripts/ensureAdminAccount.js"
+    "ensure-admin": "node scripts/ensureAdminAccount.js",
+    "test-admin": "node scripts/testAdminAccount.js",
+    "reset-admin": "node scripts/resetAdminPassword.js",
+    "test-login": "node scripts/testLogin.js"
   },
   "dependencies": {
     "@vercel/blob": "^1.1.1",
