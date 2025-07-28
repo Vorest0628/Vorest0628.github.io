@@ -4,16 +4,18 @@
   <meta charset="utf-8">
   <title>Vorest's Personal Website</title>
   <script>
-    // SPA 路由重定向 - 适配 GitHub Pages
-    var pathSegmentsToKeep = 1;
+    // 简单的 SPA 重定向 - 适配 GitHub Pages
     var l = window.location;
-    l.replace(
-      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + 
-      '/?/' + l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-      l.hash
-    );
+    var baseUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
+    
+    // 如果是根路径，直接重定向到首页
+    if (l.pathname === '/' || l.pathname === '/index.html') {
+      window.location.href = baseUrl + '/#/';
+    } else {
+      // 对于其他路径，重定向到对应的 hash 路由
+      var path = l.pathname.replace(/^\//, ''); // 移除开头的斜杠
+      window.location.href = baseUrl + '/#' + (path ? '/' + path : '');
+    }
   </script>
 </head>
 <body>

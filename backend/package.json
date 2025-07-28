@@ -7,8 +7,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "init": "node scripts/initDatabase.js",
-    "migrate-to-blob": "node scripts/migrateToVercelBlob.js",
-    "reset-admin": "node scripts/resetAdminPassword.js"
+    "migrate-to-blob": "node scripts/migrateToVercelBlob.js"
   },
   "dependencies": {
     "@vercel/blob": "^1.1.1",

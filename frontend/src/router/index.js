@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
 
 // 懒加载页面组件，添加错误处理
@@ -175,7 +175,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     // 路由切换时滚动到顶部
@@ -192,6 +192,13 @@ router.beforeEach(async (to, from, next) => {
   // 调试信息
   console.log(`路由导航: ${from.path} -> ${to.path}`)
   
+  // 防止循环重定向
+  if (to.path === from.path && to.path !== '/') {
+    console.log('检测到循环重定向，停止导航')
+    next(false)
+    return
+  }
+  
   // 设置页面标题
   document.title = to.meta.title ? `${to.meta.title} - Vorest's Website` : "Vorest's Website"
   
@@ -203,9 +210,11 @@ router.beforeEach(async (to, from, next) => {
     // 检查是否已登录
     if (!token || !user) {
       console.log('未登录，重定向到首页进行登录')
-      alert(to.meta.requiresAdmin ? '请先登录后再访问管理员面板' : '请先登录后再访问此页面')
-      next('/')
-      return
+      if (to.path !== '/') {
+        alert(to.meta.requiresAdmin ? '请先登录后再访问管理员面板' : '请先登录后再访问此页面')
+        next('/')
+        return
+      }
     }
     
     // 检查是否需要管理员权限
@@ -213,33 +222,45 @@ router.beforeEach(async (to, from, next) => {
       // 检查是否有管理员权限
       if (user.role !== 'admin') {
         console.log('权限不足，重定向到首页')
-        alert('您没有管理员权限')
-        next('/')
-        return
+        if (to.path !== '/') {
+          alert('您没有管理员权限')
+          next('/')
+          return
+        }
       }
       
-      // 验证管理员token是否有效
+      // 验证管理员token是否有效 - 添加超时处理
       try {
         const { adminApi } = await import('../api/admin')
-        await adminApi.verifyAdmin()
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('验证超时')), 5000)
+        )
+        await Promise.race([adminApi.verifyAdmin(), timeoutPromise])
       } catch (error) {
-        console.log('管理员Token无效，清除认证信息并重定向到首页')
-        authStorage.clearAuth()
-        alert('登录已过期，请重新登录')
-        next('/')
-        return
+        console.log('管理员Token验证失败:', error.message)
+        if (to.path !== '/') {
+          authStorage.clearAuth()
+          alert('登录已过期，请重新登录')
+          next('/')
+          return
+        }
       }
-    } else {
-      // 对于普通用户，验证token是否有效
+    } else if (to.meta.requiresAuth) {
+      // 对于普通用户，验证token是否有效 - 添加超时处理
       try {
         const { authApi } = await import('../api/auth')
-        await authApi.getCurrentUser()
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('验证超时')), 5000)
+        )
+        await Promise.race([authApi.getCurrentUser(), timeoutPromise])
       } catch (error) {
-        console.log('用户Token无效，清除认证信息并重定向到首页')
-        authStorage.clearAuth()
-        alert('登录已过期，请重新登录')
-        next('/')
-        return
+        console.log('用户Token验证失败:', error.message)
+        if (to.path !== '/') {
+          authStorage.clearAuth()
+          alert('登录已过期，请重新登录')
+          next('/')
+          return
+        }
       }
     }
   }
