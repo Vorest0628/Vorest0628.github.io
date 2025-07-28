@@ -517,9 +517,9 @@ exports.previewDocument = async (req, res, next) => {
                   </div>
                 </div>
                 
-                <div class="preview-notice">
-                  📄 <strong>弱化预览模式</strong> - 此预览仅显示文档的文本内容和图片，可能无法完全还原原始格式。
-                </div>
+                                 <div class="preview-notice">
+                   📄 <strong>智能预览模式</strong> - 此预览提取了文档的文本内容和图片，可以快速了解文档主要内容。
+                 </div>
                 
                 <div class="content-container">
                   ${result.value}
@@ -531,15 +531,18 @@ exports.previewDocument = async (req, res, next) => {
                   </a>
                 </div>
                 
-                <div class="limitations">
-                  <strong>预览限制说明：</strong>
-                  <ul>
-                    <li>仅显示文本内容和图片</li>
-                    <li>表格、复杂格式可能显示异常</li>
-                    <li>字体、颜色等样式可能丢失</li>
-                    <li>建议下载原文档以获得完整体验</li>
-                  </ul>
-                </div>
+                                 <div class="limitations">
+                   <strong>预览能力说明：</strong>
+                   <ul>
+                     <li>✅ 完整文本内容提取</li>
+                     <li>✅ 文档图片正常显示</li>
+                     <li>✅ 标题层级结构保持</li>
+                     <li>✅ 段落和列表格式</li>
+                     <li>⚠️ 表格可能显示为文本</li>
+                     <li>⚠️ 字体、颜色等样式会丢失</li>
+                     <li>⚠️ 复杂布局可能简化</li>
+                   </ul>
+                 </div>
               </body>
               </html>
             `
