@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const documentController = require('../controllers/documentController')
 const { auth, optionalAuth, checkRole } = require('../middleware/auth')
-const { uploadDocument, handleUploadError } = require('../middleware/upload')
+const { handleUploadError } = require('../middleware/upload')
 
 /**
  * 文档库路由配置
@@ -22,7 +22,7 @@ router.get('/:id', optionalAuth, documentController.getDocumentById) // 获取�
 
 // 管理员专用路由 - 需要管理员权限
 router.use(auth, checkRole('admin')) // 应用认证和管理员权限检查
-router.post('/upload', uploadDocument, handleUploadError, documentController.uploadDocument) // 上传文档
+router.post('/upload', handleUploadError, documentController.uploadDocument) // 上传文档
 router.post('/', documentController.createDocument) // 创建文档
 router.put('/:id', documentController.updateDocument) // 更新文档
 router.delete('/:id', documentController.deleteDocument) // 删除文档

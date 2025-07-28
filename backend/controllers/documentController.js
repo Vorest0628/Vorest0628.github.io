@@ -1,4 +1,21 @@
-const { put, del } = require('@vercel/blob');
+// 条件导入 Vercel Blob，如果没有配置则使用空函数
+let put, del;
+try {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blobModule = require('@vercel/blob');
+    put = blobModule.put;
+    del = blobModule.del;
+  } else {
+    console.warn('⚠️ BLOB_READ_WRITE_TOKEN 未配置，Vercel Blob 功能将被禁用');
+    put = async () => { throw new Error('Vercel Blob 未配置'); };
+    del = async () => { console.log('Vercel Blob 未配置，跳过删除'); };
+  }
+} catch (error) {
+  console.warn('⚠️ 无法加载 @vercel/blob:', error.message);
+  put = async () => { throw new Error('Vercel Blob 不可用'); };
+  del = async () => { console.log('Vercel Blob 不可用，跳过删除'); };
+}
+
 const Document = require('../models/Document')
 const { ApiError, catchAsync } = require('../utils/error')
 const { documentUpload } = require('../utils/fileUpload')

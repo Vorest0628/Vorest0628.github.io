@@ -1,4 +1,18 @@
-const { put } = require('@vercel/blob');
+// 条件导入 Vercel Blob
+let put;
+try {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blobModule = require('@vercel/blob');
+    put = blobModule.put;
+  } else {
+    console.error('❌ BLOB_READ_WRITE_TOKEN 环境变量未设置');
+    process.exit(1);
+  }
+} catch (error) {
+  console.error('❌ 无法加载 @vercel/blob:', error.message);
+  process.exit(1);
+}
+
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
