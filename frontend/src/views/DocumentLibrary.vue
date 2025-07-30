@@ -260,6 +260,8 @@ const getDocuments = async () => {
     
     if (response.success) {
       allDocuments.value = response.data || []
+      // 在获取文档后更新分类列表
+      await getCategories()
     } else {
       throw new Error(response.message || '获取文档失败')
     }
@@ -283,7 +285,14 @@ const getCategories = async () => {
     }
   } catch (err) {
     console.error('获取分类失败:', err)
-    allCategories.value = ['全部', '前端开发', '游戏攻略', 'AI技术', '音乐制作', '模板资源']
+    // 从现有文档中提取分类
+    const categories = new Set(['全部', '前端开发', '游戏攻略', 'AI技术', '音乐制作', '模板资源'])
+    allDocuments.value.forEach(doc => {
+      if (doc.category) {
+        categories.add(doc.category)
+      }
+    })
+    allCategories.value = Array.from(categories).sort()
   }
 }
 

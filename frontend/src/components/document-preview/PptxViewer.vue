@@ -1,15 +1,15 @@
 <template>
-  <div class="vue-office-viewer">
+  <div class="pptx-viewer">
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
-      <p>{{ loadingText }}</p>
+      <p>正在加载PowerPoint文档...</p>
     </div>
     
     <!-- 错误状态 -->
     <div v-else-if="error" class="error-container">
       <div class="error-icon">⚠️</div>
-      <h3>预览失败</h3>
+      <h3>PowerPoint预览失败</h3>
       <p>{{ error }}</p>
       <div class="error-actions">
         <button @click="retry" class="retry-btn">重试</button>
@@ -17,65 +17,22 @@
       </div>
     </div>
     
-    <!-- 预览内容 -->
-    <div v-else class="preview-container">
-      <!-- Word文档预览 -->
-      <vue-office-docx
-        v-if="fileType === 'docx'"
+    <!-- PPTX预览内容 -->
+    <div v-else class="pptx-container">
+      <VueOfficePptx
+        v-if="documentSrc"
         :src="documentSrc"
         :style="viewerStyle"
         @rendered="onRendered"
         @error="onError"
       />
-      
-      <!-- Excel文档预览 -->
-      <vue-office-excel
-        v-else-if="fileType === 'xlsx' || fileType === 'xls'"
-        :src="documentSrc"
-        :style="viewerStyle"
-        @rendered="onRendered"
-        @error="onError"
-      />
-      
-      <!-- PowerPoint预览 -->
-      <PptxViewer
-        v-else-if="fileType === 'pptx' || fileType === 'ppt'"
-        :document="document"
-        :blob="blob"
-        @rendered="onRendered"
-        @error="onError"
-      />
-      
-      <!-- PDF文档预览 - 使用现有的PdfViewer组件 -->
-      <PdfViewer
-        v-else-if="fileType === 'pdf'"
-        :url="documentSrc"
-        @rendered="onRendered"
-        @error="onError"
-      />
-      
-      <!-- 不支持的文件类型 -->
-      <div v-else class="unsupported-container">
-        <div class="unsupported-icon">📄</div>
-        <h3>不支持的文件类型</h3>
-        <p>当前文件类型 ({{ fileType }}) 暂不支持在线预览</p>
-        <button @click="download" class="download-btn">下载文档</button>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import VueOfficeDocx from '@vue-office/docx'
-import VueOfficeExcel from '@vue-office/excel'
-import PptxViewer from './PptxViewer.vue'
-import PdfViewer from '../PdfViewer.vue'
-
-// 引入样式
-import '@vue-office/docx/lib/index.css'
-import '@vue-office/excel/lib/index.css'
-// 注意：Vue-Office PPTX组件可能不需要额外的CSS文件
+import VueOfficePptx from '@vue-office/pptx'
 
 // Props
 const props = defineProps({
@@ -98,24 +55,6 @@ const error = ref('')
 const documentSrc = ref(null)
 
 // 计算属性
-const fileType = computed(() => {
-  return props.document.type?.toLowerCase() || 'unknown'
-})
-
-const loadingText = computed(() => {
-  const texts = {
-    docx: '正在加载Word文档...',
-    xlsx: '正在加载Excel文档...',
-    xls: '正在加载Excel文档...',
-    pdf: '正在加载PDF文档...',
-    pptx: '正在加载PowerPoint文档...',
-    ppt: '正在加载PowerPoint文档...',
-    md: '正在加载Markdown文档...',
-    txt: '正在加载文本文档...'
-  }
-  return texts[fileType.value] || '正在加载文档...'
-})
-
 const viewerStyle = computed(() => ({
   height: '100%',
   width: '100%',
@@ -128,21 +67,17 @@ const initializeDocument = async () => {
     loading.value = true
     error.value = ''
     
-    // 检查文件类型，决定使用哪种预览方式
-    if (['md', 'txt', 'pptx', 'ppt'].includes(fileType.value)) {
-      // Markdown、文本和PPTX文件使用专门的处理方案
-      loading.value = false
-      return
-    }
+    console.log('🔍 开始初始化PPTX预览:', props.document.title)
     
     if (props.blob) {
-      // 将Blob转换为ArrayBuffer，这是Vue-Office期望的格式
-      console.log('🔍 处理Blob数据:', {
+      // 处理Blob数据
+      console.log('📦 处理Blob数据:', {
         size: props.blob.size,
         type: props.blob.type
       })
       
       try {
+        // 尝试转换为ArrayBuffer
         const arrayBuffer = await props.blob.arrayBuffer()
         documentSrc.value = arrayBuffer
         console.log('✅ Blob转换为ArrayBuffer成功')
@@ -153,7 +88,7 @@ const initializeDocument = async () => {
         console.log('🔄 使用Blob URL作为备选方案')
       }
     } else if (props.document.filePath && props.document.filePath.startsWith('https://')) {
-      // 如果是Vercel Blob URL，直接使用URL
+      // 使用Vercel Blob URL
       documentSrc.value = props.document.filePath
       console.log('🌐 使用Vercel Blob URL:', props.document.filePath)
     } else {
@@ -163,29 +98,29 @@ const initializeDocument = async () => {
         throw new Error('获取文档内容失败')
       }
       documentSrc.value = await response.arrayBuffer()
+      console.log('📡 从API获取文档内容成功')
     }
     
     loading.value = false
   } catch (err) {
-    console.error('文档初始化失败:', err)
-    error.value = err.message || '文档加载失败'
+    console.error('PPTX初始化失败:', err)
+    error.value = err.message || 'PPTX文档加载失败'
     loading.value = false
   }
 }
 
 const onRendered = () => {
-  console.log('✅ 文档渲染完成:', props.document.title)
+  console.log('✅ PPTX渲染完成:', props.document.title)
   emit('rendered', props.document)
 }
 
 const onError = (err) => {
-  console.error('❌ 文档渲染失败:', err)
+  console.error('❌ PPTX渲染失败:', err)
   console.error('错误详情:', {
-    fileType: fileType.value,
     documentSrc: documentSrc.value,
     document: props.document
   })
-  error.value = '文档预览失败，请尝试下载查看'
+  error.value = 'PowerPoint文档预览失败，请尝试下载查看'
   emit('error', err)
 }
 
@@ -211,7 +146,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.vue-office-viewer {
+.pptx-viewer {
   height: 100%;
   width: 100%;
   display: flex;
@@ -219,8 +154,7 @@ onUnmounted(() => {
 }
 
 .loading-container,
-.error-container,
-.unsupported-container {
+.error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -245,8 +179,7 @@ onUnmounted(() => {
   100% { transform: rotate(360deg); }
 }
 
-.error-icon,
-.unsupported-icon {
+.error-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
 }
@@ -283,7 +216,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-.preview-container {
+.pptx-container {
   flex: 1;
   overflow: hidden;
 }

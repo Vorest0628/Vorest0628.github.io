@@ -41,9 +41,25 @@ export function useDocumentPreview() {
       // 检查是否支持 Vue-Office（仅Office文档格式）
       if (vueOffice.isSupported(normalizedType)) {
         // 使用 Vue-Office 处理 Office 文档
-        previewType.value = 'vue-office'
-        console.log('🔍 使用Vue-Office预览:', normalizedType)
-        return await vueOffice.previewDocument({ type: normalizedType, title: fileName }, blob)
+        try {
+          previewType.value = 'vue-office'
+          console.log('🔍 使用Vue-Office预览:', normalizedType)
+          const result = await vueOffice.previewDocument({ type: normalizedType, title: fileName }, blob)
+          if (!result) {
+            throw new Error('Vue-Office预览失败')
+          }
+          return result
+        } catch (err) {
+          console.error('Vue-Office预览失败，回退到原有方案:', err)
+          // 如果Vue-Office失败，回退到原有预览方案
+          if (normalizedType === 'docx') {
+            await previewDocx(blob)
+          } else if (['pptx', 'ppt'].includes(normalizedType)) {
+            await previewPowerPoint(blob, fileName)
+          } else {
+            throw err
+          }
+        }
       } else if (['md', 'markdown'].includes(normalizedType)) {
         // 使用原有的 Markdown 预览逻辑
         await previewMarkdown(blob)

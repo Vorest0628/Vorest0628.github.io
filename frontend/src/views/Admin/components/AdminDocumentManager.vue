@@ -11,11 +11,9 @@
     <div class="filter-bar">
       <select v-model="categoryFilter" @change="filterDocuments">
         <option value="">全部分类</option>
-        <option value="前端开发">前端开发</option>
-        <option value="游戏攻略">游戏攻略</option>
-        <option value="AI技术">AI技术</option>
-        <option value="音乐制作">音乐制作</option>
-        <option value="模板资源">模板资源</option>
+        <option v-for="category in availableCategories" :key="category" :value="category">
+          {{ category }}
+        </option>
       </select>
       <select v-model="typeFilter" @change="filterDocuments">
         <option value="">全部类型</option>
@@ -127,14 +125,24 @@
             </div>
             <div class="form-group">
               <label>分类</label>
-              <select v-model="currentDocument.category" required>
+              <select v-model="currentDocument.category" @change="onCategoryChange" required>
                 <option value="">选择分类</option>
-                <option value="前端开发">前端开发</option>
-                <option value="游戏攻略">游戏攻略</option>
-                <option value="AI技术">AI技术</option>
-                <option value="音乐制作">音乐制作</option>
-                <option value="模板资源">模板资源</option>
+                <option v-for="category in availableCategories" :key="category" :value="category">
+                  {{ category }}
+                </option>
+                <option value="__other__">其他</option>
               </select>
+              
+              <!-- 自定义分类输入 -->
+              <div v-if="currentDocument.category === '__other__'" class="mt-2">
+                <input 
+                  v-model="currentDocument.newCategoryText" 
+                  type="text" 
+                  placeholder="输入新分类名称" 
+                  required
+                  class="form-control"
+                />
+              </div>
             </div>
             <div class="form-group">
               <label>二级标签</label>
@@ -210,6 +218,7 @@ const currentDocument = reactive({
   title: '',
   description: '',
   category: '',
+  newCategoryText: '',
   secondaryTagsInput: '',
   secondaryTags: [],
   type: '',
@@ -218,6 +227,31 @@ const currentDocument = reactive({
   previewUrl: '',
   status: 'draft'
 })
+
+// 可用分类列表
+const availableCategories = ref(['前端开发', '游戏攻略', 'AI技术', '音乐制作', '模板资源'])
+
+// 获取所有已使用的分类
+const getCategories = () => {
+  const categories = new Set(['前端开发', '游戏攻略', 'AI技术', '音乐制作', '模板资源']) // 默认分类
+  
+  // 从现有文档中提取分类
+  documents.value.forEach(doc => {
+    if (doc.category) {
+      categories.add(doc.category)
+    }
+  })
+  
+  availableCategories.value = Array.from(categories).sort()
+}
+
+// 分类改变时重置自定义分类文本
+const onCategoryChange = () => {
+  // 如果不是"其他"，清空自定义分类文本
+  if (currentDocument.category !== '__other__') {
+    currentDocument.newCategoryText = ''
+  }
+}
 
 // 过滤文档
 const filterDocuments = () => {
@@ -347,6 +381,9 @@ const getDocuments = async () => {
         acc[doc.status] = (acc[doc.status] || 0) + 1
         return acc
       }, {}))
+      
+      // 在获取文档后更新分类列表
+      getCategories()
     } else {
       throw new Error(response.message || '获取文档列表失败')
     }
@@ -364,6 +401,7 @@ const editDocument = (doc) => {
     title: doc.title,
     description: doc.description,
     category: doc.category,
+    newCategoryText: '',
     secondaryTagsInput: doc.secondaryTags?.join(',') || '',
     secondaryTags: doc.secondaryTags || [],
     type: doc.type,
@@ -381,10 +419,15 @@ const saveDocument = async () => {
     uploadProgress.value = 0
           if (import.meta.env.DEV) console.log('🔍 开始保存文档...')
     
+    // 确定最终的分类名称
+    const finalCategory = currentDocument.category === '__other__' 
+      ? currentDocument.newCategoryText.trim() 
+      : currentDocument.category
+    
     const documentData = {
       title: currentDocument.title,
       description: currentDocument.description,
-      category: currentDocument.category,
+      category: finalCategory,
       secondaryTags: currentDocument.secondaryTagsInput.split(',').map(tag => tag.trim()).filter(Boolean),
       type: currentDocument.type,
       size: currentDocument.size,
@@ -400,6 +443,12 @@ const saveDocument = async () => {
     }
     if (!documentData.category) {
       alert('请选择文档分类')
+      return
+    }
+    
+    // 验证自定义分类
+    if (currentDocument.category === '__other__' && !currentDocument.newCategoryText.trim()) {
+      alert('请输入新分类名称')
       return
     }
     
@@ -581,6 +630,7 @@ const closeModal = () => {
     title: '',
     description: '',
     category: '',
+    newCategoryText: '',
     secondaryTagsInput: '',
     secondaryTags: [],
     type: '',
@@ -1197,6 +1247,30 @@ onMounted(() => {
 }
 
 .empty-state p {
+  color: #999;
+}
+
+/* 自定义分类输入框样式 */
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.form-control::placeholder {
   color: #999;
 }
 </style> 
