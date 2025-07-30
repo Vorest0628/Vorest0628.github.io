@@ -37,14 +37,22 @@
         @error="onError"
       />
       
-      <!-- PowerPoint预览 -->
-      <VueOfficePptx
-        v-else-if="fileType === 'pptx' || fileType === 'ppt'"
-        :src="documentSrc"
-        :style="viewerStyle"
-        @rendered="onRendered"
-        @error="onError"
-      />
+      <!-- PowerPoint预览 - 添加错误处理 -->
+      <div v-else-if="fileType === 'pptx' || fileType === 'ppt'" class="pptx-container">
+        <VueOfficePptx
+          v-if="!pptxError"
+          :src="documentSrc"
+          :style="viewerStyle"
+          @rendered="onRendered"
+          @error="onPptxError"
+        />
+        <div v-else class="pptx-fallback">
+          <div class="fallback-icon">📽️</div>
+          <h3>PowerPoint预览暂时不可用</h3>
+          <p>请尝试下载文档到本地查看</p>
+          <button @click="download" class="download-btn">下载文档</button>
+        </div>
+      </div>
       
       <!-- PDF文档预览 - 使用现有的PdfViewer组件 -->
       <PdfViewer
@@ -95,6 +103,7 @@ const emit = defineEmits(['rendered', 'error', 'close'])
 const loading = ref(true)
 const error = ref('')
 const documentSrc = ref(null)
+const pptxError = ref(false)
 
 // 计算属性
 const fileType = computed(() => {
@@ -126,6 +135,7 @@ const initializeDocument = async () => {
   try {
     loading.value = true
     error.value = ''
+    pptxError.value = false
     
     // 检查文件类型，决定使用哪种预览方式
     if (['md', 'txt'].includes(fileType.value)) {
@@ -165,6 +175,12 @@ const onError = (err) => {
   emit('error', err)
 }
 
+const onPptxError = (err) => {
+  console.error('PowerPoint渲染失败:', err)
+  pptxError.value = true
+  emit('error', err)
+}
+
 const retry = () => {
   initializeDocument()
 }
@@ -196,7 +212,8 @@ onUnmounted(() => {
 
 .loading-container,
 .error-container,
-.unsupported-container {
+.unsupported-container,
+.pptx-fallback {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -222,7 +239,8 @@ onUnmounted(() => {
 }
 
 .error-icon,
-.unsupported-icon {
+.unsupported-icon,
+.fallback-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
 }
@@ -262,5 +280,10 @@ onUnmounted(() => {
 .preview-container {
   flex: 1;
   overflow: hidden;
+}
+
+.pptx-container {
+  height: 100%;
+  width: 100%;
 }
 </style> 
