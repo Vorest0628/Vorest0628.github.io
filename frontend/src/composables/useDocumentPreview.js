@@ -77,7 +77,9 @@ export function useDocumentPreview() {
         previewContent.value = `
           <div class="docx-preview-container">
             <div class="docx-content">
-              ${result.value}
+              <div class="docx-inner-content">
+                ${result.value}
+              </div>
             </div>
           </div>
         `

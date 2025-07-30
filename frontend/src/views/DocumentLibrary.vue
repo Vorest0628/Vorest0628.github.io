@@ -923,12 +923,14 @@ h1 {
   flex-direction: column;
   overflow: hidden;
   background: #f8f9fa;
+  min-height: 0; /* 确保flex子元素可以正确收缩 */
 }
 
 .document-preview-container {
   flex: 1;
   display: flex;
   overflow: hidden;
+  min-height: 0; /* 确保flex子元素可以正确收缩 */
 }
 
 .document-preview-frame {
@@ -991,6 +993,31 @@ h1 {
   background: white;
 }
 
+/* 自定义滚动条样式 */
+.docx-preview-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.docx-preview-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.docx-preview-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.docx-preview-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Firefox滚动条样式 */
+.docx-preview-container {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
 .html-preview iframe {
   width: 100%;
   height: 100%;
@@ -1007,37 +1034,83 @@ h1 {
 .docx-preview-container {
   height: 100%;
   overflow-y: auto;
-  padding: 20px 40px;
+  padding: 30px 50px;
   background: white;
+  box-sizing: border-box;
 }
 
 .docx-content {
   max-width: 800px;
   margin: 0 auto;
-  line-height: 1.7;
+  line-height: 1.8;
   color: #2c3e50;
   font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.docx-inner-content {
+  min-height: 100%;
+  padding-bottom: 40px;
 }
 
 .docx-content h1, .docx-content h2, .docx-content h3,
 .docx-content h4, .docx-content h5, .docx-content h6 {
   color: #2c3e50;
-  margin-top: 24px;
-  margin-bottom: 16px;
+  margin-top: 32px;
+  margin-bottom: 20px;
   border-bottom: 1px solid #eaecef;
-  padding-bottom: 0.3em;
+  padding-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.docx-content h1 {
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.docx-content h2 {
+  font-size: 1.6rem;
+}
+
+.docx-content h3 {
+  font-size: 1.3rem;
 }
 
 .docx-content p {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  text-align: justify;
+  word-wrap: break-word;
 }
 
 .docx-content img {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
-  margin: 10px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: block;
+}
+
+.docx-content ul, .docx-content ol {
+  margin: 20px 0;
+  padding-left: 30px;
+}
+
+.docx-content li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.docx-content blockquote {
+  border-left: 4px solid #667eea;
+  padding-left: 20px;
+  margin: 20px 0;
+  font-style: italic;
+  color: #666;
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 0 8px 8px 0;
 }
 
 .docx-content table {
