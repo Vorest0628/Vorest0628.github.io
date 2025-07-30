@@ -19,10 +19,12 @@
     "highlight.js": "^11.11.1",
     "live2d-widget": "^3.1.4",
     "lodash": "^4.17.21",
+    "mammoth": "^1.9.1",
     "marked": "^15.0.12",
     "particles.js": "^2.0.0",
     "pdfjs-dist": "^5.3.93",
     "pinia": "^3.0.2",
+    "pptxgenjs": "^4.0.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1"
   },

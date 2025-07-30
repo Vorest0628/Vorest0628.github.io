@@ -6,7 +6,7 @@
   3. 二级标签过滤
   4. 文档搜索
   5. 文档下载
-  6. Markdown文档预览
+  6. 支持DOCX、PPTX等多种格式的在线预览
 -->
 <template>
   <div class="document-library">
@@ -136,20 +136,40 @@
           </div>
           <div class="document-modal-body">
             <div class="document-preview-container">
-              <!-- Markdown 预览 -->
-              <div v-if="previewDoc.type === 'MD' || previewDoc.type === 'MARKDOWN'" class="markdown-preview" v-html="previewContent"></div>
+              <!-- 加载状态 -->
+              <div v-if="documentPreview.loading.value" class="preview-loading">
+                <div class="loading-spinner"></div>
+                <p>正在加载文档预览...</p>
+              </div>
               
-              <!-- 其他类型使用iframe预览 -->
+              <!-- 错误状态 -->
+              <div v-else-if="documentPreview.hasError.value" class="preview-error">
+                <div class="error-icon">⚠️</div>
+                <h4>预览失败</h4>
+                <p>{{ documentPreview.error.value }}</p>
+                <button @click="downloadDocument(previewDoc)" class="download-action-btn">
+                  📥 下载文档
+                </button>
+              </div>
+              
+              <!-- HTML内容预览（DOCX、Markdown、Text等） -->
+              <div 
+                v-else-if="documentPreview.previewType.value === 'html'" 
+                class="html-preview"
+                v-html="documentPreview.previewContent.value"
+              ></div>
+              
+              <!-- Iframe预览（PDF等） -->
               <iframe
-                v-else-if="canPreview(previewDoc)"
-                :src="previewUrlObject"
+                v-else-if="documentPreview.previewType.value === 'iframe'"
+                :src="documentPreview.previewUrl.value"
                 frameborder="0"
                 class="document-preview-frame"
                 title="文档预览"
               ></iframe>
               
-              <!-- 无法预览的文档 -->
-              <div v-else class="no-preview-content">
+              <!-- 不支持预览的文档 -->
+              <div v-else-if="documentPreview.previewType.value === 'unsupported'" class="no-preview-content">
                 <div class="no-preview-icon">
                   <i :class="getDocIcon(previewDoc.type)"></i>
                 </div>
@@ -160,6 +180,12 @@
                   <i class="fas fa-download"></i>
                   立即下载
                 </button>
+              </div>
+              
+              <!-- 默认状态 -->
+              <div v-else class="preview-placeholder">
+                <div class="placeholder-icon">📄</div>
+                <p>准备预览中...</p>
               </div>
             </div>
           </div>
@@ -184,11 +210,14 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { documentApi } from '@/api/document'
-import { marked } from 'marked'
+import { useDocumentPreview } from '@/composables/useDocumentPreview'
 
 // 获取路由信息
 const route = useRoute()
 const router = useRouter()
+
+// 文档预览组合式函数
+const documentPreview = useDocumentPreview()
 
 // 响应式数据
 const searchQuery = ref('')
@@ -199,8 +228,6 @@ const showPreview = ref(false)
 const previewDoc = ref(null)
 const loading = ref(false)
 const error = ref('')
-const previewContent = ref('') // 用于存储Markdown渲染后的HTML
-const previewUrlObject = ref('') // 用于存储Blob URL
 
 // 真实数据
 const allDocuments = ref([])
@@ -349,16 +376,11 @@ const getDocIcon = (type) => {
 const previewDocument = async (doc) => {
   console.log('📖 打开文档预览:', doc.title);
   previewDoc.value = doc;
-  previewContent.value = '';
-  if (previewUrlObject.value) {
-    URL.revokeObjectURL(previewUrlObject.value);
-    previewUrlObject.value = '';
-  }
-
-  if (!canPreview(doc)) {
-    showPreview.value = true;
-    return;
-  }
+  
+  // 显示预览模态框
+  showPreview.value = true;
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', handleEscKey);
 
   try {
     console.log('🔍 开始获取文档内容:', doc.type, doc._id || doc.id);
@@ -368,53 +390,29 @@ const previewDocument = async (doc) => {
       type: blob.type
     });
 
-    if (doc.type === 'MD' || doc.type === 'MARKDOWN') {
-      const markdownText = await blob.text();
-      previewContent.value = marked(markdownText);
-      console.log('📝 Markdown转换完成, 长度:', previewContent.value.length);
-    } else {
-      previewUrlObject.value = URL.createObjectURL(blob);
-      console.log('🔗 Blob URL创建:', previewUrlObject.value);
-    }
+    // 使用 useDocumentPreview 组合式函数处理预览
+    await documentPreview.previewDocument(blob, doc.type, doc.title);
   } catch (e) {
     console.error('获取预览内容失败:', e);
     // 根据文档类型显示不同的错误信息
     let errorMessage = '加载预览失败';
     if (doc.type === 'PPTX' || doc.type === 'PPT') {
-      errorMessage = 'PowerPoint文档预览需要LibreOffice支持，请尝试下载文档查看';
+      errorMessage = 'PowerPoint文档预览需要在线服务支持，请尝试下载文档查看';
     } else if (doc.type === 'DOCX') {
-      errorMessage = 'Word文档预览失败，可能是LibreOffice配置问题，请尝试下载文档查看';
+      errorMessage = 'Word文档预览失败，可能是文档格式问题，请尝试下载文档查看';
     } else if (doc.type === 'XLSX' || doc.type === 'XLS') {
       errorMessage = 'Excel文档预览需要LibreOffice支持，请尝试下载文档查看';
     }
     
-    previewContent.value = `
-      <div style="text-align: center; color: #666; padding: 40px;">
-        <div style="font-size: 3em; margin-bottom: 20px;">📄</div>
-        <h3 style="color: #e74c3c; margin-bottom: 15px;">预览不可用</h3>
-        <p style="margin-bottom: 20px;">${errorMessage}</p>
-        <button onclick="window.parent.postMessage('download', '*')" 
-                style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-          📥 下载文档
-        </button>
-      </div>
-    `;
+    documentPreview.error.value = errorMessage;
   }
-
-  showPreview.value = true;
-  document.body.style.overflow = 'hidden';
-  document.addEventListener('keydown', handleEscKey);
 };
 
 const closePreview = () => {
   console.log('❌ 关闭文档预览');
   showPreview.value = false;
   previewDoc.value = null;
-  previewContent.value = '';
-  if (previewUrlObject.value) {
-    URL.revokeObjectURL(previewUrlObject.value);
-    previewUrlObject.value = '';
-  }
+  documentPreview.cleanup(); // 清理预览资源
   document.body.style.overflow = '';
   document.removeEventListener('keydown', handleEscKey);
 };
@@ -467,11 +465,7 @@ const getPreviewUrl = (doc) => {
   return docId ? `${baseUrl}/documents/${docId}/preview` : '#'
 }
 
-const canPreview = (doc) => {
-  if (!doc || !doc.filePath) return false
-  const previewableTypes = ['PDF', 'TXT', 'DOCX', 'PPT', 'PPTX', 'MD', 'MARKDOWN']
-  return previewableTypes.includes(doc.type)
-}
+
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)
@@ -531,6 +525,7 @@ onUnmounted(() => {
   if (showPreview.value) {
     closePreview()
   }
+  documentPreview.cleanup()
   window.removeEventListener('message', handleMessage)
 })
 </script>
@@ -989,6 +984,400 @@ h1 {
   color: #6a737d;
 }
 
+/* HTML预览样式 */
+.html-preview {
+  flex: 1;
+  overflow: hidden;
+  background: white;
+}
+
+.html-preview iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 当HTML内容直接嵌入时 */
+.html-preview > div {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* DOCX预览样式 */
+.docx-preview-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px 40px;
+  background: white;
+}
+
+.docx-content {
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.7;
+  color: #2c3e50;
+  font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+}
+
+.docx-content h1, .docx-content h2, .docx-content h3,
+.docx-content h4, .docx-content h5, .docx-content h6 {
+  color: #2c3e50;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+}
+
+.docx-content p {
+  margin-bottom: 16px;
+}
+
+.docx-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.docx-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+  border: 1px solid #dfe2e5;
+}
+
+.docx-content th, .docx-content td {
+  border: 1px solid #dfe2e5;
+  padding: 6px 13px;
+}
+
+.docx-content th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+/* PPTX预览样式 */
+.pptx-preview-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.preview-notice {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.notice-icon {
+  font-size: 2rem;
+}
+
+.notice-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.3rem;
+}
+
+.notice-content p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.preview-options {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.option-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.option-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+}
+
+.option-card.download-option {
+  border-color: #28a745;
+}
+
+.option-card.download-option:hover {
+  border-color: #20c997;
+  box-shadow: 0 4px 20px rgba(40, 167, 69, 0.15);
+}
+
+.option-icon {
+  font-size: 2rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-content h4 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.option-content p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.option-badge {
+  background: #28a745;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.preview-frame-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.frame-header {
+  background: #f8f9fa;
+  padding: 12px 20px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.frame-title {
+  font-weight: 600;
+  color: #495057;
+}
+
+.close-frame-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.close-frame-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+#pptxIframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+/* Markdown预览样式 */
+.markdown-preview-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px 40px;
+  background: white;
+}
+
+.markdown-content {
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.7;
+  color: #2c3e50;
+}
+
+.markdown-content h1, .markdown-content h2, .markdown-content h3,
+.markdown-content h4, .markdown-content h5, .markdown-content h6 {
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.markdown-content code {
+  background-color: #f6f8fa;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  border-radius: 3px;
+}
+
+.markdown-content pre {
+  background-color: #f6f8fa;
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+.markdown-content pre code {
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+  background: transparent;
+}
+
+.markdown-content blockquote {
+  border-left: 0.25em solid #dfe2e5;
+  padding: 0 1em;
+  color: #6a737d;
+}
+
+/* 文本预览样式 */
+.text-preview-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  background: white;
+}
+
+.text-content {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #2c3e50;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 加载和错误状态样式 */
+.preview-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  color: #6c757d;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.preview-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 40px;
+  color: #555;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  color: #dc3545;
+}
+
+.preview-error h4 {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.preview-error p {
+  margin: 0 0 24px 0;
+  color: #718096;
+  line-height: 1.6;
+}
+
+.preview-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  color: #6c757d;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  color: #cbd5e0;
+}
+
+/* 不支持预览的文档样式 */
+.unsupported-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 40px;
+  color: #555;
+}
+
+.unsupported-icon {
+  font-size: 4rem;
+  margin-bottom: 24px;
+  color: #cbd5e0;
+}
+
+.unsupported-preview h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.unsupported-preview p {
+  margin: 0 0 8px 0;
+  color: #718096;
+  line-height: 1.6;
+}
+
+.suggestion {
+  font-size: 0.9rem !important;
+  color: #a0aec0 !important;
+}
+
 .no-preview-content {
   flex: 1;
   display: flex;
@@ -1117,4 +1506,3 @@ h1 {
   .document-modal-body { padding: 15px; }
 }
 </style>
-''

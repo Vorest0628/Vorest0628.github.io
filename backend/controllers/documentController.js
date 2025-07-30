@@ -357,66 +357,54 @@ exports.previewDocument = async (req, res, next) => {
 
     const path = require('path')
     const fs = require('fs')
-    const documentConverter = require('../utils/documentConverter')
     
     // 检查是否是Vercel Blob URL
     if (document.filePath.startsWith('https://')) {
       console.log('📁 文档存储在Vercel Blob:', document.filePath)
       
-      // 对于Vercel Blob存储的文档，直接重定向到Blob URL
+      // 对于Vercel Blob存储的文档，检查文件类型并处理
       const fileExtension = path.extname(document.filePath).toLowerCase()
       
       // 根据文件类型设置响应头
       switch (fileExtension) {
         case '.pdf':
           res.setHeader('Content-Type', 'application/pdf')
-          break
+          return res.redirect(document.filePath)
+          
         case '.txt':
           res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-          break
+          return res.redirect(document.filePath)
+          
         case '.md':
           res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
-          break
+          return res.redirect(document.filePath)
+          
         case '.docx':
-          // 对于DOCX文件，尝试提取文本和图片进行弱化预览
+          // 对于DOCX文件，直接返回文件内容供前端mammoth.js处理
           try {
-            console.log('🔍 开始DOCX弱化预览:', document.title)
+            console.log('🔍 DOCX文件预览 - 返回原始文件供前端处理:', document.title)
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+            res.setHeader('Access-Control-Allow-Origin', '*')
+            res.setHeader('Access-Control-Allow-Methods', 'GET')
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+            return res.redirect(document.filePath)
+          } catch (error) {
+            console.error('DOCX文件预览失败:', error)
+            throw new ApiError(500, 'DOCX文档预览失败，请尝试下载文档查看')
+          }
+          
+        case '.pptx':
+          // 对于PPTX文件，使用Office Online预览或返回提示
+          try {
+            console.log('🔍 PPTX文件预览 - 使用Office Online方案:', document.title)
             
-            // 从Vercel Blob下载文件到临时位置
-            const https = require('https')
-            const tempDir = path.join(__dirname, '..', 'temp')
-            if (!fs.existsSync(tempDir)) {
-              fs.mkdirSync(tempDir, { recursive: true })
-            }
-            
-            const tempFilePath = path.join(tempDir, `${document._id}_${Date.now()}.docx`)
-            
-            // 下载文件
-            await new Promise((resolve, reject) => {
-              const file = fs.createWriteStream(tempFilePath)
-              https.get(document.filePath, (response) => {
-                response.pipe(file)
-                file.on('finish', () => {
-                  file.close()
-                  resolve()
-                })
-              }).on('error', reject)
-            })
-            
-            // 使用mammoth提取文本和图片
-            const mammoth = require('mammoth')
-            const result = await mammoth.convertToHtml({ path: tempFilePath })
-            
-            // 清理临时文件
-            fs.unlinkSync(tempFilePath)
-            
-            // 创建预览页面
+            // 创建预览页面，使用多种预览方案
             const htmlContent = `
               <!DOCTYPE html>
               <html>
               <head>
                 <meta charset="utf-8">
-                <title>${document.title} - 文档预览</title>
+                <title>${document.title} - PowerPoint预览</title>
                 <style>
                   body {
                     font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -440,72 +428,73 @@ exports.previewDocument = async (req, res, next) => {
                     opacity: 0.9;
                     font-size: 0.9rem;
                   }
-                  .preview-notice {
-                    background: #fff3cd;
-                    border: 1px solid #ffeaa7;
-                    color: #856404;
-                    padding: 15px;
-                    margin: 20px;
-                    border-radius: 8px;
-                    text-align: center;
-                  }
-                  .content-container {
+                  .preview-options {
                     max-width: 800px;
-                    margin: 0 auto;
+                    margin: 30px auto;
+                    padding: 20px;
                     background: white;
-                    padding: 40px;
-                    margin: 20px auto;
                     border-radius: 10px;
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                  }
+                  .option-card {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 15px;
+                    transition: all 0.3s ease;
+                  }
+                  .option-card:hover {
+                    border-color: #667eea;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+                  }
+                  .option-title {
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    color: #2c3e50;
+                    margin-bottom: 10px;
+                  }
+                  .option-desc {
+                    color: #666;
+                    margin-bottom: 15px;
                     line-height: 1.6;
                   }
-                  .content-container img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 8px;
-                    margin: 10px 0;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                  }
-                  .content-container h1, .content-container h2, .content-container h3 {
-                    color: #2c3e50;
-                    border-bottom: 2px solid #3498db;
-                    padding-bottom: 10px;
-                    margin-top: 30px;
-                  }
-                  .content-container p {
-                    margin-bottom: 15px;
-                    color: #333;
-                  }
-                  .download-section {
-                    text-align: center;
-                    margin: 30px 0;
-                    padding: 20px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                  }
-                  .download-btn {
+                  .option-btn {
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
                     border: none;
-                    padding: 12px 30px;
-                    border-radius: 8px;
+                    padding: 12px 24px;
+                    border-radius: 6px;
                     font-size: 1rem;
                     cursor: pointer;
                     text-decoration: none;
                     display: inline-block;
-                    transition: transform 0.3s ease;
+                    transition: all 0.3s ease;
                   }
-                  .download-btn:hover {
+                  .option-btn:hover {
                     transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
                   }
-                  .limitations {
-                    background: #e8f4fd;
-                    border: 1px solid #3498db;
+                  .download-section {
+                    text-align: center;
+                    margin-top: 30px;
+                    padding: 20px;
+                    background: #f8f9fa;
                     border-radius: 8px;
-                    padding: 15px;
+                  }
+                  .iframe-container {
                     margin-top: 20px;
-                    color: #2c3e50;
-                    font-size: 0.9rem;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    display: none;
+                  }
+                  .iframe-container.active {
+                    display: block;
+                  }
+                  iframe {
+                    width: 100%;
+                    height: 600px;
+                    border: none;
                   }
                 </style>
               </head>
@@ -513,228 +502,71 @@ exports.previewDocument = async (req, res, next) => {
                 <div class="header">
                   <h1>${document.title}</h1>
                   <div class="meta">
-                    文档类型: ${document.type} | 作者: ${document.author} | 大小: ${document.formattedSize || '未知'}
+                    文档类型: PowerPoint | 作者: ${document.author} | 大小: ${document.formattedSize || '未知'}
                   </div>
                 </div>
                 
-                                 <div class="preview-notice">
-                   📄 <strong>智能预览模式</strong> - 此预览提取了文档的文本内容和图片，可以快速了解文档主要内容。
-                 </div>
-                
-                <div class="content-container">
-                  ${result.value}
+                <div class="preview-options">
+                  <div class="option-card">
+                    <div class="option-title">🌐 Office Online 预览</div>
+                    <div class="option-desc">使用微软官方的Office Online服务预览PowerPoint文档，支持完整的格式和动画效果。</div>
+                    <button class="option-btn" onclick="previewWithOfficeOnline()">
+                      打开Office Online预览
+                    </button>
+                  </div>
+                  
+                  <div class="option-card">
+                    <div class="option-title">📱 Google Docs 预览</div>
+                    <div class="option-desc">使用Google Docs查看器预览文档，适合快速浏览文档内容。</div>
+                    <button class="option-btn" onclick="previewWithGoogleDocs()">
+                      打开Google Docs预览
+                    </button>
+                  </div>
+                  
+                  <div class="iframe-container" id="previewFrame"></div>
+                  
+                  <div class="download-section">
+                    <p style="color: #666; margin-bottom: 15px;">如果在线预览不可用，您可以下载文档到本地查看完整内容</p>
+                    <a href="/api/documents/${document._id}/download" class="option-btn">
+                      📥 下载完整文档
+                    </a>
+                  </div>
                 </div>
                 
-                <div class="download-section">
-                  <a href="/api/documents/${document._id}/download" class="download-btn">
-                    📥 下载完整文档
-                  </a>
-                </div>
-                
-                                 <div class="limitations">
-                   <strong>预览能力说明：</strong>
-                   <ul>
-                     <li>✅ 完整文本内容提取</li>
-                     <li>✅ 文档图片正常显示</li>
-                     <li>✅ 标题层级结构保持</li>
-                     <li>✅ 段落和列表格式</li>
-                     <li>⚠️ 表格可能显示为文本</li>
-                     <li>⚠️ 字体、颜色等样式会丢失</li>
-                     <li>⚠️ 复杂布局可能简化</li>
-                   </ul>
-                 </div>
+                <script>
+                  const fileUrl = encodeURIComponent('${document.filePath}');
+                  
+                  function previewWithOfficeOnline() {
+                    const viewerUrl = \`https://view.officeapps.live.com/op/embed.aspx?src=\${fileUrl}\`;
+                    showPreview(viewerUrl);
+                  }
+                  
+                  function previewWithGoogleDocs() {
+                    const viewerUrl = \`https://docs.google.com/gview?url=\${fileUrl}&embedded=true\`;
+                    showPreview(viewerUrl);
+                  }
+                  
+                  function showPreview(url) {
+                    const container = document.getElementById('previewFrame');
+                    container.innerHTML = \`<iframe src="\${url}" title="文档预览"></iframe>\`;
+                    container.classList.add('active');
+                    container.scrollIntoView({ behavior: 'smooth' });
+                  }
+                </script>
               </body>
               </html>
             `
             res.setHeader('Content-Type', 'text/html; charset=utf-8')
             return res.send(htmlContent)
-            
           } catch (error) {
-            console.error('DOCX弱化预览失败:', error)
-            // 如果弱化预览失败，回退到原来的提示页面
-            const htmlContent = `
-              <!DOCTYPE html>
-              <html>
-              <head>
-                <meta charset="utf-8">
-                <title>${document.title} - 预览提示</title>
-                <style>
-                  body {
-                    font-family: 'Microsoft YaHei', Arial, sans-serif;
-                    margin: 0;
-                    padding: 40px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                  }
-                  .preview-container {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 15px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                    text-align: center;
-                    max-width: 600px;
-                    width: 100%;
-                  }
-                  .icon {
-                    font-size: 4rem;
-                    margin-bottom: 20px;
-                  }
-                  h1 {
-                    color: #2c3e50;
-                    margin-bottom: 20px;
-                    font-size: 1.8rem;
-                  }
-                  .message {
-                    color: #666;
-                    line-height: 1.6;
-                    margin-bottom: 30px;
-                    font-size: 1.1rem;
-                  }
-                  .download-btn {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    padding: 12px 30px;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    cursor: pointer;
-                    text-decoration: none;
-                    display: inline-block;
-                    transition: transform 0.3s ease;
-                  }
-                  .download-btn:hover {
-                    transform: translateY(-2px);
-                  }
-                  .dev-note {
-                    background: #e8f4fd;
-                    border: 1px solid #3498db;
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin-top: 20px;
-                    color: #2c3e50;
-                    font-size: 0.9rem;
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="preview-container">
-                  <div class="icon">📄</div>
-                  <h1>${document.title}</h1>
-                  <div class="message">
-                    由于技术原因，DOCX格式文档暂不支持在线预览，请点击下载按钮下载查看。
-                  </div>
-                  <a href="/api/documents/${document._id}/download" class="download-btn">
-                    📥 下载文档
-                  </a>
-                  <div class="dev-note">
-                    <strong>开发者提示：</strong>本地开发环境下，LibreOffice可直接用于文档转换预览。
-                  </div>
-                </div>
-              </body>
-              </html>
-            `
-            res.setHeader('Content-Type', 'text/html; charset=utf-8')
-            return res.send(htmlContent)
+            console.error('PPTX预览失败:', error)
+            throw new ApiError(500, 'PowerPoint文档预览失败，请尝试下载文档查看')
           }
-          break
-        case '.pptx':
-          // 对于PPTX文件，返回提示信息
-          const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <title>${document.title} - 预览提示</title>
-              <style>
-                body {
-                  font-family: 'Microsoft YaHei', Arial, sans-serif;
-                  margin: 0;
-                  padding: 40px;
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  min-height: 100vh;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                }
-                .preview-container {
-                  background: white;
-                  padding: 40px;
-                  border-radius: 15px;
-                  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                  text-align: center;
-                  max-width: 600px;
-                  width: 100%;
-                }
-                .icon {
-                  font-size: 4rem;
-                  margin-bottom: 20px;
-                }
-                h1 {
-                  color: #2c3e50;
-                  margin-bottom: 20px;
-                  font-size: 1.8rem;
-                }
-                .message {
-                  color: #666;
-                  line-height: 1.6;
-                  margin-bottom: 30px;
-                  font-size: 1.1rem;
-                }
-                .download-btn {
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  color: white;
-                  border: none;
-                  padding: 12px 30px;
-                  border-radius: 8px;
-                  font-size: 1rem;
-                  cursor: pointer;
-                  text-decoration: none;
-                  display: inline-block;
-                  transition: transform 0.3s ease;
-                }
-                .download-btn:hover {
-                  transform: translateY(-2px);
-                }
-                .dev-note {
-                  background: #e8f4fd;
-                  border: 1px solid #3498db;
-                  border-radius: 8px;
-                  padding: 15px;
-                  margin-top: 20px;
-                  color: #2c3e50;
-                  font-size: 0.9rem;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="preview-container">
-                <div class="icon">📄</div>
-                <h1>${document.title}</h1>
-                <div class="message">
-                  由于技术原因，PPTX格式文档暂不支持在线预览，请点击下载按钮下载查看。
-                </div>
-                <a href="/api/documents/${document._id}/download" class="download-btn">
-                  📥 下载文档
-                </a>
-                <div class="dev-note">
-                  <strong>开发者提示：</strong>本地开发环境下，LibreOffice可直接用于文档转换预览。
-                </div>
-              </div>
-            </body>
-            </html>
-          `
-          res.setHeader('Content-Type', 'text/html; charset=utf-8')
-          return res.send(htmlContent)
-          break
+          
         default:
           res.setHeader('Content-Type', 'application/octet-stream')
+          return res.redirect(document.filePath)
       }
-      
-      // 重定向到Vercel Blob URL
-      return res.redirect(document.filePath)
     }
     
     // 本地文件处理（向后兼容）
@@ -772,114 +604,100 @@ exports.previewDocument = async (req, res, next) => {
         contentType = 'text/markdown; charset=utf-8'
         break
       case '.docx':
-        console.log('🔍 开始处理DOCX文档预览:', document.title);
-        console.log('📁 原始文件路径:', filePath);
-        try {
-          // 优先尝试PDF转换
-          console.log('🔄 尝试PDF转换...');
-          finalPath = await documentConverter.smartConvert(filePath, 'pdf')
-          console.log('✅ PDF转换成功:', finalPath);
-          contentType = 'application/pdf'
-        } catch (convertError) {
-          console.error('❌ DOCX PDF转换失败:', convertError.message)
-          // 如果PDF转换失败，尝试HTML预览作为备选方案
-          try {
-            console.log('🔄 尝试HTML转换作为备选方案...');
-            const htmlContent = await documentConverter.convertDocxToHtml(filePath)
-            console.log('✅ HTML转换成功, 长度:', htmlContent.length);
-            // 创建一个简单的HTML文档并作为blob返回
-            const htmlDocument = `
-              <!DOCTYPE html>
-              <html>
-              <head>
-                <meta charset="utf-8">
-                <title>${document.title}</title>
-                <style>
-                  body {
-                    font-family: 'Microsoft YaHei', Arial, sans-serif;
-                    margin: 20px;
-                    line-height: 1.6;
-                    background-color: #f9f9f9;
-                  }
-                  .document-container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                    background: white;
-                    padding: 40px;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                    border-radius: 8px;
-                  }
-                  .document-header {
-                    border-bottom: 2px solid #007bff;
-                    padding-bottom: 15px;
-                    margin-bottom: 30px;
-                    text-align: center;
-                  }
-                  .document-header h1 {
-                    color: #333;
-                    margin: 0 0 10px 0;
-                    font-size: 2em;
-                  }
-                  .document-meta {
-                    color: #666;
-                    font-size: 0.9em;
-                  }
-                  .document-content {
-                    font-size: 1.1em;
-                    color: #333;
-                  }
-                  .document-content p {
-                    margin-bottom: 1em;
-                  }
-                  .conversion-notice {
-                    background: #fff3cd;
-                    border: 1px solid #ffeaa7;
-                    color: #856404;
-                    padding: 10px;
-                    border-radius: 4px;
-                    margin-bottom: 20px;
-                    font-size: 0.9em;
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="document-container">
-                  <div class="conversion-notice">
-                    📄 此文档以HTML格式预览。LibreOffice转换失败，可能需要检查安装配置。
-                  </div>
-                  <div class="document-header">
-                    <h1>${document.title}</h1>
-                    <div class="document-meta">
-                      文档类型: ${document.type} | 作者: ${document.author} | 大小: ${document.formattedSize || '未知'}
-                    </div>
-                  </div>
-                  <div class="document-content">
-                    ${htmlContent}
-                  </div>
-                </div>
-              </body>
-              </html>
-            `
-            res.setHeader('Content-Type', 'text/html; charset=utf-8')
-            return res.send(htmlDocument)
-          } catch (htmlError) {
-            console.error('DOCX HTML转换也失败:', htmlError)
-            throw new ApiError(500, 'DOCX文档预览失败：PDF转换和HTML转换都失败了')
-          }
-        }
+        console.log('🔍 本地DOCX文档预览:', document.title);
+        // 对于本地DOCX文件，直接返回文件供前端mammoth.js处理
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         break
       case '.pptx':
       case '.ppt':
-        try {
-          // 尝试PDF转换
-          finalPath = await documentConverter.smartConvert(filePath, 'pdf')
-          contentType = 'application/pdf'
-        } catch (convertError) {
-          console.error('PPTX转换失败:', convertError)
-          // PPTX转换失败，返回错误信息而不是HTML页面
-          throw new ApiError(500, `PowerPoint文档预览失败：${convertError.message}。请检查LibreOffice配置或下载文档到本地查看。`)
-        }
-        break
+        console.log('🔍 本地PPTX文档预览:', document.title);
+        // 对于本地PPTX文件，返回提示页面
+        const htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>${document.title} - PowerPoint预览</title>
+            <style>
+              body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                margin: 0;
+                padding: 40px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .preview-container {
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                text-align: center;
+                max-width: 600px;
+                width: 100%;
+              }
+              .icon {
+                font-size: 4rem;
+                margin-bottom: 20px;
+              }
+              h1 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+                font-size: 1.8rem;
+              }
+              .message {
+                color: #666;
+                line-height: 1.6;
+                margin-bottom: 30px;
+                font-size: 1.1rem;
+              }
+              .download-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 8px;
+                font-size: 1rem;
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-block;
+                transition: transform 0.3s ease;
+              }
+              .download-btn:hover {
+                transform: translateY(-2px);
+              }
+              .dev-note {
+                background: #e8f4fd;
+                border: 1px solid #3498db;
+                border-radius: 8px;
+                padding: 15px;
+                margin-top: 20px;
+                color: #2c3e50;
+                font-size: 0.9rem;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="preview-container">
+              <div class="icon">📄</div>
+              <h1>${document.title}</h1>
+              <div class="message">
+                PowerPoint文档建议下载到本地使用Microsoft PowerPoint或兼容软件查看，以获得最佳的预览体验。
+              </div>
+              <a href="/api/documents/${document._id}/download" class="download-btn">
+                📥 下载文档
+              </a>
+              <div class="dev-note">
+                <strong>提示：</strong>本地环境下，可以考虑集成LibreOffice进行服务器端转换预览。
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+        res.setHeader('Content-Type', 'text/html; charset=utf-8')
+        return res.send(htmlContent)
       default:
         throw new ApiError(400, '不支持预览此文件类型')
     }
@@ -891,6 +709,9 @@ exports.previewDocument = async (req, res, next) => {
     
     res.setHeader('Content-Type', contentType)
     res.setHeader('Content-Disposition', 'inline')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
     
     // 发送文件
     res.sendFile(finalPath)
