@@ -24,24 +24,11 @@ window.addEventListener('error', (event) => {
 // 处理Promise未捕获的错误
 window.addEventListener('unhandledrejection', (event) => {
   const error = event.reason
-  
-  // 过滤浏览器扩展相关的错误
   if (error && error.stack && (
     error.stack.includes('content_scripts') ||
     error.stack.includes('extension://') ||
     error.stack.includes('chrome-extension://')
   )) {
-    event.preventDefault()
-    return false
-  }
-  
-  // 处理Vue-Office相关错误
-  if (error && error.message && (
-    error.message.includes('Cannot read properties of undefined') ||
-    error.message.includes('vue-office') ||
-    error.message.includes('VueOfficePptx')
-  )) {
-    console.warn('Vue-Office组件错误已捕获:', error.message)
     event.preventDefault()
     return false
   }
