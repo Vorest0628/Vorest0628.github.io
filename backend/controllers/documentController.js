@@ -340,6 +340,64 @@ exports.getPopularDocuments = async (req, res, next) => {
   }
 }
 
+// 获取文档内容用于预览
+exports.getDocumentContent = async (req, res, next) => {
+  try {
+    const document = await Document.findById(req.params.id)
+    if (!document) {
+      throw new ApiError(404, '文档不存在')
+    }
+    
+    // 检查用户权限
+    const isAdmin = req.user && req.user.role === 'admin'
+    if (!isAdmin && (document.status !== 'published')) {
+      throw new ApiError(403, '您没有权限预览此文档')
+    }
+    
+    // 检查是否是Vercel Blob URL
+    if (document.filePath.startsWith('https://')) {
+      // 对于Vercel Blob存储，直接返回重定向
+      return res.redirect(document.filePath)
+    }
+    
+    // 本地文件处理
+    const path = require('path')
+    const fs = require('fs')
+    const filePath = path.join(__dirname, '..', document.filePath)
+    
+    if (!fs.existsSync(filePath)) {
+      throw new ApiError(404, '文件不存在')
+    }
+    
+    // 设置正确的Content-Type
+    const contentType = getContentType(document.type)
+    res.setHeader('Content-Type', contentType)
+    res.setHeader('Content-Disposition', `inline; filename="${document.title}"`)
+    
+    // 流式传输文件
+    const fileStream = fs.createReadStream(filePath)
+    fileStream.pipe(res)
+    
+  } catch (error) {
+    next(error)
+  }
+}
+
+// 获取文件Content-Type
+const getContentType = (fileType) => {
+  const typeMap = {
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'xls': 'application/vnd.ms-excel',
+    'pdf': 'application/pdf',
+    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'ppt': 'application/vnd.ms-powerpoint',
+    'md': 'text/markdown; charset=utf-8',
+    'txt': 'text/plain; charset=utf-8'
+  }
+  return typeMap[fileType?.toLowerCase()] || 'application/octet-stream'
+}
+
 // 预览文档
 exports.previewDocument = async (req, res, next) => {
   try {

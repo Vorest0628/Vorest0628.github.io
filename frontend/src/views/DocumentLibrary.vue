@@ -136,8 +136,18 @@
           </div>
           <div class="document-modal-body">
             <div class="document-preview-container">
+              <!-- Vue-Office预览（Word、Excel、PowerPoint） -->
+              <VueOfficeViewer
+                v-if="documentPreview.previewType.value === 'vue-office'"
+                :document="previewDoc"
+                :blob="documentBlob"
+                @rendered="onDocumentRendered"
+                @error="onDocumentError"
+                @close="closePreview"
+              />
+              
               <!-- 加载状态 -->
-              <div v-if="documentPreview.loading.value" class="preview-loading">
+              <div v-else-if="documentPreview.loading.value" class="preview-loading">
                 <div class="loading-spinner"></div>
                 <p>正在加载文档预览...</p>
               </div>
@@ -152,7 +162,7 @@
                 </button>
               </div>
               
-              <!-- HTML内容预览（DOCX、Markdown、Text等） -->
+              <!-- HTML内容预览（Markdown、Text等） -->
               <div 
                 v-else-if="documentPreview.previewType.value === 'html'" 
                 class="html-preview"
@@ -211,6 +221,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { documentApi } from '@/api/document'
 import { useDocumentPreview } from '@/composables/useDocumentPreview'
+import VueOfficeViewer from '@/components/document-preview/VueOfficeViewer.vue'
 
 // 获取路由信息
 const route = useRoute()
@@ -226,6 +237,7 @@ const selectedSecondaryTag = ref('全部')
 const showSearchTip = ref(true)
 const showPreview = ref(false)
 const previewDoc = ref(null)
+const documentBlob = ref(null)
 const loading = ref(false)
 const error = ref('')
 
@@ -390,6 +402,9 @@ const previewDocument = async (doc) => {
       type: blob.type
     });
 
+    // 保存blob用于Vue-Office预览
+    documentBlob.value = blob;
+
     // 使用 useDocumentPreview 组合式函数处理预览
     await documentPreview.previewDocument(blob, doc.type, doc.title);
   } catch (e) {
@@ -412,9 +427,19 @@ const closePreview = () => {
   console.log('❌ 关闭文档预览');
   showPreview.value = false;
   previewDoc.value = null;
+  documentBlob.value = null;
   documentPreview.cleanup(); // 清理预览资源
   document.body.style.overflow = '';
   document.removeEventListener('keydown', handleEscKey);
+};
+
+// Vue-Office 事件处理
+const onDocumentRendered = (doc) => {
+  console.log('✅ 文档渲染完成:', doc.title);
+};
+
+const onDocumentError = (error) => {
+  console.error('❌ 文档渲染失败:', error);
 };
 
 const handleEscKey = (event) => {
@@ -989,7 +1014,8 @@ h1 {
 /* HTML预览样式 */
 .html-preview {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
+  padding: 30px;
   background: white;
 }
 
@@ -1033,7 +1059,6 @@ h1 {
 /* DOCX预览样式 */
 .docx-preview-container {
   height: 100%;
-  overflow-y: auto;
   padding: 30px 50px;
   background: white;
   box-sizing: border-box;
@@ -1045,7 +1070,6 @@ h1 {
   line-height: 1.8;
   color: #2c3e50;
   font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-  padding: 0 20px;
   box-sizing: border-box;
 }
 

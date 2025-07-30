@@ -22,7 +22,7 @@ export const documentApi = {
 
   // New function to get raw content for preview
   getDocumentContent(id) {
-    return apiService.get(`/documents/${id}/preview`, {
+    return apiService.get(`/documents/${id}/content`, {
       responseType: 'blob',
     })
   },

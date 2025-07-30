@@ -16,6 +16,7 @@ router.get('/tags', documentController.getTags) // 获取所有标签
 router.get('/stats/categories', documentController.getCategoryStats) // 获取分类统计
 router.get('/popular', documentController.getPopularDocuments) // 获取热门文档
 router.get('/:id/preview', optionalAuth, documentController.previewDocument) // 预览文档
+router.get('/:id/content', optionalAuth, documentController.getDocumentContent) // 获取文档内容
 router.get('/:id/download', optionalAuth, documentController.downloadDocument) // 下载文档
 router.post('/:id/view', optionalAuth, documentController.recordView) // 记录访问
 router.get('/:id', optionalAuth, documentController.getDocumentById) // 获取文档详情

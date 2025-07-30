@@ -1,13 +1,17 @@
 import { ref, computed } from 'vue'
 import mammoth from 'mammoth'
 import { marked } from 'marked'
+import { useVueOffice } from './useVueOffice'
 
 export function useDocumentPreview() {
   const loading = ref(false)
   const error = ref(null)
   const previewContent = ref('')
-  const previewType = ref('') // 'html', 'iframe', 'error', 'unsupported'
+  const previewType = ref('') // 'html', 'iframe', 'error', 'unsupported', 'vue-office'
   const previewUrl = ref('')
+  
+  // 使用Vue-Office组合式函数
+  const vueOffice = useVueOffice()
 
   const isLoading = computed(() => loading.value)
   const hasError = computed(() => !!error.value)
@@ -34,26 +38,24 @@ export function useDocumentPreview() {
     try {
       const normalizedType = fileType.toLowerCase()
       
-      switch (normalizedType) {
-        case 'docx':
-          await previewDocx(blob)
-          break
-        case 'md':
-        case 'markdown':
-          await previewMarkdown(blob)
-          break
-        case 'txt':
-          await previewText(blob)
-          break
-        case 'pdf':
-          await previewPdf(blob)
-          break
-        case 'pptx':
-        case 'ppt':
-          await previewPowerPoint(blob, fileName)
-          break
-        default:
-          handleUnsupportedFormat(normalizedType)
+      // 检查是否支持 Vue-Office（仅Office文档格式）
+      if (vueOffice.isSupported(normalizedType)) {
+        // 使用 Vue-Office 处理 Office 文档
+        previewType.value = 'vue-office'
+        console.log('🔍 使用Vue-Office预览:', normalizedType)
+        return await vueOffice.previewDocument({ type: normalizedType, title: fileName }, blob)
+      } else if (['md', 'markdown'].includes(normalizedType)) {
+        // 使用原有的 Markdown 预览逻辑
+        await previewMarkdown(blob)
+      } else if (normalizedType === 'txt') {
+        // 使用原有的文本预览逻辑
+        await previewText(blob)
+      } else if (normalizedType === 'pdf') {
+        // 使用原有的 PDF 预览逻辑
+        await previewPdf(blob)
+      } else {
+        // 不支持的文件类型
+        handleUnsupportedFormat(normalizedType)
       }
     } catch (err) {
       console.error('文档预览失败:', err)
@@ -327,6 +329,9 @@ export function useDocumentPreview() {
     previewContent,
     previewType,
     previewUrl,
+    
+    // Vue-Office 相关
+    ...vueOffice,
     
     // 方法
     previewDocument,

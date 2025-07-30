@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@vue-office/docx": "^1.6.3",
+    "@vue-office/excel": "^1.7.14",
+    "@vue-office/pptx": "^1.0.1",
     "@vueuse/core": "^13.3.0",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
