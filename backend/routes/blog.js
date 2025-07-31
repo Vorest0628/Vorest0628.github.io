@@ -8,8 +8,12 @@ const admin = require('../middleware/admin')
 router.get('/', blogController.getBlogs)
 router.get('/search', blogController.searchBlogs)
 router.get('/:id', blogController.getBlogById)
-router.post('/:id/like', blogController.likeBlog)
 router.get('/categories', blogController.getCategories)
+
+// 点赞相关路由（必须在 /:id 之前）
+router.post('/:id/like', auth.auth, blogController.likeBlog)
+router.delete('/:id/like', auth.auth, blogController.unlikeBlog)
+router.get('/:id/like-status', auth.optionalAuth, blogController.checkBlogLikeStatus)
 
 // 管理员接口
 router.post('/', auth, admin, blogController.createBlog)

@@ -1,4 +1,5 @@
 const Blog = require('../models/Blog')
+const BlogLike = require('../models/BlogLike')
 const { ApiError } = require('../utils/error')
 
 /**
@@ -278,20 +279,116 @@ exports.deleteBlog = async (req, res, next) => {
  */
 exports.likeBlog = async (req, res, next) => {
   try {
-    // 查找博客
-    const blog = await Blog.findById(req.params.id)
+    const { id } = req.params
     
-    // 检查博客是否存在
+    if (!req.user) {
+      throw new ApiError(401, '请先登录')
+    }
+
+    const blog = await Blog.findById(id)
     if (!blog) {
       throw new ApiError(404, '博客不存在')
     }
 
-    // TODO: 检查用户是否已经点赞过
-    // 增加点赞数
+    // 检查是否已经点赞
+    const existingLike = await BlogLike.findOne({
+      blog: id,
+      user: req.user.id
+    })
+
+    if (existingLike) {
+      throw new ApiError(400, '您已经点赞过这篇博客')
+    }
+
+    // 创建点赞记录
+    await BlogLike.create({
+      blog: id,
+      user: req.user.id
+    })
+
+    // 更新博客点赞数
     blog.likeCount += 1
     await blog.save()
 
-    res.json({ data: blog })
+    res.json({
+      success: true,
+      message: '点赞成功',
+      data: { likeCount: blog.likeCount }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * 取消点赞博客
+ * @param {Object} req - 请求对象
+ * @param {Object} res - 响应对象
+ * @param {Function} next - 下一个中间件函数
+ */
+exports.unlikeBlog = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    
+    if (!req.user) {
+      throw new ApiError(401, '请先登录')
+    }
+
+    const blog = await Blog.findById(id)
+    if (!blog) {
+      throw new ApiError(404, '博客不存在')
+    }
+
+    // 删除点赞记录
+    const deletedLike = await BlogLike.findOneAndDelete({
+      blog: id,
+      user: req.user.id
+    })
+
+    if (!deletedLike) {
+      throw new ApiError(400, '您还没有点赞过这篇博客')
+    }
+
+    // 更新博客点赞数
+    blog.likeCount = Math.max(0, blog.likeCount - 1)
+    await blog.save()
+
+    res.json({
+      success: true,
+      message: '取消点赞成功',
+      data: { likeCount: blog.likeCount }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * 检查用户是否已点赞博客
+ * @param {Object} req - 请求对象
+ * @param {Object} res - 响应对象
+ * @param {Function} next - 下一个中间件函数
+ */
+exports.checkBlogLikeStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    
+    if (!req.user) {
+      return res.json({
+        success: true,
+        data: { isLiked: false }
+      })
+    }
+
+    const like = await BlogLike.findOne({
+      blog: id,
+      user: req.user.id
+    })
+
+    res.json({
+      success: true,
+      data: { isLiked: !!like }
+    })
   } catch (error) {
     next(error)
   }

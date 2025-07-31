@@ -198,6 +198,7 @@ const loadArticle = async (articleId) => {
     if (res.success) {
       article.value = res.data
       await loadComments(articleId)
+      await checkLikeStatus() // 检查点赞状态
     } else {
       throw new Error(res.message || '文章加载失败')
     }
@@ -306,11 +307,48 @@ const scrollToComments = () => {
   commentsSection.value?.scrollIntoView({ behavior: 'smooth' })
 }
 
-// 点赞文章 (模拟)
-const toggleLike = () => {
-  isLiked.value = !isLiked.value
-  if(article.value) {
-    article.value.likeCount += isLiked.value ? 1 : -1
+// 检查点赞状态
+const checkLikeStatus = async () => {
+  if (!authStore.isAuthenticated || !article.value) return
+  
+  try {
+    const res = await blogApi.checkBlogLikeStatus(article.value.id)
+    if (res.success) {
+      isLiked.value = res.data.isLiked
+    }
+  } catch (err) {
+    console.error('检查点赞状态失败:', err)
+  }
+}
+
+// 点赞/取消点赞文章
+const toggleLike = async () => {
+  if (!authStore.isAuthenticated) {
+    alert('请先登录后再点赞')
+    return
+  }
+  
+  if (!article.value) return
+  
+  try {
+    if (isLiked.value) {
+      // 取消点赞
+      const res = await blogApi.unlikeBlog(article.value.id)
+      if (res.success) {
+        isLiked.value = false
+        article.value.likeCount = res.data.likeCount
+      }
+    } else {
+      // 点赞
+      const res = await blogApi.likeBlog(article.value.id)
+      if (res.success) {
+        isLiked.value = true
+        article.value.likeCount = res.data.likeCount
+      }
+    }
+  } catch (err) {
+    console.error('点赞操作失败:', err)
+    alert(err.response?.data?.message || '操作失败，请重试')
   }
 }
 

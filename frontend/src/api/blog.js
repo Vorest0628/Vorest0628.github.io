@@ -81,6 +81,15 @@ export const blogApi = {
   },
 
   /**
+   * 检查博客点赞状态
+   * @param {string} id - 博客ID
+   * @returns {Promise} 返回点赞状态
+   */
+  checkBlogLikeStatus(id) {
+    return apiService.get(`/blogs/${id}/like-status`)
+  },
+
+  /**
    * 获取热门博客
    * @param {number} limit - 限制数量
    * @returns {Promise} 返回热门博客列表
