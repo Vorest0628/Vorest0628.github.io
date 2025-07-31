@@ -32,11 +32,10 @@ const commentSchema = new mongoose.Schema({
     ref: 'Comment',
     default: null
   },
-  // 状态
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending'
+  // 是否公开
+  isPublic: {
+    type: Boolean,
+    default: true
   },
   // 点赞数
   likeCount: {
@@ -50,7 +49,7 @@ const commentSchema = new mongoose.Schema({
 })
 
 // 索引
-commentSchema.index({ targetId: 1, targetType: 1, status: 1 });
+commentSchema.index({ targetId: 1, targetType: 1, isPublic: 1 });
 commentSchema.index({ createdAt: -1 });
 
 // 虚拟字段：用于获取评论的回复

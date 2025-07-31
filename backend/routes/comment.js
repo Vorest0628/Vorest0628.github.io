@@ -26,4 +26,9 @@ router.put('/:id', auth, commentController.updateComment)
 // 审核评论（管理员专用）
 router.patch('/:id/moderate', auth, checkRole('admin'), commentController.moderateComment)
 
+// 添加点赞相关路由
+router.post('/:id/like', auth, commentController.likeComment)
+router.delete('/:id/like', auth, commentController.unlikeComment)
+router.get('/:id/like-status', optionalAuth, commentController.checkLikeStatus)
+
 module.exports = router

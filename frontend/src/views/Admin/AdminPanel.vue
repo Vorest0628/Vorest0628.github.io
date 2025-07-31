@@ -55,7 +55,6 @@
       <component 
         :is="currentComponent" 
         v-if="currentView !== 'overview'"
-        @update-pending="updatePendingCount"
       />
     </div>
   </div>
@@ -88,16 +87,7 @@ const stats = reactive({
   comments: 0
 })
 
-const pendingCounts = reactive({
-  comments: 0
-})
-
 const recentActivities = ref([])
-
-// 计算总待审核数量
-const totalPending = computed(() => {
-  return pendingCounts.comments
-})
 
 // 管理导航项目
 const adminNavItems = computed(() => [
@@ -141,7 +131,7 @@ const adminNavItems = computed(() => [
     icon: '💬',
     label: '评论管理',
     description: '管理用户评论',
-    pending: pendingCounts.comments
+    pending: 0
   },
   {
     key: 'user-panel',
@@ -178,7 +168,6 @@ const getStats = async () => {
     const response = await adminApi.getStats()
     if (response.success) {
       Object.assign(stats, response.data.stats)
-      Object.assign(pendingCounts, response.data.pendingCounts)
       // 限制最近活动为最多3条
       recentActivities.value = (response.data.recentActivities || []).slice(0, 3)
     }
@@ -191,10 +180,6 @@ const getStats = async () => {
       documents: 25,
       playlists: 45,
       comments: 89
-    })
-    Object.assign(pendingCounts, {
-      comments: 3,
-      recommendations: 2
     })
     // 设置模拟的最近活动数据，限制为3条
     recentActivities.value = [
@@ -220,10 +205,7 @@ const getStats = async () => {
   }
 }
 
-// 更新待审核数量
-const updatePendingCount = (type, count) => {
-  pendingCounts[type] = count
-}
+
 
 // 格式化时间
 const formatTime = (time) => {

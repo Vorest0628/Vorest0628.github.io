@@ -49,6 +49,8 @@
         </div>
         
         <div class="comment-actions">
+          <!-- 点赞显示 -->
+          <span class="like-count">{{ comment.likeCount || 0 }} ❤️</span>
           <button @click="editComment(comment)" class="edit-btn">编辑</button>
           <button @click="togglePublic(comment)" class="toggle-btn">
             {{ comment.isPublic ? '设为私有' : '设为公开' }}
@@ -491,6 +493,13 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.like-count {
+  color: #e74c3c;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .comment-actions button {

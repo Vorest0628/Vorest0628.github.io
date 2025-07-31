@@ -251,5 +251,15 @@ export const adminApi = {
    */
   deleteFriendLink(id) {
     return apiService.delete(`/admin/friendlinks/${id}`)
+  },
+
+  /**
+   * 更新评论公开状态
+   * @param {number} id - 评论ID
+   * @param {boolean} isPublic - 是否公开
+   * @returns {Promise} 返回更新结果
+   */
+  updateCommentVisibility(id, isPublic) {
+    return apiService.put(`/admin/comments/${id}/visibility`, { isPublic })
   }
 } 

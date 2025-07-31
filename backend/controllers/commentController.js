@@ -1,4 +1,5 @@
 const Comment = require('../models/Comment')
+const CommentLike = require('../models/CommentLike')
 const { ApiError } = require('../utils/error')
 
 // 获取所有评论列表（分页）
@@ -16,11 +17,23 @@ exports.getAllComments = async (req, res, next) => {
 
     const query = {}
 
-    // 处理isPublic参数：true表示只获取审核通过的评论
+    // 处理isPublic参数
     if (isPublic === 'true') {
-      query.status = 'approved'
-    } else if (status) {
-      query.status = status
+      query.isPublic = true
+    } else if (isPublic === 'false') {
+      // 只有管理员或评论作者可以看到私有评论
+      if (req.user && req.user.role === 'admin') {
+        // 管理员可以看到所有评论
+      } else if (req.user) {
+        // 普通用户只能看到自己的私有评论
+        query.$or = [
+          { isPublic: true },
+          { author: req.user.id, isPublic: false }
+        ]
+      } else {
+        // 未登录用户只能看到公开评论
+        query.isPublic = true
+      }
     }
 
     // 如果指定了targetType，添加到查询条件
@@ -64,13 +77,40 @@ exports.getCommentsByTarget = async (req, res, next) => {
 
     const query = {
       targetType,
-      targetId,
-      status: 'approved' // 只获取审核通过的评论
+      targetId
+    }
+
+    // 根据用户权限过滤评论
+    if (req.user && req.user.role === 'admin') {
+      // 管理员可以看到所有评论
+    } else if (req.user) {
+      // 普通用户可以看到公开评论和自己的私有评论
+      query.$or = [
+        { isPublic: true },
+        { author: req.user.id, isPublic: false }
+      ]
+    } else {
+      // 未登录用户只能看到公开评论
+      query.isPublic = true
     }
 
     // 递归函数，用于获取一个评论的所有子评论
     const getReplies = async (commentId) => {
-      const replies = await Comment.find({ parentComment: commentId, status: 'approved' })
+      const replyQuery = { parentComment: commentId }
+      
+      // 对回复也应用相同的权限过滤
+      if (req.user && req.user.role === 'admin') {
+        // 管理员可以看到所有回复
+      } else if (req.user) {
+        replyQuery.$or = [
+          { isPublic: true },
+          { author: req.user.id, isPublic: false }
+        ]
+      } else {
+        replyQuery.isPublic = true
+      }
+      
+      const replies = await Comment.find(replyQuery)
         .populate({
           path: 'author',
           select: 'username avatar'
@@ -170,7 +210,7 @@ exports.createComment = async (req, res, next) => {
       content: content.trim(),
       parentComment: parentComment || null,
       author: req.user.id,
-      status: 'approved' // 注册用户评论自动通过
+      isPublic: true // 默认公开
     }
     
     // TODO: 验证 targetId 和 targetType 对应的资源是否存在
@@ -297,6 +337,114 @@ exports.moderateComment = async (req, res, next) => {
       success: true,
       data: { comment: updatedComment },
       message: `评论已${isPublic ? '发布' : '隐藏'}`
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// 点赞评论
+exports.likeComment = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    
+    if (!req.user) {
+      throw new ApiError(401, '请先登录')
+    }
+
+    const comment = await Comment.findById(id)
+    if (!comment) {
+      throw new ApiError(404, '评论不存在')
+    }
+
+    // 检查是否已经点赞
+    const existingLike = await CommentLike.findOne({
+      comment: id,
+      user: req.user.id
+    })
+
+    if (existingLike) {
+      throw new ApiError(400, '您已经点赞过这条评论')
+    }
+
+    // 创建点赞记录
+    await CommentLike.create({
+      comment: id,
+      user: req.user.id
+    })
+
+    // 更新评论点赞数
+    comment.likeCount += 1
+    await comment.save()
+
+    res.json({
+      success: true,
+      message: '点赞成功',
+      data: { likeCount: comment.likeCount }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// 取消点赞
+exports.unlikeComment = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    
+    if (!req.user) {
+      throw new ApiError(401, '请先登录')
+    }
+
+    const comment = await Comment.findById(id)
+    if (!comment) {
+      throw new ApiError(404, '评论不存在')
+    }
+
+    // 删除点赞记录
+    const deletedLike = await CommentLike.findOneAndDelete({
+      comment: id,
+      user: req.user.id
+    })
+
+    if (!deletedLike) {
+      throw new ApiError(400, '您还没有点赞过这条评论')
+    }
+
+    // 更新评论点赞数
+    comment.likeCount = Math.max(0, comment.likeCount - 1)
+    await comment.save()
+
+    res.json({
+      success: true,
+      message: '取消点赞成功',
+      data: { likeCount: comment.likeCount }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// 检查用户是否已点赞
+exports.checkLikeStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    
+    if (!req.user) {
+      return res.json({
+        success: true,
+        data: { isLiked: false }
+      })
+    }
+
+    const like = await CommentLike.findOne({
+      comment: id,
+      user: req.user.id
+    })
+
+    res.json({
+      success: true,
+      data: { isLiked: !!like }
     })
   } catch (error) {
     next(error)

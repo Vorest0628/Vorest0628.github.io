@@ -5,9 +5,9 @@
 ## ✨ 功能特性
 
 ### 🏠 核心功能
-- **📝 博客系统** - 支持Markdown编写，分类管理，置顶功能，全文搜索
-- **📄 文档库** - 多格式文档管理，在线预览，置顶展示，文档搜索
-- **🖼️ 图库管理** - 图片上传、分类展示、缩略图生成、状态管理
+- **📝 博客系统** - 支持Markdown编写，分类管理，置顶功能，全文搜索，"其他"分类支持
+- **📄 文档库** - 多格式文档管理，Vue-Office在线预览，置顶展示，文档搜索，"其他"分类支持
+- **🖼️ 图库管理** - 图片上传、分类展示、缩略图生成、状态管理，"其他"分类支持
 - **💬 评论系统** - 多层次评论回复，审核机制，实时通知
 - **👥 用户管理** - 用户注册登录，权限控制，个人面板
 - **🔗 友情链接** - 友站推荐管理，申请审核
@@ -26,6 +26,12 @@
 - **🚦 内容审核** - 评论、用户审核机制
 - **👤 用户面板** - 个人评论管理，账户设置
 
+### 🆕 最新功能 (v1.1.0)
+- **📄 Vue-Office文档预览** - 支持Word、Excel、PowerPoint在线预览
+- **🏷️ 动态分类系统** - 博客、文档、图库支持"其他"自定义分类
+- **🔄 智能预览回退** - Vue-Office失败时自动回退到原有预览方案
+- **🎯 分类自动更新** - 新增分类后自动更新分类列表
+
 ## 🛠️ 技术栈
 
 ### 前端技术
@@ -41,6 +47,9 @@ Element Plus 2.9.11  - Vue3组件库
 ### 前端增强
 ```
 particles.js 2.0.0   - 粒子背景效果
+@vue-office/docx     - Word文档预览
+@vue-office/excel    - Excel文档预览
+@vue-office/pptx     - PowerPoint预览
 pdfjs-dist 5.3.93    - PDF在线预览
 marked 15.0.12       - Markdown解析
 highlight.js 11.11.1 - 代码高亮
@@ -134,7 +143,14 @@ my-website/
 │   ├── 📂 src/
 │   │   ├── 📂 api/            # API接口层
 │   │   ├── 📂 components/     # 可复用组件
+│   │   │   ├── 📂 document-preview/  # 文档预览组件
+│   │   │   │   ├── VueOfficeViewer.vue  # Vue-Office统一预览
+│   │   │   │   └── PptxViewer.vue       # PowerPoint专用预览
+│   │   │   └── ...
 │   │   ├── 📂 views/          # 页面组件
+│   │   │   ├── 📂 Admin/      # 管理面板
+│   │   │   │   └── 📂 components/  # 管理组件
+│   │   │   └── ...
 │   │   ├── 📂 router/         # 路由配置
 │   │   ├── 📂 store/          # 状态管理
 │   │   ├── 📂 utils/          # 工具函数
@@ -150,16 +166,16 @@ my-website/
 
 ### 📝 博客系统
 - **Markdown支持** - 实时预览，语法高亮
-- **分类管理** - 灵活分类系统
+- **分类管理** - 灵活分类系统，支持"其他"自定义分类
 - **置顶功能** - 重要文章优先展示
 - **状态控制** - 草稿/已发布/置顶
 - **全文搜索** - MongoDB文本索引
 
 ### 📄 文档库
-- **多格式支持** - PDF, DOC, PPT, XLS等
-- **在线预览** - 无需下载即可查看
-- **转换服务** - 自动格式转换
-- **分类标签** - 便于组织管理
+- **多格式支持** - PDF, DOCX, PPTX, XLSX, TXT, MD等
+- **Vue-Office预览** - Word、Excel、PowerPoint在线预览
+- **智能回退** - Vue-Office失败时自动回退到原有方案
+- **分类标签** - 支持"其他"自定义分类，便于组织管理
 - **下载统计** - 跟踪文档使用情况
 
 ### 💬 评论系统
@@ -171,7 +187,7 @@ my-website/
 ### 🖼️ 图库管理
 - **批量上传** - 支持多图片上传
 - **缩略图** - 自动生成预览图
-- **标签分类** - 灵活的分类系统
+- **标签分类** - 支持"其他"自定义分类的灵活系统
 - **状态管理** - 公开/私有控制
 
 ### 👥 用户系统
@@ -184,11 +200,11 @@ my-website/
 
 | 服务 | 地址 | 说明 |
 |-----|------|------|
-| 🎨 前端网站 | http://localhost:5174 | 主网站界面 |
+| 🎨 前端网站 | http://localhost:5175 | 主网站界面 |
 | 🔧 后端API | http://localhost:3000/api | RESTful API |
-| 👑 管理面板 | http://localhost:5174/admin | 管理员控制台 |
-| 👤 用户面板 | http://localhost:5174/user | 个人管理中心 |
-| 🌬️ 粒子演示 | http://localhost:5174/particles-demo | 特效展示 |
+| 👑 管理面板 | http://localhost:5175/admin | 管理员控制台 |
+| 👤 用户面板 | http://localhost:5175/user | 个人管理中心 |
+| 🌬️ 粒子演示 | http://localhost:5175/particles-demo | 特效展示 |
 
 ## ⚙️ 配置说明
 
@@ -210,7 +226,7 @@ UPLOAD_PATH=uploads/
 MAX_FILE_SIZE=52428800
 
 # 跨域
-CORS_ORIGIN=http://localhost:5174
+CORS_ORIGIN=http://localhost:5175
 ```
 
 ### 前端配置 (frontend/setting.env)
@@ -218,6 +234,38 @@ CORS_ORIGIN=http://localhost:5174
 VITE_API_BASE_URL=http://localhost:3000/api
 VITE_APP_TITLE=Vorest's Personal Website
 ```
+
+## 📄 文档预览技术方案
+
+### Vue-Office 集成
+| 文件类型 | 预览技术 | 说明 |
+|---------|----------|------|
+| .docx | Vue-Office | 增强Word文档预览功能 |
+| .xlsx/.xls | Vue-Office | 新增Excel文档预览功能 |
+| .pptx/.ppt | Vue-Office | 新增PowerPoint预览功能 |
+| .pdf | pdfjs-dist | 保持现有PDF预览功能 |
+| .md | marked.js | 保持现有Markdown预览功能 |
+| .txt | 原生文本 | 保持现有文本预览功能 |
+
+### 智能预览策略
+- **优先使用Vue-Office** - 为Office文档提供最佳预览体验
+- **自动回退机制** - Vue-Office失败时回退到原有预览方案
+- **错误处理** - 友好的错误提示和重试机制
+- **性能优化** - 按需加载，资源自动清理
+
+## 🏷️ 动态分类系统
+
+### "其他"分类功能
+- **自定义分类** - 支持用户输入新的分类名称
+- **动态更新** - 新增分类后自动更新分类列表
+- **数据持久化** - 自定义分类保存到数据库
+- **统一体验** - 博客、文档、图库保持一致的操作方式
+
+### 分类管理流程
+1. **选择"其他"** - 在下拉菜单中选择"其他"选项
+2. **输入分类名** - 在输入框中输入新的分类名称
+3. **验证保存** - 系统验证并保存新分类
+4. **自动更新** - 分类列表自动更新，立即可用
 
 ## 🎨 粒子效果配置
 
@@ -271,6 +319,7 @@ VITE_APP_TITLE=Vorest's Personal Website
 - **图片优化** - 自动压缩和格式转换
 - **缓存策略** - 静态资源缓存
 - **粒子优化** - 限制粒子数量，自动清理
+- **Vue-Office优化** - 按需加载，资源自动清理
 
 ### 后端优化
 - **数据库索引** - 搜索和查询优化
@@ -280,7 +329,14 @@ VITE_APP_TITLE=Vorest's Personal Website
 
 ## 🔄 更新日志
 
-### v1.0.0 (最新)
+### v1.1.0 (最新)
+- ✅ **Vue-Office集成** - Word、Excel、PowerPoint在线预览
+- ✅ **动态分类系统** - 博客、文档、图库支持"其他"分类
+- ✅ **智能预览回退** - Vue-Office失败时自动回退
+- ✅ **分类自动更新** - 新增分类后自动更新列表
+- ✅ **错误处理优化** - 更友好的错误提示和重试机制
+
+### v1.0.0
 - ✅ 完整的博客系统
 - ✅ 文档库管理
 - ✅ 图库功能
@@ -322,6 +378,7 @@ VITE_APP_TITLE=Vorest's Personal Website
 感谢以下开源项目：
 - Vue.js 团队
 - Element Plus 社区
+- Vue-Office 作者
 - Particles.js 作者
 - MongoDB 团队
 - 所有贡献者
@@ -330,7 +387,4 @@ VITE_APP_TITLE=Vorest's Personal Website
 
 ⭐ **如果这个项目对你有帮助，请给它一个星标！**
 
-
-> 💡 这是一个完整的全栈项目，适合学习和实际部署使用 #   T r i g g e r   p r o d u c t i o n   d e p l o y m e n t 
- 
- 
+> 💡 这是一个完整的全栈项目，适合学习和实际部署使用

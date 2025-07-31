@@ -175,5 +175,42 @@ export const commentApi = {
     return apiService.get('/comments/search', { 
       params: { keyword, ...params } 
     })
+  },
+
+  /**
+   * 点赞评论
+   * @param {string} id - 评论ID
+   * @returns {Promise} 返回点赞结果
+   */
+  likeComment(id) {
+    return apiService.post(`/comments/${id}/like`)
+  },
+
+  /**
+   * 取消点赞评论
+   * @param {string} id - 评论ID
+   * @returns {Promise} 返回取消点赞结果
+   */
+  unlikeComment(id) {
+    return apiService.delete(`/comments/${id}/like`)
+  },
+
+  /**
+   * 检查点赞状态
+   * @param {string} id - 评论ID
+   * @returns {Promise} 返回点赞状态
+   */
+  checkLikeStatus(id) {
+    return apiService.get(`/comments/${id}/like-status`)
+  },
+
+  /**
+   * 更新评论公开状态
+   * @param {string} id - 评论ID
+   * @param {boolean} isPublic - 是否公开
+   * @returns {Promise} 返回更新结果
+   */
+  updateCommentVisibility(id, isPublic) {
+    return apiService.put(`/comments/${id}`, { isPublic })
   }
 } 

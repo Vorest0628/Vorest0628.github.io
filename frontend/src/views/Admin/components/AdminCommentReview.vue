@@ -13,8 +13,6 @@
         <option value="">全部来源</option>
         <option value="blog">博客</option>
         <option value="comment">评论区</option>
-        <option value="document">文档</option>
-        <option value="gallery">图库</option>
         <option value="General">留言板</option>
       </select>
       <input 
@@ -71,6 +69,16 @@
         </div>
 
         <div class="comment-actions">
+          <!-- 点赞显示 -->
+          <span class="like-count">{{ comment.likeCount || 0 }} ❤️</span>
+          <!-- 公开/私有切换按钮 -->
+          <button 
+            @click="toggleVisibility(comment)"
+            class="visibility-btn"
+            :class="{ private: !comment.isPublic }"
+          >
+            {{ comment.isPublic ? '🔒 设为私有' : '🔓 设为公开' }}
+          </button>
           <button 
             @click="jumpToSource(comment)" 
             class="jump-btn"
@@ -92,28 +100,6 @@
       <h3>暂无评论</h3>
       <p>还没有任何评论数据</p>
     </div>
-
-    <!-- 拒绝原因模态框 -->
-    <Teleport to="body">
-      <div v-if="showRejectReasonModal" class="modal-overlay" @click="closeRejectModal">
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <h3>拒绝原因</h3>
-            <button @click="closeRejectModal" class="close-btn">✕</button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>请说明拒绝原因:</label>
-              <textarea v-model="rejectReason" rows="4" placeholder="请详细说明拒绝的原因..."></textarea>
-            </div>
-            <div class="form-actions">
-              <button @click="closeRejectModal" class="cancel-btn">取消</button>
-              <button @click="confirmReject" class="confirm-btn">确认拒绝</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
@@ -123,7 +109,7 @@ import { useRouter } from 'vue-router'
 import { adminApi } from '../../../api/admin'
 
 const router = useRouter()
-const emit = defineEmits(['updatePendingCount'])
+
 
 const comments = ref([])
 const statusFilter = ref('')
@@ -131,15 +117,9 @@ const sourceFilter = ref('')
 const searchQuery = ref('')
 const loading = ref(false)
 const error = ref('')
-const showRejectReasonModal = ref(false)
-const rejectReason = ref('')
-const currentComment = ref(null)
 
 // 计算统计数据
 const totalCount = computed(() => comments.value.length)
-const pendingCount = computed(() => {
-  return comments.value.filter(comment => comment.status === 'pending').length
-})
 
 // 获取评论列表
 const getComments = async () => {
@@ -156,7 +136,6 @@ const getComments = async () => {
     
     if (response.success) {
       comments.value = response.data.comments || response.data || []
-      emit('updatePendingCount', 'comments', pendingCount.value)
     } else {
       throw new Error(response.message || '获取评论列表失败')
     }
@@ -166,20 +145,6 @@ const getComments = async () => {
     comments.value = []
   } finally {
     loading.value = false
-  }
-}
-
-// 审核评论
-const reviewComment = async (id, status, reason = '') => {
-  try {
-    const response = await adminApi.moderateComment(id, { status, reason })
-    if (response.success) {
-      await getComments()
-      alert(status === 'approved' ? '评论已通过审核!' : '评论已被拒绝!')
-    }
-  } catch (error) {
-    console.error('审核失败:', error)
-    alert('审核失败: ' + (error.response?.data?.message || error.message))
   }
 }
 
@@ -196,6 +161,21 @@ const deleteComment = async (id) => {
   } catch (error) {
     console.error('删除失败:', error)
     alert('删除失败: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// 切换评论可见性
+const toggleVisibility = async (comment) => {
+  try {
+    const newVisibility = !comment.isPublic
+    const response = await adminApi.updateCommentVisibility(comment._id || comment.id, newVisibility)
+    if (response.success) {
+      comment.isPublic = newVisibility
+      alert(`评论已${newVisibility ? '设为公开' : '设为私有'}`)
+    }
+  } catch (error) {
+    console.error('更新可见性失败:', error)
+    alert('操作失败: ' + (error.response?.data?.message || error.message))
   }
 }
 
@@ -242,10 +222,6 @@ const getSourceText = (targetType) => {
     blog: '博客',
     Blog: '博客', 
     comment: '评论区',
-    document: '文档',
-    Document: '文档',
-    gallery: '图库',
-    Gallery: '图库',
     General: '留言板'
   }
   return typeMap[targetType] || '其他'
@@ -265,40 +241,6 @@ const getFullSourceText = (comment) => {
   } else {
     return sourceType
   }
-}
-
-// 显示拒绝模态框
-const showRejectModal = (comment) => {
-  currentComment.value = comment
-  rejectReason.value = ''
-  showRejectReasonModal.value = true
-}
-
-// 关闭拒绝模态框
-const closeRejectModal = () => {
-  showRejectReasonModal.value = false
-  currentComment.value = null
-  rejectReason.value = ''
-}
-
-// 确认拒绝
-const confirmReject = async () => {
-  if (!rejectReason.value.trim()) {
-    alert('请填写拒绝原因')
-    return
-  }
-  await reviewComment(currentComment.value._id || currentComment.value.id, 'rejected', rejectReason.value)
-  closeRejectModal()
-}
-
-// 获取状态文本
-const getStatusText = (status) => {
-  const statusMap = {
-    pending: '待审核',
-    approved: '已通过',
-    rejected: '已拒绝'
-  }
-  return statusMap[status] || status
 }
 
 // 格式化日期
@@ -525,6 +467,14 @@ onMounted(() => {
   padding-top: 1rem;
   border-top: 1px solid #eee;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.like-count {
+  color: #e74c3c;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
 }
 
 .approve-btn, .reject-btn, .jump-btn, .delete-btn {
@@ -573,99 +523,21 @@ onMounted(() => {
   background: #545b62;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-group textarea {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-sizing: border-box;
-  font-family: inherit;
-  resize: vertical;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
-
-.cancel-btn, .confirm-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.cancel-btn {
-  background: #6c757d;
+.visibility-btn {
+  background: #17a2b8;
   color: white;
 }
 
-.cancel-btn:hover {
-  background: #545b62;
+.visibility-btn:hover {
+  background: #138496;
 }
 
-.confirm-btn {
-  background: #dc3545;
-  color: white;
+.visibility-btn.private {
+  background: #ff6b6b;
 }
 
-.confirm-btn:hover {
-  background: #c82333;
+.visibility-btn.private:hover {
+  background: #ff5252;
 }
 
 /* 响应式设计 */
