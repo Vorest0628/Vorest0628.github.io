@@ -1,393 +1,158 @@
 # 🌟 Vorest's Personal Website
 
-一个功能完整的现代化个人网站，集成博客、文档库、图库、评论系统和管理面板等功能，支持动态粒子背景效果。
+一个功能全面、技术现代化的全栈个人网站项目，集成了博客、文档库、图库、评论系统、用户中心和强大的管理面板。项目为 Vercel Serverless 环境特别优化，并采用前后端分离架构。
 
 ## ✨ 功能特性
 
 ### 🏠 核心功能
-- **📝 博客系统** - 支持Markdown编写，分类管理，置顶功能，全文搜索，"其他"分类支持
-- **📄 文档库** - 多格式文档管理，Vue-Office在线预览，置顶展示，文档搜索，"其他"分类支持
-- **🖼️ 图库管理** - 图片上传、分类展示、缩略图生成、状态管理，"其他"分类支持
-- **💬 评论系统** - 多层次评论回复，审核机制，实时通知
-- **👥 用户管理** - 用户注册登录，权限控制，个人面板
-- **🔗 友情链接** - 友站推荐管理，申请审核
-- **🔍 全文搜索** - Google风格搜索，支持博客和文档统一搜索
+- **📝 博客系统** - 支持Markdown，文章分类、标签、置顶，全文搜索。
+- **📄 文档库** - 支持多种格式文档（PDF, DOCX, XLSX, PPTX, TXT, MD）的上传、管理和在线预览，支持文档分类、标签和搜索。
+- **🖼️ 图库管理** - 支持图片批量上传、分类管理、标签系统和瀑布流展示。
+- **💬 评论系统** - 支持多级嵌套回复、点赞、用户身份标识和管理员审核。
+- **👥 用户系统** - 提供用户注册、登录、JWT认证、个人主页和权限管理（管理员/普通用户）。
+- **🔗 友情链接** - 支持友情链接的申请、审核和展示。
+- **🔍 统一搜索** - 提供跨越博客和文档的全文搜索功能，支持关键词高亮和相关性排序。
+- **🌦️ 天气查询** - （可能存在的隐藏功能）提供天气信息查询。
 
-### 🎨 界面特效
-- **🌬️ 粒子背景** - 蒲公英飘散效果，particles.js驱动
-- **🎭 响应式设计** - 完美适配桌面、平板、手机
-- **💻 现代化UI** - 毛玻璃效果，渐变背景，优雅动画
-- **🌙 主题支持** - 支持背景图片自定义
+### 🎨 界面与交互
+- **🌬️ 动态粒子背景** - 基于 `particles.js` 实现的动态蒲公英粒子效果。
+- **📱 响应式设计** - 完美适配桌面、平板和手机等不同尺寸的设备。
+- **💻 现代化UI** - 采用毛玻璃、渐变背景和流畅的动画效果，提升用户视觉体验。
+- **📄 文档在线预览** - 集成 `Vue-Office` 和 `pdfjs-dist`，支持多种主流文档格式的在线预览。
 
 ### ⚙️ 管理功能
-- **📊 管理员面板** - 全面的内容管理系统
-- **🔐 权限控制** - 基于角色的访问控制
-- **📈 数据统计** - 访问量和内容统计
-- **🚦 内容审核** - 评论、用户审核机制
-- **👤 用户面板** - 个人评论管理，账户设置
-
-### 🆕 最新功能 (v1.1.0)
-- **📄 Vue-Office文档预览** - 支持Word、Excel、PowerPoint在线预览
-- **🏷️ 动态分类系统** - 博客、文档、图库支持"其他"自定义分类
-- **🔄 智能预览回退** - Vue-Office失败时自动回退到原有预览方案
-- **🎯 分类自动更新** - 新增分类后自动更新分类列表
+- **📊 管理员面板** - 提供一个全面的后台管理系统，用于管理网站的所有内容。
+- **🔐 权限控制** - 基于角色的访问控制（RBAC），区分管理员和普通用户权限。
+- **📈 数据统计** - 提供网站核心数据的统计概览。
+- **🚦 内容审核** - 支持对评论、用户注册和友情链接进行审核。
+- **👤 用户面板** - 普通用户拥有独立的面板，可管理个人信息和发表的内容。
 
 ## 🛠️ 技术栈
 
-### 前端技术
-```
-Vue 3.5.13           - 渐进式JavaScript框架
-Composition API      - 现代Vue开发方式
-Vue Router 4.5.1     - 客户端路由管理
-Pinia 3.0.2          - 轻量级状态管理
-Vite 6.2.4           - 快速构建工具
-Element Plus 2.9.11  - Vue3组件库
-```
+### 前端 (Frontend)
+- **框架**: `Vue 3` (Composition API)
+- **构建工具**: `Vite`
+- **路由**: `Vue Router`
+- **状态管理**: `Pinia`
+- **UI组件库**: `Element Plus`
+- **HTTP客户端**: `Axios`
+- **文档预览**:
+  - `@vue-office/docx` (Word)
+  - `@vue-office/excel` (Excel)
+  - `@vue-office/pptx` (PowerPoint)
+  - `pdfjs-dist` (PDF)
+- **Markdown解析**: `marked`
+- **粒子效果**: `particles.js`
 
-### 前端增强
-```
-particles.js 2.0.0   - 粒子背景效果
-@vue-office/docx     - Word文档预览
-@vue-office/excel    - Excel文档预览
-@vue-office/pptx     - PowerPoint预览
-pdfjs-dist 5.3.93    - PDF在线预览
-marked 15.0.12       - Markdown解析
-highlight.js 11.11.1 - 代码高亮
-date-fns 4.1.0       - 日期处理
-lodash 4.17.21       - 工具函数库
-axios 1.9.0          - HTTP客户端
-```
+### 后端 (Backend)
+- **框架**: `Node.js` + `Express`
+- **数据库**: `MongoDB` + `Mongoose`
+- **认证**: `JWT` (JSON Web Token)
+- **文件上传**: `Multer`
+- **Serverless部署适配**: `@vercel/blob` (用于文件存储)
+- **密码加密**: `bcryptjs`
+- **图片处理**: `sharp`
 
-### 后端技术
-```
-Node.js              - JavaScript运行环境
-Express 4.18.3       - Web应用框架
-MongoDB + Mongoose   - NoSQL数据库
-JWT 9.0.2            - 身份认证
-Multer 1.4.5         - 文件上传
-bcryptjs 2.4.3       - 密码加密
-```
-
-### 文档处理
-```
-libreoffice-convert  - Office文档转换
-mammoth 1.9.1        - Word文档解析
-pdf-lib 1.17.1       - PDF处理
-sharp 0.34.2         - 图片处理
-pdf2pic 3.2.0        - PDF转图片
-```
-
-### 开发工具
-```
-nodemon 3.1.0        - 开发热重载
-concurrently 9.1.2   - 并发任务运行
-ESLint               - 代码质量检查
-Git                  - 版本控制
-```
+### 开发与部署
+- **并发任务**: `concurrently`
+- **热重载**: `nodemon`
+- **代码规范**: `ESLint`
+- **版本控制**: `Git`
+- **部署平台**: `Vercel` (前后端), `MongoDB Atlas` (数据库)
 
 ## 🚀 快速开始
 
+如果你想本地部署，请：
 ### 环境要求
 - Node.js >= 16.0.0
-- MongoDB >= 4.4.0  
 - npm >= 8.0.0
+- MongoDB (本地或云端)
 
-### 一键安装
-```bash
-# 克隆项目
-git clone https://github.com/Vorest0628/my-website.git
-cd my-website
+### 安装与启动
+1.  **克隆项目**
+    ```bash
+    git clone https://github.com/Vorest0628/my-website.git
+    cd my-website
+    ```
 
-# 安装所有依赖
-npm run install:all
+2.  **一键安装所有依赖**
+    ```bash
+    npm run install:all
+    ```
 
-# 启动开发环境
-npm run dev
-```
+3.  **配置环境变量**
+    - 复制 `backend/setting.env.example` 为 `backend/setting.env`。
+    - 复制 `frontend/setting.env.example` 为 `frontend/setting.env`。
+    - 根据您的本地环境修改这两个 `.env` 文件，配置数据库连接、JWT密钥等。
 
-### 分步安装
-```bash
-# 1. 安装根目录依赖
-npm install
-
-# 2. 安装后端依赖
-cd backend && npm install
-
-# 3. 安装前端依赖
-cd ../frontend && npm install
-
-# 4. 启动数据库
-# Windows: net start MongoDB
-# macOS: brew services start mongodb-community
-# Linux: sudo systemctl start mongod
-
-# 5. 启动项目
-cd .. && npm run dev
-```
+4.  **启动开发环境**
+    ```bash
+    npm run dev
+    ```
+    项目将在本地启动，前端访问 `http://localhost:5173`，后端API服务在 `http://localhost:3000`。
 
 ## 📁 项目结构
 
 ```
 my-website/
-├── 📂 backend/                 # 后端服务
-│   ├── 📂 controllers/         # 业务控制器
-│   ├── 📂 models/             # 数据模型
-│   ├── 📂 routes/             # API路由
-│   ├── 📂 middleware/         # 中间件
-│   ├── 📂 utils/              # 工具函数
-│   ├── 📂 uploads/            # 文件上传目录
-│   ├── 📂 scripts/            # 数据库脚本
-│   ├── ⚙️ app.js               # 应用入口
-│   └── 🔧 setting.env         # 环境配置
-├── 📂 frontend/               # 前端应用
+├── 📂 backend/             # 后端 (Node.js + Express)
+│   ├── 📂 controllers/     # 控制器 (业务逻辑)
+│   ├── 📂 models/         # 数据模型 (Mongoose Schemas)
+│   ├── 📂 routes/         # API 路由
+│   ├── 📂 middleware/     # 中间件 (认证、权限)
+│   ├── 📂 utils/          # 工具函数
+│   ├── ⚙️ app.js           # 应用入口
+│   └── 🔧 setting.env     # 环境变量
+├── 📂 frontend/           # 前端 (Vue 3 + Vite)
 │   ├── 📂 src/
-│   │   ├── 📂 api/            # API接口层
-│   │   ├── 📂 components/     # 可复用组件
-│   │   │   ├── 📂 document-preview/  # 文档预览组件
-│   │   │   │   ├── VueOfficeViewer.vue  # Vue-Office统一预览
-│   │   │   │   └── PptxViewer.vue       # PowerPoint专用预览
-│   │   │   └── ...
-│   │   ├── 📂 views/          # 页面组件
-│   │   │   ├── 📂 Admin/      # 管理面板
-│   │   │   │   └── 📂 components/  # 管理组件
-│   │   │   └── ...
-│   │   ├── 📂 router/         # 路由配置
-│   │   ├── 📂 store/          # 状态管理
-│   │   ├── 📂 utils/          # 工具函数
-│   │   └── 📂 assets/         # 静态资源
-│   ├── 📂 public/             # 公共资源
-│   └── ⚡ vite.config.js      # 构建配置
-├── 📂 docs/                   # 项目文档
-├── 📄 package.json            # 项目配置
-└── 📖 README.md               # 项目说明
+│   │   ├── 📂 api/        # API 请求模块
+│   │   ├── 📂 assets/     # 静态资源 (CSS, 图片)
+│   │   ├── 📂 components/ # 可复用组件
+│   │   ├── 📂 router/     # 路由配置
+│   │   ├── 📂 store/      # 状态管理 (Pinia)
+│   │   ├── 📂 views/      # 页面组件
+│   │   └── ⚡ main.js      # 应用入口
+│   └── ⚡ vite.config.js  # Vite 配置
+├── 📄 .gitignore
+├── 📄 package.json        # 根项目配置
+└── 📖 README.md           # 就是你现在看到的这个文件
 ```
 
-## 🎯 核心功能详解
+## 部署指南
 
-### 📝 博客系统
-- **Markdown支持** - 实时预览，语法高亮
-- **分类管理** - 灵活分类系统，支持"其他"自定义分类
-- **置顶功能** - 重要文章优先展示
-- **状态控制** - 草稿/已发布/置顶
-- **全文搜索** - MongoDB文本索引
+本项目已为 `Vercel` 平台优化，推荐使用 Vercel 进行一键部署。
+如果你想基于本项目效仿属于自己的个人网站，在运营上线时可以参考如下配置：
 
-### 📄 文档库
-- **多格式支持** - PDF, DOCX, PPTX, XLSX, TXT, MD等
-- **Vue-Office预览** - Word、Excel、PowerPoint在线预览
-- **智能回退** - Vue-Office失败时自动回退到原有方案
-- **分类标签** - 支持"其他"自定义分类，便于组织管理
-- **下载统计** - 跟踪文档使用情况
 
-### 💬 评论系统
-- **多层回复** - 支持评论嵌套
-- **实时通知** - 新评论即时提醒
-- **审核机制** - 防止垃圾评论
-- **来源追踪** - 标记评论来源页面
+1.  **前端部署 (Vercel)**
+    - 使用vite进行 `npm run build` 的构建
+    - 将全部项目内容部署到github并使用github pages
 
-### 🖼️ 图库管理
-- **批量上传** - 支持多图片上传
-- **缩略图** - 自动生成预览图
-- **标签分类** - 支持"其他"自定义分类的灵活系统
-- **状态管理** - 公开/私有控制
+2.  **后端部署 (Vercel)**
+    - 将 `backend` 目录作为另一个 Vercel 项目进行部署。
+    - Vercel 会自动识别为 Node.js Serverless Function。
+    - 在 Vercel 项目设置中，配置后端的环境变量（`MONGODB_URI`, `JWT_SECRET`, `BLOB_READ_WRITE_TOKEN` 等）。
 
-### 👥 用户系统
-- **注册登录** - JWT身份认证
-- **权限管理** - 用户/管理员角色
-- **个人面板** - 评论管理，设置修改
-- **状态控制** - 审核/启用状态
+3.  **文件存储 (Vercel Blob)**
+    - 在 Vercel 后端项目中，集成 Vercel Blob 服务。
+    - 获取 `BLOB_READ_WRITE_TOKEN` 并配置到环境变量中。
+    - 项目中的文件上传（文档、图库）会自动使用 Vercel Blob 进行存储。
 
-## 🌐 访问地址
+4.  **数据库 (MongoDB Atlas)**
+    - 推荐使用 MongoDB Atlas 作为云数据库。
+    - 创建免费的数据库集群，并将连接字符串配置到后端环境变量 `MONGODB_URI` 中。
+    - **重要**: 确保在 MongoDB Atlas 的网络访问设置中，允许来自所有IP地址（`0.0.0.0/0`）的连接，以便 Vercel Serverless 函数可以访问。
 
-| 服务 | 地址 | 说明 |
-|-----|------|------|
-| 🎨 前端网站 | http://localhost:5175 | 主网站界面 |
-| 🔧 后端API | http://localhost:3000/api | RESTful API |
-| 👑 管理面板 | http://localhost:5175/admin | 管理员控制台 |
-| 👤 用户面板 | http://localhost:5175/user | 个人管理中心 |
-| 🌬️ 粒子演示 | http://localhost:5175/particles-demo | 特效展示 |
+## 🤝 贡献
 
-## ⚙️ 配置说明
+欢迎对本项目进行贡献！如果您有任何想法或建议，或者发现bug，请随时提交 Pull Request 或创建 Issue。
 
-### 后端配置 (backend/setting.env)
-```env
-# 数据库
-MONGODB_URI=mongodb://localhost:27017/my_website
-
-# JWT安全
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRES_IN=7d
-
-# 服务器
-PORT=3000
-NODE_ENV=development
-
-# 文件上传
-UPLOAD_PATH=uploads/
-MAX_FILE_SIZE=52428800
-
-# 跨域
-CORS_ORIGIN=http://localhost:5175
-```
-
-### 前端配置 (frontend/setting.env)
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_APP_TITLE=Vorest's Personal Website
-```
-
-## 📄 文档预览技术方案
-
-### Vue-Office 集成
-| 文件类型 | 预览技术 | 说明 |
-|---------|----------|------|
-| .docx | Vue-Office | 增强Word文档预览功能 |
-| .xlsx/.xls | Vue-Office | 新增Excel文档预览功能 |
-| .pptx/.ppt | Vue-Office | 新增PowerPoint预览功能 |
-| .pdf | pdfjs-dist | 保持现有PDF预览功能 |
-| .md | marked.js | 保持现有Markdown预览功能 |
-| .txt | 原生文本 | 保持现有文本预览功能 |
-
-### 智能预览策略
-- **优先使用Vue-Office** - 为Office文档提供最佳预览体验
-- **自动回退机制** - Vue-Office失败时回退到原有预览方案
-- **错误处理** - 友好的错误提示和重试机制
-- **性能优化** - 按需加载，资源自动清理
-
-## 🏷️ 动态分类系统
-
-### "其他"分类功能
-- **自定义分类** - 支持用户输入新的分类名称
-- **动态更新** - 新增分类后自动更新分类列表
-- **数据持久化** - 自定义分类保存到数据库
-- **统一体验** - 博客、文档、图库保持一致的操作方式
-
-### 分类管理流程
-1. **选择"其他"** - 在下拉菜单中选择"其他"选项
-2. **输入分类名** - 在输入框中输入新的分类名称
-3. **验证保存** - 系统验证并保存新分类
-4. **自动更新** - 分类列表自动更新，立即可用
-
-## 🎨 粒子效果配置
-
-### 特效参数
-- **粒子数量**: 65个 (性能优化)
-- **颜色主题**: 蓝白渐变
-- **运动方向**: 右上角飘散
-- **交互效果**: 鼠标悬停气泡，点击增加粒子
-- **性能优化**: 自动清理，防止内存泄漏
-
-### 自定义粒子
-可在 `frontend/src/components/ParticlesBackground.vue` 中调整:
-- 粒子数量和密度
-- 颜色和透明度
-- 运动速度和方向
-- 交互效果配置
-
-## 📱 响应式支持
-
-| 设备类型 | 屏幕宽度 | 适配特性 |
-|---------|----------|----------|
-| 🖥️ 桌面 | ≥1024px | 完整布局，侧边栏 |
-| 📱 平板 | 768-1023px | 调整布局，折叠侧边栏 |
-| 📱 手机 | <768px | 移动优化，堆叠布局 |
-
-## 🔒 安全特性
-
-- **JWT认证** - 安全的用户身份验证
-- **密码加密** - bcrypt哈希加密
-- **XSS防护** - 输入内容过滤
-- **CORS配置** - 跨域请求控制
-- **文件验证** - 上传文件类型检查
-- **权限控制** - 基于角色的访问权限
-
-## 🚀 部署指南
-
-### GitHub Pages部署
-详见 [GitHubPages部署指南.md](GitHubPages部署指南.md)
-
-### 云服务部署
-推荐平台:
-- **Vercel** - 前端部署
-- **Render** - 后端部署  
-- **MongoDB Atlas** - 数据库托管
-
-## 📊 性能优化
-
-### 前端优化
-- **懒加载** - 路由组件按需加载
-- **代码分割** - Vite自动代码分割
-- **图片优化** - 自动压缩和格式转换
-- **缓存策略** - 静态资源缓存
-- **粒子优化** - 限制粒子数量，自动清理
-- **Vue-Office优化** - 按需加载，资源自动清理
-
-### 后端优化
-- **数据库索引** - 搜索和查询优化
-- **文件压缩** - 图片自动压缩
-- **API缓存** - 减少重复查询
-- **连接池** - 数据库连接优化
-
-## 🔄 更新日志
-
-### v1.1.0 (最新)
-- ✅ **Vue-Office集成** - Word、Excel、PowerPoint在线预览
-- ✅ **动态分类系统** - 博客、文档、图库支持"其他"分类
-- ✅ **智能预览回退** - Vue-Office失败时自动回退
-- ✅ **分类自动更新** - 新增分类后自动更新列表
-- ✅ **错误处理优化** - 更友好的错误提示和重试机制
-
-### v1.0.0
-- ✅ 完整的博客系统
-- ✅ 文档库管理
-- ✅ 图库功能
-- ✅ 用户权限系统
-- ✅ 评论系统
-- ✅ 管理员面板
-- ✅ 粒子背景效果
-- ✅ 全文搜索功能
-- ✅ 响应式设计
-
-## 🤝 贡献指南
-
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/新功能`)
-3. 提交更改 (`git commit -m '添加新功能'`)
-4. 推送分支 (`git push origin feature/新功能`)
-5. 开启 Pull Request
-
-## 📝 开发规范
-
-- **代码风格**: ESLint + Prettier
-- **提交规范**: Conventional Commits
-- **分支管理**: Git Flow
-- **测试要求**: API测试 + 单元测试
+1.  Fork 本项目
+2.  创建您的功能分支 (`git checkout -b feature/YourFeature`)
+3.  提交您的更改 (`git commit -m 'Add some feature'`)
+4.  推送到分支 (`git push origin feature/YourFeature`)
+5.  提交 Pull Request
 
 ## 📄 许可证
 
-本项目采用 [MIT License](LICENSE) - 查看文件了解详情
-
-## 👨‍💻 作者信息
-
-**Vorest** 
-- 🐙 GitHub: [@Vorest0628](https://github.com/Vorest0628)
-- 🌐 Website: [Your Website](https://vorest0628.github.io)
-
-## 🙏 致谢
-
-感谢以下开源项目：
-- Vue.js 团队
-- Element Plus 社区
-- Vue-Office 作者
-- Particles.js 作者
-- MongoDB 团队
-- 所有贡献者
-
----
-
-⭐ **如果这个项目对你有帮助，请给它一个星标！**
-
-<<<<<<< HEAD
-> 💡 这是一个完整的全栈项目，适合学习和实际部署使用
-=======
-> 💡 这是一个完整的全栈项目，适合学习和实际部署使用
->>>>>>> fb323a4ddc23fe5051a622b949484c2601a4c2d8
+本项目采用 [MIT License](LICENSE) 开源。
