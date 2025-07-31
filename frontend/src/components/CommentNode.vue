@@ -46,6 +46,16 @@
         <!-- 回复输入框 -->
         <div v-if="showReply" class="reply-form">
           <textarea v-model="replyContent" placeholder="输入你的回复..." rows="3"></textarea>
+          <div class="reply-options">
+            <label class="checkbox-label">
+              <input 
+                v-model="replyIsPublic" 
+                type="checkbox" 
+                class="checkbox-input"
+              />
+              <span class="checkbox-text">公开回复</span>
+            </label>
+          </div>
           <button @click="submitReply" :disabled="isSubmitting">提交回复</button>
           <button @click="showReply = false" class="cancel-btn">取消</button>
         </div>
@@ -90,6 +100,7 @@ const authStore = useAuthStore();
 
 const showReply = ref(false);
 const replyContent = ref('');
+const replyIsPublic = ref(true); // 默认公开回复
 const isSubmitting = ref(false);
 // 添加新的响应式数据
 const isLiked = ref(false);
@@ -141,12 +152,14 @@ const submitReply = async () => {
       content: replyContent.value,
       targetId: props.comment.targetId,
       targetType: props.comment.targetType,
-      parentComment: props.comment._id
+      parentComment: props.comment._id,
+      isPublic: replyIsPublic.value
     };
     const response = await commentApi.createComment(replyData);
     if (response.success) {
       emit('comment-added', response.data);
       replyContent.value = '';
+      replyIsPublic.value = true; // 重置为默认公开
       showReply.value = false;
       alert('回复成功');
     }
@@ -286,6 +299,33 @@ onMounted(() => {
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.reply-options {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.checkbox-input {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  user-select: none;
 }
 
 .reply-form .cancel-btn {

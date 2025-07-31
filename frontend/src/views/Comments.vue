@@ -46,6 +46,16 @@
             class="form-textarea"
           ></textarea>
         </div>
+        <div class="comment-options">
+          <label class="checkbox-label">
+            <input 
+              v-model="newComment.isPublic" 
+              type="checkbox" 
+              class="checkbox-input"
+            />
+            <span class="checkbox-text">公开留言</span>
+          </label>
+        </div>
         <div class="form-actions">
           <button type="submit" class="submit-btn" :disabled="isSubmitting">
             {{ isSubmitting ? '发布中...' : '发布留言' }}
@@ -95,7 +105,10 @@ const authStore = useAuthStore()
 const comments = ref([])
 const loading = ref(false)
 const error = ref('')
-const newComment = ref({ content: '' })
+const newComment = ref({ 
+  content: '',
+  isPublic: true // 默认公开
+})
 const isSubmitting = ref(false)
 
 // 计算属性
@@ -168,12 +181,14 @@ const submitComment = async () => {
       content: newComment.value.content.trim(),
       targetType: 'General',
       targetId: '000000000000000000000001', // 固定的留言板ID
-      parentComment: null
+      parentComment: null,
+      isPublic: newComment.value.isPublic
     }
     const response = await commentApi.createComment(commentData)
     if (response.success) {
       handleCommentAdded(response.data);
       newComment.value.content = '';
+      newComment.value.isPublic = true; // 重置为默认公开
       alert('留言发布成功！');
     } else {
       throw new Error(response.message || '发布留言失败')
@@ -359,6 +374,33 @@ h1 {
 .submit-btn:disabled {
   background-color: #bdc3c7;
   cursor: not-allowed;
+}
+
+.comment-options {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  user-select: none;
 }
 
 .submit-btn.small {

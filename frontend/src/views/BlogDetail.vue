@@ -89,6 +89,16 @@
               class="form-textarea"
             ></textarea>
           </div>
+          <div class="comment-options">
+            <label class="checkbox-label">
+              <input 
+                v-model="newComment.isPublic" 
+                type="checkbox" 
+                class="checkbox-input"
+              />
+              <span class="checkbox-text">公开评论</span>
+            </label>
+          </div>
           <div class="form-actions">
             <button type="submit" class="submit-btn" :disabled="isSubmittingComment">
               {{ isSubmittingComment ? '发布中...' : '发布评论' }}
@@ -144,7 +154,8 @@ const commentsSection = ref(null)
 
 // 评论相关
 const newComment = ref({
-  content: ''
+  content: '',
+  isPublic: true // 默认公开
 })
 const isSubmittingComment = ref(false)
 
@@ -224,7 +235,8 @@ const submitComment = async () => {
       content: newComment.value.content,
       targetType: 'Blog',
       targetId: article.value.id, // 修复：使用id而不是_id
-      parentComment: null
+      parentComment: null,
+      isPublic: newComment.value.isPublic
     }
     
     const res = await commentApi.createComment(commentData)
@@ -232,6 +244,7 @@ const submitComment = async () => {
     if (res.success) {
       handleCommentAdded(res.data)
       newComment.value.content = ''
+      newComment.value.isPublic = true // 重置为默认公开
       alert('评论发表成功！')
     } else {
       throw new Error(res.message || '评论发布失败')
@@ -586,6 +599,33 @@ watch(() => route.params.id, (newId) => {
 .submit-btn:disabled {
   background-color: #a9d6f5;
   cursor: not-allowed;
+}
+
+.comment-options {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  user-select: none;
 }
 
 .comments-list {
