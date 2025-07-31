@@ -21,18 +21,17 @@ exports.getAllComments = async (req, res, next) => {
     if (isPublic === 'true') {
       query.isPublic = true
     } else if (isPublic === 'false') {
+      // 显示私有评论
+      query.isPublic = false
       // 只有管理员或评论作者可以看到私有评论
       if (req.user && req.user.role === 'admin') {
-        // 管理员可以看到所有评论
+        // 管理员可以看到所有私有评论，不需要额外过滤
       } else if (req.user) {
         // 普通用户只能看到自己的私有评论
-        query.$or = [
-          { isPublic: true },
-          { author: req.user.id, isPublic: false }
-        ]
+        query.author = req.user.id
       } else {
-        // 未登录用户只能看到公开评论
-        query.isPublic = true
+        // 未登录用户不能看到私有评论，返回空结果
+        query._id = null // 确保查询不到任何结果
       }
     }
 
@@ -82,7 +81,7 @@ exports.getCommentsByTarget = async (req, res, next) => {
 
     // 根据用户权限过滤评论
     if (req.user && req.user.role === 'admin') {
-      // 管理员可以看到所有评论
+      // 管理员可以看到所有评论，不需要额外过滤条件
     } else if (req.user) {
       // 普通用户可以看到公开评论和自己的私有评论
       query.$or = [
@@ -100,7 +99,7 @@ exports.getCommentsByTarget = async (req, res, next) => {
       
       // 对回复也应用相同的权限过滤
       if (req.user && req.user.role === 'admin') {
-        // 管理员可以看到所有回复
+        // 管理员可以看到所有回复，不需要额外过滤条件
       } else if (req.user) {
         replyQuery.$or = [
           { isPublic: true },
@@ -193,7 +192,7 @@ exports.getCommentById = async (req, res, next) => {
 // 创建新评论
 exports.createComment = async (req, res, next) => {
   try {
-    const { targetId, targetType, content, parentComment } = req.body
+    const { targetId, targetType, content, parentComment, isPublic } = req.body
 
     // 检查用户是否已登录
     if (!req.user) {
@@ -210,7 +209,7 @@ exports.createComment = async (req, res, next) => {
       content: content.trim(),
       parentComment: parentComment || null,
       author: req.user.id,
-      isPublic: true // 默认公开
+      isPublic: isPublic !== undefined ? isPublic : true // 使用前端传递的值，默认为true
     }
     
     // TODO: 验证 targetId 和 targetType 对应的资源是否存在

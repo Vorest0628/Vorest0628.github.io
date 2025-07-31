@@ -110,7 +110,7 @@ router.get('/dashboard', auth, checkRole('admin'), async (req, res, next) => {
       
       // 待审核统计
       Blog.countDocuments({ status: 'draft' }),
-      Comment.countDocuments({ status: 'pending' }),
+      Comment.countDocuments({ isPublic: false }),
       Gallery.countDocuments({ status: 'pending' })
     ])
 
@@ -129,7 +129,7 @@ router.get('/dashboard', auth, checkRole('admin'), async (req, res, next) => {
     const recentComments = await Comment.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .select('content status createdAt author')
+      .select('content isPublic createdAt author')
       .populate('author', 'username')
 
     res.json({
@@ -505,10 +505,10 @@ router.delete('/blogs/:id', auth, checkRole('admin'), async (req, res, next) => 
 // 评论管理 - 获取所有评论
 router.get('/comments', auth, checkRole('admin'), async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, status, search, targetType } = req.query
+    const { page = 1, limit = 10, isPublic, search, targetType } = req.query
     
     const query = {}
-    if (status) query.status = status
+    if (isPublic !== undefined) query.isPublic = isPublic === 'true'
     if (targetType) query.targetType = targetType
     if (search) {
       query.content = { $regex: search, $options: 'i' }
@@ -586,19 +586,19 @@ router.get('/comments', auth, checkRole('admin'), async (req, res, next) => {
   }
 })
 
-// 评论管理 - 审核评论
-router.put('/comments/:id/moderate', auth, checkRole('admin'), async (req, res, next) => {
+// 评论管理 - 更新评论可见性
+router.put('/comments/:id/visibility', auth, checkRole('admin'), async (req, res, next) => {
   try {
     const { id } = req.params
-    const { status } = req.body
+    const { isPublic } = req.body
 
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
-      throw new ApiError(400, '无效的评论状态')
+    if (typeof isPublic !== 'boolean') {
+      throw new ApiError(400, '无效的可见性设置')
     }
 
     const comment = await Comment.findByIdAndUpdate(
       id,
-      { status },
+      { isPublic },
       { new: true }
     ).populate('author', 'username')
 
@@ -609,7 +609,7 @@ router.put('/comments/:id/moderate', auth, checkRole('admin'), async (req, res, 
     res.json({
       success: true,
       data: { comment },
-      message: `评论已${status === 'approved' ? '通过审核' : status === 'rejected' ? '被拒绝' : '设为待审核'}`
+      message: `评论已${isPublic ? '设为公开' : '设为私有'}`
     })
   } catch (error) {
     next(error)
