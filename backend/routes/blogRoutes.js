@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const blogController = require('../controllers/blogController')
-const { auth, checkRole } = require('../middleware/auth')
+const { auth, checkRole, optionalAuth } = require('../middleware/auth')
 
 /**
  * 博客路由配置
@@ -18,7 +18,7 @@ router.get('/admin/all', auth, checkRole('admin'), blogController.getAllBlogsFor
 // 点赞相关路由（必须在 /:id 之前）
 router.post('/:id/like', auth, blogController.likeBlog) // 点赞博客
 router.delete('/:id/like', auth, blogController.unlikeBlog) // 取消点赞博客
-router.get('/:id/like-status', blogController.checkBlogLikeStatus) // 检查点赞状态
+router.get('/:id/like-status', optionalAuth, blogController.checkBlogLikeStatus) // 检查点赞状态
 
 // 动态路由 - 放在最后
 router.get('/:id', blogController.getBlogById) // 获取博客详情

@@ -309,7 +309,7 @@ const scrollToComments = () => {
 
 // 检查点赞状态
 const checkLikeStatus = async () => {
-  if (!authStore.isAuthenticated || !article.value) return
+  if (!article.value) return
   
   try {
     const res = await blogApi.checkBlogLikeStatus(article.value.id)
@@ -318,6 +318,8 @@ const checkLikeStatus = async () => {
     }
   } catch (err) {
     console.error('检查点赞状态失败:', err)
+    // 如果检查失败，默认设置为未点赞状态
+    isLiked.value = false
   }
 }
 
