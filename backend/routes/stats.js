@@ -3,6 +3,7 @@ const router = express.Router()
 const Blog = require('../models/Blog')
 const Comment = require('../models/Comment')
 const Gallery = require('../models/Gallery')
+const Visit = require('../models/Visit')
 
 /**
  * 公开统计API
@@ -14,24 +15,54 @@ router.get('/', async (req, res, next) => {
   try {
     const Document = require('../models/Document')
     
+    // 获取基础数据统计
     const [
       totalBlogs,
-      totalComments,
       totalGalleryItems,
       totalDocuments
     ] = await Promise.all([
       Blog.countDocuments({ status: 'published' }),
-      Comment.countDocuments({ status: 'approved' }),
       Gallery.countDocuments({ status: 'published' }),
       Document.countDocuments({ status: 'published' })
     ])
 
+    // 获取评论统计 - 包括所有公开的评论和回复
+    const totalComments = await Comment.countDocuments({ 
+      isPublic: true 
+    })
+
+    // 获取博客评论数量（不包括留言板评论）
+    const blogCommentsCount = await Comment.countDocuments({
+      targetType: 'Blog',
+      isPublic: true
+    })
+
+    // 获取留言板评论数量（包括回复）
+    const messageBoardCommentsCount = await Comment.countDocuments({
+      targetType: 'General',
+      isPublic: true
+    })
+
+    // 计算总访问量（基于实际访问记录 + 博客浏览次数）
+    const [totalVisits, totalBlogViews] = await Promise.all([
+      Visit.countDocuments(),
+      Blog.aggregate([
+        { $match: { status: 'published' } },
+        { $group: { _id: null, totalViews: { $sum: '$viewCount' } } }
+      ])
+    ])
+    
+    const baseVisitCount = 500 // 基础访问量
+    const visitCount = baseVisitCount + totalVisits + (totalBlogViews[0]?.totalViews || 0)
+
     res.json({
       success: true,
       data: {
-        visitCount: 1234, // 暂时设为固定值，后续可以添加访问统计
+        visitCount: visitCount,
         blogsCount: totalBlogs,
-        commentsCount: totalComments,
+        commentsCount: totalComments, // 所有公开评论和回复的总数
+        blogCommentsCount: blogCommentsCount, // 博客评论数量
+        messageBoardCommentsCount: messageBoardCommentsCount, // 留言板评论数量
         documentsCount: totalDocuments,
         imagesCount: totalGalleryItems,
         songsCount: 0, // 暂时设为0，后续可以添加音乐模块
@@ -54,11 +85,11 @@ router.get('/popular', async (req, res, next) => {
         .sort({ createdAt: -1 })
         .limit(3)
         .select('title slug createdAt'),
-      Comment.find({ status: 'approved' })
+      Comment.find({ isPublic: true })
         .populate('author', 'username')
         .sort({ createdAt: -1 })
         .limit(5)
-        .select('content createdAt author')
+        .select('content createdAt author targetType')
     ])
 
     res.json({
@@ -73,11 +104,22 @@ router.get('/popular', async (req, res, next) => {
   }
 })
 
-// 记录访问统计（示例接口）
+// 记录访问统计
 router.post('/visit', async (req, res, next) => {
   try {
-    // 这里可以实现访问统计逻辑
-    // 目前只返回成功状态
+    const { page, userAgent } = req.body
+    const ip = req.ip || req.connection.remoteAddress
+    
+    // 创建访问记录
+    const visit = new Visit({
+      page: page || '/',
+      userAgent: userAgent || '',
+      ip: ip,
+      timestamp: new Date()
+    })
+    
+    await visit.save()
+    
     res.json({
       success: true,
       message: '访问记录成功'

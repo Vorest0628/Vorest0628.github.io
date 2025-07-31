@@ -73,7 +73,7 @@
           </div>
           <div class="stat-item">
             <span class="stat-number">{{ stats.commentsCount }}</span>
-            <span class="stat-label">评论数量</span>
+            <span class="stat-label">评论总数</span>
           </div>
           <div class="stat-item">
             <span class="stat-number">{{ stats.totalContent }}</span>
@@ -99,6 +99,8 @@ const stats = ref({
   visitCount: 0,
   blogsCount: 0,
   commentsCount: 0,
+  blogCommentsCount: 0,
+  messageBoardCommentsCount: 0,
   documentsCount: 0,
   imagesCount: 0,
   songsCount: 0,
@@ -119,6 +121,8 @@ const getStats = async () => {
         visitCount: response.data?.visitCount || 0,
         blogsCount: response.data?.blogsCount || 0,
         commentsCount: response.data?.commentsCount || 0,
+        blogCommentsCount: response.data?.blogCommentsCount || 0,
+        messageBoardCommentsCount: response.data?.messageBoardCommentsCount || 0,
         documentsCount: response.data?.documentsCount || 0,
         imagesCount: response.data?.imagesCount || 0,
         songsCount: response.data?.songsCount || 0,
@@ -134,6 +138,8 @@ const getStats = async () => {
       visitCount: 1234,
       blogsCount: 0,
       commentsCount: 0,
+      blogCommentsCount: 0,
+      messageBoardCommentsCount: 0,
       documentsCount: 0,
       imagesCount: 0,
       songsCount: 0,
