@@ -11,6 +11,11 @@ const { auth, optionalAuth, checkRole } = require('../middleware/auth')
 // 获取所有评论（分页，支持可选认证）
 router.get('/', optionalAuth, commentController.getAllComments)
 
+// 点赞相关路由（必须在 /:targetType/:targetId 之前）
+router.post('/:id/like', auth, commentController.likeComment)
+router.delete('/:id/like', auth, commentController.unlikeComment)
+router.get('/:id/like-status', optionalAuth, commentController.checkLikeStatus)
+
 // 获取指定目标的评论（支持可选认证）
 router.get('/:targetType/:targetId', optionalAuth, commentController.getCommentsByTarget)
 
@@ -25,10 +30,5 @@ router.put('/:id', auth, commentController.updateComment)
 
 // 审核评论（管理员专用）
 router.patch('/:id/moderate', auth, checkRole('admin'), commentController.moderateComment)
-
-// 添加点赞相关路由
-router.post('/:id/like', auth, commentController.likeComment)
-router.delete('/:id/like', auth, commentController.unlikeComment)
-router.get('/:id/like-status', optionalAuth, commentController.checkLikeStatus)
 
 module.exports = router
