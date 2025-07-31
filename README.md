@@ -370,7 +370,6 @@ VITE_APP_TITLE=Vorest's Personal Website
 
 **Vorest** 
 - 🐙 GitHub: [@Vorest0628](https://github.com/Vorest0628)
-- 📧 Email: your-email@example.com
 - 🌐 Website: [Your Website](https://vorest0628.github.io)
 
 ## 🙏 致谢
@@ -387,4 +386,8 @@ VITE_APP_TITLE=Vorest's Personal Website
 
 ⭐ **如果这个项目对你有帮助，请给它一个星标！**
 
+<<<<<<< HEAD
 > 💡 这是一个完整的全栈项目，适合学习和实际部署使用
+=======
+> 💡 这是一个完整的全栈项目，适合学习和实际部署使用
+>>>>>>> fb323a4ddc23fe5051a622b949484c2601a4c2d8
