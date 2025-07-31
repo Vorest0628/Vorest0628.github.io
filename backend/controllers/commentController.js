@@ -26,6 +26,7 @@ exports.getAllComments = async (req, res, next) => {
       // 只有管理员或评论作者可以看到私有评论
       if (req.user && req.user.role === 'admin') {
         // 管理员可以看到所有私有评论，不需要额外过滤
+        // 保持 isPublic: false 条件
       } else if (req.user) {
         // 普通用户只能看到自己的私有评论
         query.author = req.user.id
@@ -82,6 +83,7 @@ exports.getCommentsByTarget = async (req, res, next) => {
     // 根据用户权限过滤评论
     if (req.user && req.user.role === 'admin') {
       // 管理员可以看到所有评论，不需要额外过滤条件
+      // 保持原有的 targetType 和 targetId 条件
     } else if (req.user) {
       // 普通用户可以看到公开评论和自己的私有评论
       query.$or = [
@@ -100,6 +102,7 @@ exports.getCommentsByTarget = async (req, res, next) => {
       // 对回复也应用相同的权限过滤
       if (req.user && req.user.role === 'admin') {
         // 管理员可以看到所有回复，不需要额外过滤条件
+        // 保持原有的 parentComment 条件
       } else if (req.user) {
         replyQuery.$or = [
           { isPublic: true },

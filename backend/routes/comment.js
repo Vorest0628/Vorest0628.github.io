@@ -8,11 +8,11 @@ const { auth, optionalAuth, checkRole } = require('../middleware/auth')
  * 定义了所有与评论相关的API端点
  */
 
-// 获取所有评论（分页）
-router.get('/', commentController.getAllComments)
+// 获取所有评论（分页，支持可选认证）
+router.get('/', optionalAuth, commentController.getAllComments)
 
-// 获取指定目标的公开评论
-router.get('/:targetType/:targetId', commentController.getCommentsByTarget)
+// 获取指定目标的评论（支持可选认证）
+router.get('/:targetType/:targetId', optionalAuth, commentController.getCommentsByTarget)
 
 // 创建评论（需要登录）
 router.post('/', auth, commentController.createComment)
