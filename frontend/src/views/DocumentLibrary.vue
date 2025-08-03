@@ -1308,30 +1308,30 @@ h1 {
   border: none;
 }
 
-/* Markdown预览样式 */
-.markdown-preview-container {
+/* Markdown预览样式 - 使用:deep()穿透scoped样式 */
+:deep(.markdown-preview-container) {
   height: 100%;
   overflow-y: auto;
+  overflow-x: auto; /* 添加水平滚动 */
   padding: 20px 40px;
-  background: white;
 }
 
-.markdown-content {
+:deep(.markdown-content) {
   max-width: 800px;
   margin: 0 auto;
   line-height: 1.7;
   color: #2c3e50;
 }
 
-.markdown-content h1, .markdown-content h2, .markdown-content h3,
-.markdown-content h4, .markdown-content h5, .markdown-content h6 {
+:deep(.markdown-content h1), :deep(.markdown-content h2), :deep(.markdown-content h3),
+:deep(.markdown-content h4), :deep(.markdown-content h5), :deep(.markdown-content h6) {
   border-bottom: 1px solid #eaecef;
   padding-bottom: 0.3em;
   margin-top: 24px;
   margin-bottom: 16px;
 }
 
-.markdown-content code {
+:deep(.markdown-content code) {
   background-color: #f6f8fa;
   padding: 0.2em 0.4em;
   margin: 0;
@@ -1339,25 +1339,44 @@ h1 {
   border-radius: 3px;
 }
 
-.markdown-content pre {
+:deep(.markdown-content pre) {
   background-color: #f6f8fa;
   padding: 16px;
   border-radius: 6px;
   overflow: auto;
 }
 
-.markdown-content pre code {
+:deep(.markdown-content pre code) {
   padding: 0;
   margin: 0;
   font-size: 100%;
   background: transparent;
 }
 
-.markdown-content blockquote {
+:deep(.markdown-content blockquote) {
   border-left: 0.25em solid #dfe2e5;
   padding: 0 1em;
   color: #6a737d;
 }
+
+/* 添加图片样式 */
+:deep(.markdown-content img) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.markdown-content ul) {
+  margin-left:10px;
+}
+
+:deep(.markdown-content li) {
+  margin-left:5px;
+}
+
 
 /* 文本预览样式 */
 .text-preview-container {
