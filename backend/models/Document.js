@@ -34,10 +34,8 @@ const documentSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, '分类是必填项'],
-    enum: {
-      values: ['前端开发', '游戏攻略', 'AI技术', '音乐制作', '模板资源'],
-      message: '请选择有效的分类'
-    }
+    trim: true,
+    maxlength: [50, '分类名称不能超过50个字符']
   },
   secondaryTags: [{
     type: String,
