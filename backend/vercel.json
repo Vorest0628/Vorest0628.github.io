@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "app.js",
-      "use": "@vercel/node"
+  "functions": {
+    "app.js": {
+      "maxDuration": 60
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
@@ -15,10 +14,5 @@
       "src": "/(.*)",
       "dest": "app.js"
     }
-  ],
-  "functions": {
-    "app.js": {
-      "maxDuration": 60
-    }
-  }
+  ]
 }
