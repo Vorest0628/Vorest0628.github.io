@@ -25,6 +25,7 @@ console.log('MONGODB_URI长度:', process.env.MONGODB_URI ? process.env.MONGODB_
 console.log('MONGODB_URI前缀:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'undefined')
 console.log('MONGODB_URI完整值:', process.env.MONGODB_URI)
 console.log('所有环境变量:', Object.keys(process.env).filter(key => key.includes('MONGODB') || key.includes('VERCEL')))
+console.log('🔄 CORS配置已更新 - 包含HTTP和HTTPS域名')
 
 // 中间件配置
 app.use(cors({
