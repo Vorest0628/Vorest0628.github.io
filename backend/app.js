@@ -31,6 +31,7 @@ app.use(cors({
   origin: [
     'https://vorest0628.github.io',
     'https://shirakawananase.top',
+    'http://shirakawananase.top',
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5174'
