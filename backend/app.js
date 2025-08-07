@@ -30,6 +30,7 @@ console.log('所有环境变量:', Object.keys(process.env).filter(key => key.in
 app.use(cors({
   origin: [
     'https://vorest0628.github.io',
+    'https://shirakawananase.top',
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5174'
