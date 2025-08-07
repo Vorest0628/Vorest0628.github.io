@@ -8,7 +8,7 @@ console.log('MODE:', import.meta.env.MODE)
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_URL || 'https://vorest0628-github-io.vercel.app/api',
+  baseURL: import.meta.env.VITE_APP_API_URL || 'https://api.shirakawananase.top/api',
   timeout: 30000  // 增加到30秒
 })
 
