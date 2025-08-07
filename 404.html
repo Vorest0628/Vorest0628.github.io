@@ -4,21 +4,32 @@
   <meta charset="utf-8">
   <title>Vorest's Personal Website</title>
   <script>
-    // 简单的 SPA 重定向 - 适配 GitHub Pages
+    // GitHub Pages SPA 重定向
     var l = window.location;
     var baseUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
     
-    // 如果是根路径，直接重定向到首页
+    // 检查是否是根路径或index.html
     if (l.pathname === '/' || l.pathname === '/index.html') {
-      window.location.href = baseUrl + '/#/';
+      // 如果已经在首页，不进行重定向
+      if (!l.hash) {
+        window.location.href = baseUrl + '/#/';
+      }
     } else {
       // 对于其他路径，重定向到对应的 hash 路由
       var path = l.pathname.replace(/^\//, ''); // 移除开头的斜杠
-      window.location.href = baseUrl + '/#' + (path ? '/' + path : '');
+      if (path && path !== '404.html') {
+        window.location.href = baseUrl + '/#/' + path;
+      }
     }
   </script>
 </head>
 <body>
-  <p>正在重定向...</p>
+  <p>正在重定向到首页...</p>
+  <script>
+    // 如果重定向失败，3秒后跳转到首页
+    setTimeout(function() {
+      window.location.href = baseUrl + '/#/';
+    }, 3000);
+  </script>
 </body>
 </html> 
