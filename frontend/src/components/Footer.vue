@@ -17,6 +17,12 @@
         </ul>
       </div>
 
+      <div class="footer-nav">
+        <p>
+          <a href="https://icp.gov.moe/?keyword=20257889" target="_blank">萌ICP备20257889号</a>
+        </p>
+      </div>
+      
       <!-- 版权信息 -->
       <div class="copyright">
         <p>© {{ currentYear }} Vorest0628. All rights reserved.</p>
