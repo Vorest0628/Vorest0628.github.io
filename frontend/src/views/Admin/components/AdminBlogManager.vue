@@ -95,9 +95,22 @@
                 <label>内容 (Markdown)</label>
                 <button type="button" @click="triggerFileUpload" class="upload-md-btn">从文件上传</button>
                 <input type="file" ref="markdownFileInput" @change="handleMarkdownUpload" accept=".md" style="display: none;">
+                <button type="button" @click="triggerAssetsSelect" class="upload-md-btn">添加资源</button>
+                <input type="file" ref="assetsInput" @change="handleAssetsSelect" multiple style="display: none;" accept="image/*,.zip">
+                <span v-if="selectedAssetsFiles.length" class="assets-counter">已添加 {{ selectedAssetsFiles.length }} 个资源</span>
+
               </div>
               <div class="markdown-editor">
-                <textarea v-model="currentBlog.content" rows="15" required class="markdown-input"></textarea>
+                <textarea 
+                  v-model="currentBlog.content" 
+                  ref="markdownTextarea"
+                  rows="15" 
+                  required 
+                  class="markdown-input"
+                  @paste="handlePasteImage"
+                  @drop="handleDropImage"
+                  @dragover.prevent
+                ></textarea>
                 <div v-html="markdownPreview" class="markdown-preview"></div>
               </div>
             </div>
@@ -149,8 +162,10 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { adminApi } from '../../../api/admin'
+import { uploadImage } from '../../../api/upload'
 import { useAuthStore } from '../../../store/modules/auth'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const authStore = useAuthStore()
 const blogs = ref([])
@@ -162,6 +177,11 @@ const showEditModal = ref(false)
 const loading = ref(false)
 const error = ref('')
 const markdownFileInput = ref(null)
+const markdownTextarea = ref(null)
+const assetsInput = ref(null)
+const selectedAssetsFiles = ref([])
+// 预览时用于从相对路径映射到本地对象URL
+const assetsUrlMap = ref(new Map())
 const availableCategories = ref(['前端开发', 'AI技术', '游戏', '音乐'])
 
 const currentBlog = reactive({
@@ -175,8 +195,45 @@ const currentBlog = reactive({
   status: 'draft'
 })
 
+// 与博客详情页一致的图片渲染与安全清理
+const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
+const renderer = new marked.Renderer()
+renderer.image = (href = '', title, text) => {
+  // 修复 marked 新版本参数传递问题
+  if (typeof href === 'object' && href !== null) {
+    const token = href
+    href = token.href || ''
+    title = token.title
+    text = token.text || token.alt || ''
+  }
+  
+  const isAbs = /^(https?:|data:)/i.test(href)
+  const isApiRoute = /^\/api\/blog\//i.test(href)
+  let src = href
+  
+  if (!isAbs && !isApiRoute) {
+    // 处理相对路径：优先使用本地映射，再使用服务器路径
+    const key = String(href).replace(/^\.\//, '').replace(/\\/g, '/').replace(/^\//, '')
+    const localUrl = assetsUrlMap.value.get(key)
+    if (localUrl) {
+      src = localUrl
+    } else {
+      src = ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${key}` : href
+    }
+  } else if (isApiRoute) {
+    // 对于 /api/blog/ 路径，直接使用（会由后端重定向到 Blob）
+    src = href
+  }
+  
+  const t = title ? ` title=\"${title}\"` : ''
+  return `<img src=\"${src}\" alt=\"${text || ''}\"${t} loading=\"lazy\" decoding=\"async\">`
+}
+marked.setOptions({ renderer })
+
 const markdownPreview = computed(() => {
-  return marked(currentBlog.content || '');
+  const html = marked(currentBlog.content || '')
+  const sanitized = DOMPurify.sanitize(html)
+  return sanitized
 });
 
 // 获取状态显示文本
@@ -215,6 +272,10 @@ const triggerFileUpload = () => {
   markdownFileInput.value?.click();
 };
 
+const triggerAssetsSelect = () => {
+  assetsInput.value?.click()
+}
+
 const handleMarkdownUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -236,6 +297,20 @@ const handleMarkdownUpload = (event) => {
   };
   reader.readAsText(file);
 };
+
+const handleAssetsSelect = async (event) => {
+  const files = Array.from(event.target.files || [])
+  selectedAssetsFiles.value = files
+  assetsUrlMap.value = new Map()
+  for (const file of files) {
+    if (/\.zip$/i.test(file.name)) {
+      // 预览阶段不解压 zip；仅在导入接口时处理
+      continue
+    }
+    const url = URL.createObjectURL(file)
+    assetsUrlMap.value.set(file.name.replace(/\\/g, '/'), url)
+  }
+}
 
 // 获取博客列表
 const getBlogs = async () => {
@@ -348,12 +423,32 @@ const saveBlog = async () => {
     }
 
     let response
-    if (showCreateModal.value) {
-      console.log('🆕 创建新博客...')
-      response = await adminApi.createBlog(blogData)
+    // 如果内容中含有相对图片路径，且选择了本地资源，则使用导入接口以便后端统一上传并重写链接
+    const hasRelativeImages = /!\[[^\]]*\]\((?!https?:|data:|\/api\/blog\/)[^\)]+\)/i.test(blogData.content)
+    if (hasRelativeImages && (selectedAssetsFiles.value?.length || 0) > 0) {
+      const form = new FormData()
+      const mdBlob = new Blob([blogData.content], { type: 'text/markdown' })
+      form.append('markdown', mdBlob, `${Date.now()}.md`)
+      form.append('title', blogData.title)
+      form.append('excerpt', blogData.excerpt)
+      form.append('category', blogData.category)
+      for (const tag of blogData.tags) form.append('tags', tag)
+      form.append('status', blogData.status)
+      // 如果是编辑模式，传递现有博客ID避免重复创建
+      if (!showCreateModal.value && currentBlog.id) {
+        form.append('blogId', currentBlog.id)
+      }
+      for (const f of selectedAssetsFiles.value) form.append('assets', f)
+      console.log(showCreateModal.value ? '🆕 通过导入接口创建博客（含资源）...' : '✏️ 通过导入接口更新博客（含资源）...')
+      response = await adminApi.importMarkdown(form)
     } else {
-      console.log('✏️ 更新博客...')
-      response = await adminApi.updateBlog(currentBlog.id, blogData)
+      if (showCreateModal.value) {
+        console.log('🆕 创建新博客...')
+        response = await adminApi.createBlog(blogData)
+      } else {
+        console.log('✏️ 更新博客...')
+        response = await adminApi.updateBlog(currentBlog.id, blogData)
+      }
     }
 
     console.log('📤 API响应:', response)
@@ -445,6 +540,64 @@ const closeModal = () => {
     tags: '',
     status: 'draft'
   })
+  // 清除选中的资源文件
+  selectedAssetsFiles.value = []
+  assetsUrlMap.value = new Map()
+  if (assetsInput.value) {
+    assetsInput.value.value = ''
+  }
+}
+
+// 插入文本到光标位置的工具函数
+function insertAtCursor(textareaEl, text) {
+  const start = textareaEl.selectionStart
+  const end = textareaEl.selectionEnd
+  const old = textareaEl.value
+  textareaEl.value = old.slice(0, start) + text + old.slice(end)
+  const pos = start + text.length
+  textareaEl.selectionStart = textareaEl.selectionEnd = pos
+  textareaEl.dispatchEvent(new Event('input')) // 触发 v-model 更新
+}
+
+// 处理粘贴图片
+const handlePasteImage = async (event) => {
+  const items = (event.clipboardData || event.originalEvent.clipboardData).items
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
+      event.preventDefault()
+      const file = item.getAsFile()
+      await uploadAndInsertImage(file)
+      break
+    }
+  }
+}
+
+// 处理拖拽图片
+const handleDropImage = async (event) => {
+  event.preventDefault()
+  const files = event.dataTransfer.files
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    if (file.type.indexOf('image') !== -1) {
+      await uploadAndInsertImage(file)
+      break
+    }
+  }
+}
+
+// 上传图片并插入
+const uploadAndInsertImage = async (file) => {
+  try {
+    console.log('🔍 开始上传图片:', file.name)
+    const result = await uploadImage(file)
+    const markdownText = `![${file.name}](${result.url})`
+    insertAtCursor(markdownTextarea.value, markdownText)
+    console.log('✅ 图片上传并插入成功')
+  } catch (error) {
+    console.error('❌ 图片上传失败:', error)
+    alert('图片上传失败: ' + error.message)
+  }
 }
 
 // 格式化日期

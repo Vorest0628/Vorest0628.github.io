@@ -137,6 +137,7 @@ import { blogApi } from '@/api/blog'
 import { commentApi } from '@/api/comment'
 import { format } from 'date-fns'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { useAuthStore } from '@/store/modules/auth'
 import CommentNode from '@/components/CommentNode.vue'
 
@@ -164,11 +165,37 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'yyyy年MM月dd日')
 }
 
-const renderedContent = computed(() => {
-  if (article.value && article.value.content) {
-    return marked(article.value.content);
+// 配置marked renderer
+const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
+const renderer = new marked.Renderer()
+renderer.image = (href = '', title, text) => {
+  // 修复 marked 新版本参数传递问题
+  if (typeof href === 'object' && href !== null) {
+    const token = href
+    href = token.href || ''
+    title = token.title
+    text = token.text || token.alt || ''
   }
-  return '';
+  
+  const isAbs = /^(https?:|data:)/i.test(href)
+  const isApiRoute = /^\/api\/blog\//i.test(href)
+  let src = href
+  
+  if (!isAbs && !isApiRoute) {
+    // 处理相对路径
+    src = ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
+  }
+  // 对于 /api/blog/ 路径和绝对 URL，直接使用
+  
+  const t = title ? ` title="${title}"` : ''
+  return `<img src="${src}" alt="${text || ''}"${t} loading="lazy" decoding="async">`
+}
+marked.setOptions({ renderer })
+
+const renderedContent = computed(() => {
+  if (!article.value?.content) return ''
+  const html = marked(article.value.content)
+  return DOMPurify.sanitize(html)
 });
 
 // 计算总评论数 (包括回复)

@@ -69,6 +69,15 @@ export const adminApi = {
   },
 
   /**
+   * 获取单个博客详情
+   * @param {number} id - 博客ID
+   * @returns {Promise} 返回博客详情
+   */
+  getBlogById(id) {
+    return apiService.get(`/admin/blogs/${id}`)
+  },
+
+  /**
    * 更新博客
    * @param {number} id - 博客ID
    * @param {Object} data - 博客数据
@@ -95,6 +104,14 @@ export const adminApi = {
    */
   deleteBlog(id) {
     return apiService.delete(`/admin/blogs/${id}`)
+  },
+
+  /**
+   * 导入 Markdown（支持携带资源 zip/多文件）
+   * @param {FormData} formData - 包含 markdown 文件以及可选 assets（zip 或多文件）
+   */
+  importMarkdown(formData) {
+    return apiService.upload('/admin/blogs/import-markdown', formData)
   },
 
   // ========== 评论管理 ==========

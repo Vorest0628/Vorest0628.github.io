@@ -48,6 +48,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 } else {
   console.log('⚠️ Vercel环境禁用静态文件服务')
 }
+// 博客资源路由（重定向到 Blob）
+const assetRoutes = require('./routes/assetRoutes')
+app.use('/api', assetRoutes)
 
 // 根路径处理
 app.get('/', (req, res) => {
@@ -151,28 +154,6 @@ app.use((err, req, res, next) => {
 
 // 数据库连接
 let MONGODB_URI = process.env.MONGODB_URI
-
-// 如果环境变量中没有，使用硬编码的URI（仅用于调试）
-if (!MONGODB_URI) {
-  console.error('❌ 警告: MONGODB_URI 未在环境变量中设置')
-  if (isVercel) {
-    console.error('🔍 使用硬编码URI进行测试')
-    MONGODB_URI = 'mongodb+srv://Henry:QnnhVROtHpXmTpRr@cluster0.27eleqn.mongodb.net/my_website?retryWrites=true&w=majority'
-  } else {
-    console.error('🔍 请检查环境变量配置')
-  process.exit(1)
-}
-}
-
-// 调试：显示连接字符串（隐藏密码）
-console.log('🔍 连接字符串检查:')
-const uriParts = MONGODB_URI.split('@')
-if (uriParts.length === 2) {
-  const authPart = uriParts[0].replace('mongodb+srv://', '')
-  const [username] = authPart.split(':')
-  console.log('用户名:', username)
-  console.log('集群地址:', uriParts[1].split('/')[0])
-}
 
 console.log('🔗 尝试连接数据库...')
 

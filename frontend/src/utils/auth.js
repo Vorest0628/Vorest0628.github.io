@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-// 创建axios实例
+// 创建axios实例（保持原有行为）
 const api = axios.create({
   baseURL: import.meta.env.VITE_APP_API_URL || 'http://localhost:3000/api',
   timeout: 5000

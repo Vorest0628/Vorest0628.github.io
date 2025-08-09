@@ -10,6 +10,7 @@ const Gallery = require('../models/Gallery')
 const FriendLink = require('../models/FriendLink')
 const Comment = require('../models/Comment')
 const { ApiError } = require('../utils/error')
+const blogImportController = require('../controllers/blogImportController')
 
 // 验证管理员权限
 router.get('/verify', auth, checkRole('admin'), async (req, res, next) => {
@@ -393,6 +394,27 @@ router.post('/blogs', auth, checkRole('admin'), async (req, res, next) => {
       success: true,
       data: { blog: populatedBlog },
       message: '博客文章创建成功'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 内容管理 - 获取单个博客文章
+router.get('/blogs/:id', auth, checkRole('admin'), async (req, res, next) => {
+  try {
+    const { id } = req.params
+    
+    const blog = await Blog.findById(id).populate('author', 'username')
+    
+    if (!blog) {
+      throw new ApiError(404, '博客文章不存在')
+    }
+
+    res.json({
+      success: true,
+      data: blog,
+      message: '博客文章获取成功'
     })
   } catch (error) {
     next(error)
@@ -955,5 +977,11 @@ router.delete('/friendlinks/:id', auth, checkRole('admin'), async (req, res, nex
     next(error)
   }
 })
+
+// 图片直传（编辑器粘贴/拖拽）
+router.post('/uploads/images', auth, checkRole('admin'), blogImportController.uploadImage)
+
+// 导入 Markdown（MD + 资产）
+router.post('/blogs/import-markdown', auth, checkRole('admin'), blogImportController.importMarkdown)
 
 module.exports = router 
