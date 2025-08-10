@@ -167,6 +167,7 @@ const formatDate = (dateString) => {
 
 // 配置marked renderer
 const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
+const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
 const renderer = new marked.Renderer()
 renderer.image = (href = '', title, text) => {
   // 修复 marked 新版本参数传递问题
@@ -185,7 +186,11 @@ renderer.image = (href = '', title, text) => {
     // 处理相对路径
     src = ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
   }
-  // 对于 /api/blog/ 路径和绝对 URL，直接使用
+  // 对于 /api/blog/ 路径，生产环境强制走 API 子域，避免主站路由兼容性问题
+  if (isApiRoute && API_ORIGIN) {
+    src = `${API_ORIGIN}${href}`
+  }
+  // 绝对 URL 直接使用
   
   const t = title ? ` title="${title}"` : ''
   return `<img src="${src}" alt="${text || ''}"${t} loading="lazy" decoding="async">`

@@ -93,6 +93,7 @@ async function handleApiRequest(request, url) {
 
     // 先打到主源，超时/5xx/522/523/524/525/526 回退到备源
     let response
+    let originUsed = 'primary'
     try {
       response = await fetchWithTimeout(primaryUrl, proxyInit, 4000)
       if (!response || response.status >= 500 || [520, 522, 523, 524, 525, 526].includes(response.status)) {
@@ -100,6 +101,7 @@ async function handleApiRequest(request, url) {
       }
     } catch (_) {
       response = await fetchWithTimeout(fallbackUrl, proxyInit, 8000)
+      originUsed = 'fallback'
     }
     
     // 创建响应，添加CORS头部
@@ -108,10 +110,15 @@ async function handleApiRequest(request, url) {
     responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     
+    const finalHeaders = new Headers(responseHeaders)
+    finalHeaders.set('X-Worker', 'api-proxy')
+    finalHeaders.set('X-Worker-Origin', originUsed)
+    finalHeaders.set('X-Worker-Target', originUsed === 'primary' ? primaryUrl : fallbackUrl)
+
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: responseHeaders
+      headers: finalHeaders
     })
     
   } catch (error) {

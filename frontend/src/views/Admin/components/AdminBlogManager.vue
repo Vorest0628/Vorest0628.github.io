@@ -197,6 +197,7 @@ const currentBlog = reactive({
 
 // 与博客详情页一致的图片渲染与安全清理
 const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
+const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
 const renderer = new marked.Renderer()
 renderer.image = (href = '', title, text) => {
   // 修复 marked 新版本参数传递问题
@@ -221,8 +222,8 @@ renderer.image = (href = '', title, text) => {
       src = ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${key}` : href
     }
   } else if (isApiRoute) {
-    // 对于 /api/blog/ 路径，直接使用（会由后端重定向到 Blob）
-    src = href
+    // 对于 /api/blog/ 路径，生产环境强制走 API 子域（后端会重定向到 Blob）
+    src = API_ORIGIN ? `${API_ORIGIN}${href}` : href
   }
   
   const t = title ? ` title=\"${title}\"` : ''
