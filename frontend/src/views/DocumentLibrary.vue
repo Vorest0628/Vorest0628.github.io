@@ -489,13 +489,19 @@ const downloadDocument = async (doc) => {
 
 const getDownloadUrl = (doc) => {
   const docId = doc._id || doc.id
-  const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000/api'
+  const baseUrl = import.meta.env.VITE_APP_API_URL
+    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
+      ? 'https://api.shirakawananase.top/api'
+      : 'http://localhost:3000/api')
   return docId ? `${baseUrl}/documents/${docId}/download` : '#'
 }
 
 const getPreviewUrl = (doc) => {
   const docId = doc._id || doc.id
-  const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000/api'
+  const baseUrl = import.meta.env.VITE_APP_API_URL
+    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
+      ? 'https://api.shirakawananase.top/api'
+      : 'http://localhost:3000/api')
   return docId ? `${baseUrl}/documents/${docId}/preview` : '#'
 }
 

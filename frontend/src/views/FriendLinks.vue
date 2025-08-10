@@ -191,7 +191,10 @@ const getStatusText = (isActive) => {
 const getLinkAvatar = (avatar) => {
   if (!avatar) return '/image/default-logo.png'
   if (avatar.startsWith('http')) return avatar
-  const baseUrl = import.meta.env.VITE_APP_API_URL?.replace('/api', '') || 'http://localhost:3000'
+  const baseUrl = (import.meta.env.VITE_APP_API_URL?.replace('/api', ''))
+    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
+      ? 'https://api.shirakawananase.top'
+      : 'http://localhost:3000')
   return `${baseUrl}${avatar}`
 }
 

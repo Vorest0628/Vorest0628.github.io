@@ -13,8 +13,31 @@ async function handleRequest(request) {
     return handleApiRequest(request, url)
   }
   
-  // 其他请求直接返回
-  return fetch(request)
+  // 非 /api/ 请求：在边缘直接响应，避免回源
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400'
+      }
+    })
+  }
+  
+  return new Response(JSON.stringify({
+    success: false,
+    message: '仅支持 /api/ 路径'
+  }), {
+    status: 404,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+  })
 }
 
 async function handleApiRequest(request, url) {

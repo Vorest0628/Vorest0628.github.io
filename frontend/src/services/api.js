@@ -6,9 +6,22 @@ console.log('VITE_APP_API_URL:', import.meta.env.VITE_APP_API_URL)
 console.log('NODE_ENV:', import.meta.env.NODE_ENV)
 console.log('MODE:', import.meta.env.MODE)
 
+// 解析 API 基地址（生产默认走 api 子域）
+const resolveBaseURL = () => {
+  const envUrl = import.meta.env.VITE_APP_API_URL
+  if (envUrl) return envUrl
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'shirakawananase.top' || host.endsWith('.shirakawananase.top')) {
+      return 'https://api.shirakawananase.top/api'
+    }
+  }
+  return '/api'
+}
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_URL || '/api',
+  baseURL: resolveBaseURL(),
   timeout: 30000  // 增加到30秒
 })
 
