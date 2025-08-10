@@ -40,21 +40,36 @@ async function handleRequest(request) {
   })
 }
 
+// 后端 API 源站（主）与回退（备）
+// 主：你的 API 子域（可能在某些地区或时段出现 522 超时）
+// 备：Vercel 应用域（同路径下提供 /api 服务）
+// 注意：PRIMARY_ORIGIN 不能指向当前绑定的自定义域（api.shirakawananase.top），否则会产生自我代理死循环
+const PRIMARY_ORIGIN = 'https://vorest0628-github-io.vercel.app'
+const FALLBACK_ORIGIN = 'https://vorest0628-github-io.vercel.app'
+
+// 简易超时封装，避免长时间等待导致 522 体验不佳
+async function fetchWithTimeout(url, init, timeoutMs) {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort('timeout'), timeoutMs)
+  try {
+    return await fetch(url, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(id)
+  }
+}
+
 async function handleApiRequest(request, url) {
   try {
-    // 构建Vercel API URL
-    const vercelUrl = `https://vorest0628-github-io.vercel.app${url.pathname}${url.search}`
-    
+    // 组装目标 URL（主、备）
+    const targetPath = `${url.pathname}${url.search}`
+    const primaryUrl = `${PRIMARY_ORIGIN}${targetPath}`
+    const fallbackUrl = `${FALLBACK_ORIGIN}${targetPath}`
+
     // 创建新的请求头，移除可能导致问题的头部
     const headers = new Headers(request.headers)
     headers.delete('host')
     headers.delete('origin')
     headers.delete('referer')
-    
-    // 添加CORS头部
-    headers.set('Access-Control-Allow-Origin', '*')
-    headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     
     // 处理预检请求
     if (request.method === 'OPTIONS') {
@@ -69,15 +84,23 @@ async function handleApiRequest(request, url) {
       })
     }
     
-    // 创建代理请求
-    const proxyRequest = new Request(vercelUrl, {
+    // 代理请求初始化
+    const proxyInit = {
       method: request.method,
-      headers: headers,
+      headers,
       body: request.body
-    })
-    
-    // 发送请求到Vercel
-    const response = await fetch(proxyRequest)
+    }
+
+    // 先打到主源，超时/5xx/522/523/524/525/526 回退到备源
+    let response
+    try {
+      response = await fetchWithTimeout(primaryUrl, proxyInit, 4000)
+      if (!response || response.status >= 500 || [520, 522, 523, 524, 525, 526].includes(response.status)) {
+        throw new Error(`primary_bad_status_${response ? response.status : 'no_response'}`)
+      }
+    } catch (_) {
+      response = await fetchWithTimeout(fallbackUrl, proxyInit, 8000)
+    }
     
     // 创建响应，添加CORS头部
     const responseHeaders = new Headers(response.headers)
