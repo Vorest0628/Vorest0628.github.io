@@ -110,15 +110,10 @@ async function handleApiRequest(request, url) {
     responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     
-    const finalHeaders = new Headers(responseHeaders)
-    finalHeaders.set('X-Worker', 'api-proxy')
-    finalHeaders.set('X-Worker-Origin', originUsed)
-    finalHeaders.set('X-Worker-Target', originUsed === 'primary' ? primaryUrl : fallbackUrl)
-
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: finalHeaders
+      headers: responseHeaders
     })
     
   } catch (error) {
