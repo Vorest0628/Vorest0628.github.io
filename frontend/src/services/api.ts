@@ -47,6 +47,7 @@ export interface UploadResult {
   contentType?: string
 }
 
+// 解析 baseURL
 const resolveBaseURL = (): string => {
   const envUrl = getViteEnv('VITE_APP_API_URL')
   if (envUrl) return envUrl
@@ -66,7 +67,9 @@ const api: AxiosInstance = axios.create({
 
 console.log('🚀 API baseURL:', api.defaults.baseURL)
 
+
 api.interceptors.request.use(
+  // 请求拦截器：为每个请求自动添加 Authorization 头（如果本地有 token）
   (config: InternalAxiosRequestConfig) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     if (token) {
@@ -75,24 +78,30 @@ api.interceptors.request.use(
       }
       ;(config.headers as any).Authorization = `Bearer ${token}`
     }
+    // 记录请求开始时间 用于计算请求时间
     config.metadata = { startTime: new Date() }
     console.log(`🚀 API请求: ${config.method?.toUpperCase()} ${config.url}`)
     return config
   },
+  // 请求失败
   (error: AxiosError) => {
     console.error('❌ API请求失败:', error)
     return Promise.reject(error)
   }
 )
 
+// 响应拦截器
 api.interceptors.response.use(
   (response: AxiosResponse) => {
+    // 计算请求时间
     const endTime = new Date()
     const duration = response.config.metadata ? endTime.getTime() - response.config.metadata.startTime.getTime() : 0
     console.log(`✅ API响应: ${response.config.method?.toUpperCase()} ${response.config.url} (${duration}ms)`)
     return response
   },
+  // 响应失败
   (error: AxiosError) => {
+    // 计算请求时间
     const endTime = new Date()
     const cfg = (error.config as InternalAxiosRequestConfig | undefined)
     const duration = cfg?.metadata ? endTime.getTime() - cfg.metadata.startTime.getTime() : 0

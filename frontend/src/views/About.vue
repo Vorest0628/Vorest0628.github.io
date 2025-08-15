@@ -62,8 +62,9 @@
               <li>Git,Redis,Docker</li>
               <li>编程语言：
                 <ul>
-                  <li>Python,JavaScript,C++（熟练）</li>
-                  <li>Java,C#,TypeScript,Go（了解/在学）</li>
+                  <li>Python,JavaScript（熟练）</li>
+                  <li>TypeScript,C++（熟悉）</li>
+                  <li>Java,C#,Go（了解/在学）</li>
                 </ul>   
               </li>
             </ul>
