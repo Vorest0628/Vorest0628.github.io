@@ -10,11 +10,11 @@
     
     // 如果是根路径，直接重定向到首页
     if (l.pathname === '/' || l.pathname === '/index.html') {
-      window.location.href = baseUrl + '/';
+      window.location.href = baseUrl + '/#/';
     } else {
       // 对于其他路径，重定向到对应的 hash 路由
       var path = l.pathname.replace(/^\//, ''); // 移除开头的斜杠
-      window.location.href = baseUrl + '/' + (path ? '/' + path : '');
+      window.location.href = baseUrl + '/#' + (path ? '/' + path : '');
     }
   </script>
 </head>
