@@ -12,6 +12,29 @@ import type {
   User
 } from '../types/api'
 
+/*
+AuthApi输出函数一览：
+register 用户注册
+login 用户登录
+getCurrentUser 获取当前用户信息
+refreshToken 刷新令牌
+changePassword 修改密码
+updateProfile 更新用户资料
+uploadAvatar 上传头像
+forgotPassword 忘记密码
+resetPassword 重置密码
+logout 退出登录
+*/
+
+/*
+authStorage输出函数一览：
+setAuth 保存认证信息
+getAuth 获取认证信息
+clearAuth 清除认证信息
+isAuthenticated 检查是否已认证
+isAdmin 检查是否为管理员
+*/
+
 /**
  * 认证相关的API请求
  */

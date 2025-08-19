@@ -9,6 +9,24 @@ import type {
   UploadResponse
 } from '../types/api'
 
+/*
+BlogApi输出函数一览：
+getBlogs 获取博客列表
+getBlogById 获取博客详情
+createBlog 创建博客
+updateBlog 更新博客
+deleteBlog 删除博客
+likeBlog 点赞博客
+unlikeBlog 取消点赞博客
+checkBlogLikeStatus 检查博客点赞状态
+getPopularBlogs 获取热门博客
+getLatestBlogs 获取最新博客
+getCategories 获取博客分类列表
+getTags 获取博客标签列表
+searchBlogs 搜索博客
+uploadImage 上传博客图片
+*/
+
 /**
  * 博客分类响应
  */

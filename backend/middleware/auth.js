@@ -2,6 +2,13 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { ApiError } = require('../utils/error')
 
+/*
+auth.js函数一览：
+auth 验证JWT令牌
+optionalAuth 可选认证中间件
+checkRole 检查用户角色
+*/
+
 // 验证JWT令牌
 exports.auth = async (req, res, next) => {
   try {

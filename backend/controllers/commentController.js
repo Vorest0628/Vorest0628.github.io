@@ -2,6 +2,19 @@ const Comment = require('../models/Comment')
 const CommentLike = require('../models/CommentLike')
 const { ApiError } = require('../utils/error')
 
+/*
+commentController.js函数一览：
+getAllComments 获取所有评论列表（分页）
+getCommentsByTarget 获取指定目标的评论列表
+getCommentById 获取单个评论详情
+createComment 创建新评论
+updateComment 更新评论
+deleteComment 删除评论
+moderateComment 审核评论（管理员）
+likeComment 点赞评论
+unlikeComment 取消点赞评论
+checkLikeStatus 检查用户是否已点赞
+*/
 // 获取所有评论列表（分页）
 exports.getAllComments = async (req, res, next) => {
   try {

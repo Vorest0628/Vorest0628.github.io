@@ -22,6 +22,16 @@ export interface DocumentCategoriesResponse {
   categories: string[]
 }
 
+/*
+DocumentApi输出函数一览：
+getDocuments 获取文档列表
+getCategories 获取文档分类列表
+recordView 记录文档查看次数
+downloadDocument 下载文档
+getDocumentContent 获取文档原始内容用于预览
+*/
+
+
 /**
  * 文档相关的API请求
  */

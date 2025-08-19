@@ -6,8 +6,26 @@ import type {
   Blog,
   BlogListParams,
   BlogListResponse,
-  BlogSearchParams
+  SearchParams
 } from '../types/api'
+
+/*
+index.ts输出函数一览：
+authApi 认证相关 API
+blogApi 博客相关 API
+searchApi 全局搜索 API
+auth 认证相关 API
+admin 管理员相关 API
+blog 博客相关 API
+comment 评论相关 API
+document 文档相关 API
+friendLink 友情链接相关 API
+gallery 图库相关 API
+stats 统计相关 API
+upload 上传相关 API
+user 用户相关 API
+weather 天气相关 API
+*/
 
 /**
  * 全局搜索参数
@@ -66,7 +84,7 @@ export const blogApi = {
   /**
    * 搜索博客
    */
-  searchBlogs: (q: string, params: Omit<BlogSearchParams, 'q'> = {}): Promise<BlogListResponse> => 
+  searchBlogs: (q: string, params: Omit<SearchParams, 'q'> = {}): Promise<BlogListResponse> => 
     apiService.get<BlogListResponse>('/blogs/search', { params: { q, ...params } })
 }
 

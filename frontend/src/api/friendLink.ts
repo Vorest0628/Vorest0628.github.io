@@ -10,6 +10,29 @@ import type {
   ReportData
 } from '../types/api'
 
+/*
+FriendLinkApi输出函数一览：
+getFriendLinks 获取友情链接列表
+getFriendLinkById 获取友情链接详情
+previewFavicon 预览网站favicon
+applyFriendLink 申请友情链接
+createFriendLink 创建友情链接（管理员）
+updateFriendLink 更新友情链接
+deleteFriendLink 删除友情链接
+reviewFriendLink 审核友情链接申请（管理员）
+checkFriendLinkStatus 检查友情链接状态
+checkAllFriendLinks 批量检查友情链接状态
+getPendingApplications 获取待审核的友情链接申请
+getApprovedFriendLinks 获取已通过的友情链接
+getCategories 获取友情链接分类列表
+createCategory 创建友情链接分类
+uploadLogo 上传友情链接Logo
+searchFriendLinks 搜索友情链接
+getStats 获取友情链接统计信息
+clickFriendLink 点击友情链接（记录访问）
+reportFriendLink 举报友情链接
+*/
+
 /**
  * Favicon 预览响应
  */

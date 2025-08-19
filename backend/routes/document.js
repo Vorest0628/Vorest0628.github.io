@@ -7,8 +7,24 @@ const { handleUploadError } = require('../middleware/upload')
 /**
  * 文档库路由配置
  * 定义了所有与文档相关的API端点
+ * 公开路由 - 可选认证：
+ * /api/documents 获取文档列表 get (可选认证)
+ * /api/documents/categories 获取所有分类 get (可选认证)
+ * /api/documents/tags 获取所有标签 get (可选认证)
+ * /api/documents/stats/categories 获取分类统计 get (可选认证)
+ * /api/documents/popular 获取热门文档 get (可选认证)
+ * /api/documents/:id/preview 预览文档 get (可选认证)
+ * /api/documents/:id/content 获取文档内容 get (可选认证)
+ * /api/documents/:id/download 下载文档 get (可选认证)
+ * /api/documents/:id/view 记录访问 post (可选认证)
+ * /api/documents/:id 获取文档详情 get (可选认证)
+ * 管理员专用路由 - 需要管理员权限：
+ * /api/documents/upload 上传文档 post (需要管理员权限)
+ * /api/documents 创建文档 post (需要管理员权限)
+ * /api/documents/:id 更新文档 put (需要管理员权限)
+ * /api/documents/:id 删除文档 delete (需要管理员权限)
+ * /api/documents/:id/toggle 切换文档公开状态 patch (需要管理员权限)
  */
-
 // 公开路由 - 可选认证
 router.get('/', optionalAuth, documentController.getDocuments) // 获取文档列表
 router.get('/categories', documentController.getCategories) // 获取所有分类

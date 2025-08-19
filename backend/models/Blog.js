@@ -3,6 +3,29 @@ const mongoose = require('mongoose')
 /**
  * 博客数据模型
  * 定义了博客的数据结构和验证规则
+ * title 博客标题
+ * excerpt 博客摘要
+ * category 博客分类
+ * content 博客内容
+ * author 作者
+ * tags 标签数组
+ * coverImage 封面图片URL
+ * status 博客状态
+ * viewCount 浏览次数
+ * likeCount 点赞数
+ * commentCount 评论数
+ * pinnedPriority 置顶优先级
+ * createdAt 创建时间
+ * updatedAt 更新时间
+ * 虚拟字段：
+ * date 日期
+ * 索引：
+ * 文本索引：title, content, excerpt, category, tags
+ * 分类索引：category
+ * 状态索引：status
+ * 置顶优先级索引：pinnedPriority
+ * 时间索引：createdAt
+ * 复合索引：status, pinnedPriority, createdAt
  */
 const blogSchema = new mongoose.Schema({
   // 博客标题

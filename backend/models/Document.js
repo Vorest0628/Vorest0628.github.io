@@ -1,5 +1,34 @@
 const mongoose = require('mongoose')
 
+/**
+ * 文档数据模型
+ * 定义了文档管理系统的数据结构和验证规则
+ * title 文档标题
+ * description 文档描述
+ * filePath 文件存储路径
+ * fileSize 文件大小(字节)
+ * formattedSize 格式化后的文件大小
+ * type 文件类型 (PDF, DOCX, PPT, PPTX, XLSX, TXT, MD, 其他)
+ * category 文档分类
+ * secondaryTags 次要标签数组
+ * downloadCount 下载次数
+ * author 作者
+ * isPublic 是否公开
+ * previewUrl 预览URL
+ * date 文档日期
+ * lastModified 最后修改时间
+ * status 文档状态 (draft, published, pinned)
+ * pinnedPriority 置顶优先级
+ * createdAt 创建时间
+ * updatedAt 更新时间
+ * 方法：
+ * incrementDownloadCount 增加下载次数
+ * 索引：
+ * 文本索引：title, description, category, secondaryTags
+ * 分类索引：category, secondaryTags
+ * 类型索引：type
+ * 时间索引：date
+ */
 const documentSchema = new mongoose.Schema({
   title: {
     type: String,

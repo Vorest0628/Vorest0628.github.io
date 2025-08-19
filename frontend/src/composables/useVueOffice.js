@@ -1,5 +1,17 @@
 import { ref, computed } from 'vue'
 
+/*
+useVueOffice输出函数一览：
+loading 加载状态
+error 错误信息
+rendered 渲染状态
+isSupported 检查文件类型是否支持
+getFileIcon 获取文件类型图标
+getFileTypeName 获取文件类型名称
+previewDocument 预览文档
+cleanup 清理资源
+*/
+
 export function useVueOffice() {
   const loading = ref(false)
   const error = ref(null)

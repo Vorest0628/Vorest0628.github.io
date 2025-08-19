@@ -8,6 +8,26 @@ declare module 'axios' {
   }
 }
 
+/*
+api.ts函数一览：
+getViteEnv 获取 Vite 环境变量
+请求拦截器，响应拦截器
+http 请求方法
+apiService 通用 API 服务
+  get 获取数据
+  delete 删除数据
+  head 获取头信息
+  options 获取选项
+  post 发送数据
+  put 更新数据
+  patch 部分更新数据
+  postForm 发送表单数据
+  putForm 更新表单数据
+  patchForm 部分更新表单数据
+  upload 上传文件
+  download 下载文件
+*/
+
 // 兼容读取 Vite 环境变量（避免直接使用 import.meta 触发编译器设置限制）
 const getViteEnv = (key: string): string | undefined => {
   try {

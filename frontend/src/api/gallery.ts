@@ -7,6 +7,18 @@ import type {
   GalleryImageCreateData 
 } from '../types/api'
 
+/*
+GalleryApi输出函数一览：
+getAllImages 获取所有图片（包括未发布的）
+getImages 获取图片列表
+getImageById 获取图片详情
+uploadImage 上传图片
+updateImage 更新图片信息
+deleteImage 删除图片
+getTags 获取所有唯一的公开标签
+getCategories 获取所有公开的分类
+*/
+
 /**
  * 图库标签响应
  */

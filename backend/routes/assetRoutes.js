@@ -3,6 +3,16 @@ const mongoose = require('mongoose')
 const router = express.Router()
 const BlogAsset = require('../models/BlogAsset')
 
+/**
+ * 资源访问路由配置
+ * 定义了博客资源文件的公开访问接口
+ * /api/blog/:blogId/:filename 重定向到Blob URL get
+ * 功能：
+ * - 公开访问博客资源文件
+ * - 自动重定向到云存储的Blob URL
+ * - 支持URL编码的文件名处理
+ * - 缓存控制优化
+ */
 // 公开访问：/api/blog/:blogId/:filename -> 重定向到 Blob URL
 router.get('/blog/:blogId/:filename', async (req, res, next) => {
   try {

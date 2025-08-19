@@ -1,5 +1,23 @@
 const mongoose = require('mongoose')
 
+/**
+ * 评论数据模型
+ * 定义了评论系统的数据结构和验证规则
+ * targetId 评论目标对象的ID (博客、相册、文档等)
+ * targetType 评论目标类型 (Blog, Gallery, Document, General)
+ * content 评论内容
+ * author 评论作者ID
+ * parentComment 父评论ID (用于回复功能)
+ * isPublic 是否公开显示
+ * likeCount 点赞数
+ * createdAt 创建时间
+ * updatedAt 更新时间
+ * 虚拟字段：
+ * replies 子评论列表
+ * 索引：
+ * 目标索引：targetId, targetType, isPublic
+ * 时间索引：createdAt
+ */
 const commentSchema = new mongoose.Schema({
   // 关联的目标模型ID (例如博客文章ID)
   targetId: {

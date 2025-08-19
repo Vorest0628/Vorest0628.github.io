@@ -2,6 +2,14 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { ApiError } = require('../utils/error')
 
+/*
+authController.js函数一览：
+generateToken 生成JWT令牌
+register 注册新用户
+login 用户登录
+getCurrentUser 获取当前用户信息
+*/
+
 // 生成JWT令牌
 const generateToken = (userId, userRole) => {
   return jwt.sign({ id: userId, role: userRole }, process.env.JWT_SECRET, {

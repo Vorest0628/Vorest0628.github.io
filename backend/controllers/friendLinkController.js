@@ -2,6 +2,18 @@ const FriendLink = require('../models/FriendLink')
 const { ApiError } = require('../utils/error')
 const { getFavicon } = require('../utils/favicon')
 
+/*
+friendLinkController.js函数一览：
+getFriendLinks 获取友情链接列表
+getFriendLinkById 获取单个友情链接详情
+createFriendLink 创建新友情链接
+updateFriendLink 更新友情链接
+deleteFriendLink 删除友情链接
+recordVisit 记录友链访问
+previewFavicon 获取网站favicon预览
+applyFriendLink 申请友情链接
+*/
+
 // 获取友情链接列表
 exports.getFriendLinks = async (req, res, next) => {
   try {

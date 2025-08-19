@@ -12,6 +12,36 @@ const Comment = require('../models/Comment')
 const { ApiError } = require('../utils/error')
 const blogImportController = require('../controllers/blogImportController')
 
+/*
+adminRoutes.js路由一览：
+/admin/verify 验证管理员权限 get
+/admin/dashboard 管理员控制台数据概览 get
+/admin/users 用户管理 get
+/admin/users/:id/role 更新用户角色和信息 put
+/admin/users/:id 删除用户 delete
+/admin/blogs 博客管理 get
+/admin/blogs/:id 获取单个博客详情 get
+/admin/blogs/:id 更新博客 put
+/admin/blogs/:id 删除博客 delete
+/admin/comments 评论管理 get
+/admin/comments/:id 删除评论 delete
+/admin/gallery 图库管理 get
+/admin/gallery/upload 图片上传 post
+/admin/gallery/:id 更新图片信息 put
+/admin/gallery/:id 删除图片 delete
+/admin/documents 文档管理 get
+/admin/documents 创建文档 post
+/admin/documents/:id 更新文档 put
+/admin/documents/:id 删除文档 delete
+/admin/friendlinks 友链管理 get
+/admin/friendlinks 添加友链 post
+/admin/friendlinks/:id/status 更新友链状态 put
+/admin/friendlinks/:id 删除友链 delete
+/admin/uploads/images 图片直传 post
+/admin/blogs/import-markdown 导入 Markdown post
+*/
+
+
 // 验证管理员权限
 router.get('/verify', auth, checkRole('admin'), async (req, res, next) => {
   try {

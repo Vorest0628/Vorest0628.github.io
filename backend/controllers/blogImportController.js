@@ -8,6 +8,14 @@ const { uploadBufferToBlob } = require('../utils/uploader')
 const Blog = require('../models/Blog')
 const BlogAsset = require('../models/BlogAsset')
 
+/*
+blogImportController.js函数一览：
+uploadImage 上传图片
+importMarkdown 导入 Markdown
+normalizeTags 标准化标签
+replaceAsync 异步替换
+*/
+
 // 统一使用内存存储（兼容 Vercel）
 const upload = multer({ storage: multer.memoryStorage() })
 

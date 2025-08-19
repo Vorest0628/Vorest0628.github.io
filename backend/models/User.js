@@ -1,6 +1,25 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 
+/**
+ * 用户数据模型
+ * 定义了用户系统的数据结构和验证规则
+ * username 用户名
+ * email 邮箱地址
+ * password 密码 (加密存储)
+ * avatar 头像图片路径
+ * role 用户角色 (user, admin)
+ * isActive 是否激活
+ * createdAt 创建时间
+ * updatedAt 更新时间
+ * 方法：
+ * comparePassword 验证密码
+ * 中间件：
+ * 保存前自动加密密码
+ * 索引：
+ * 用户名唯一索引：username
+ * 邮箱唯一索引：email
+ */
 const userSchema = new mongoose.Schema({
   // 用户名
   username: {

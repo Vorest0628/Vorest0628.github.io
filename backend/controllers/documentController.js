@@ -16,6 +16,25 @@ try {
   del = async () => { console.log('Vercel Blob 不可用，跳过删除'); };
 }
 
+/*
+documentController.js函数一览：
+getDocuments 获取文档列表
+getDocumentById 获取单个文档详情
+createDocument 创建新文档
+updateDocument 更新文档
+deleteDocument 删除文档
+getCategories 获取所有分类和标签
+getTags 获取所有标签
+getCategoryStats 按分类获取文档统计
+getPopularDocuments 获取热门文档
+getDocumentContent 获取文档内容用于预览
+previewDocument 预览文档
+downloadDocument 下载文档
+recordView 记录文档访问
+toggleDocumentPublic 切换文档公开状态
+uploadDocument 上传文档
+*/
+
 const Document = require('../models/Document')
 const { ApiError, catchAsync } = require('../utils/error')
 const { documentUpload } = require('../utils/fileUpload')

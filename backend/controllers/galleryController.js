@@ -16,6 +16,18 @@ try {
   del = async () => { console.log('Vercel Blob 不可用，跳过删除'); };
 }
 
+
+/*
+galleryController.js函数一览：
+getImages 获取图片列表
+getImage 获取单个图片详情
+uploadImage 上传图片
+updateImage 更新图片信息
+deleteImage 删除图片
+getUniqueTags 获取所有唯一的公开标签
+getFilters 获取所有公开的分类
+getAllImages 获取所有图片（包括未发布的）
+*/
 const sharp = require('sharp');
 const Gallery = require('../models/Gallery');
 const { ApiError, catchAsync } = require('../utils/error');

@@ -1,5 +1,21 @@
 const { ApiError } = require('../utils/error')
 
+/*
+validation.js函数一览：
+isValidEmail 验证邮箱格式
+isValidPassword 验证密码格式
+isValidUrl 验证URL格式
+validateRegister 用户注册验证
+validateLogin 用户登录验证
+validateBlog 博客验证
+validateComment 评论验证
+validateSong 歌曲验证
+validateFriendLink 友情链接验证
+validateDocument 文档验证
+validatePagination 分页参数验证
+validateObjectId ID参数验证
+*/
+
 // 通用验证工具函数
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

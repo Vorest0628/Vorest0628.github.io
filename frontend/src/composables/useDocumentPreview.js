@@ -3,6 +3,20 @@ import mammoth from 'mammoth'
 import { marked } from 'marked'
 import { useVueOffice } from './useVueOffice'
 
+/*
+useDocumentPreview输出函数一览：
+previewDocument 预览文档
+previewDocx 使用mammoth.js预览DOCX文件
+previewMarkdown 预览Markdown文件
+previewText 预览文本文件
+previewPdf 预览PDF文件
+previewPowerPoint 预览PowerPoint文件
+showPptxPreview 显示PPTX预览框架
+closePptxPreview 关闭PPTX预览框架
+handleUnsupportedFormat 处理不支持的文件格式
+cleanup 清理预览资源
+*/
+
 export function useDocumentPreview() {
   const loading = ref(false)
   const error = ref(null)

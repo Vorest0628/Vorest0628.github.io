@@ -6,6 +6,20 @@ import type {
   User 
 } from '../types/api'
 
+/*
+UserApi输出函数一览：
+getMyStats 获取当前用户的统计数据
+getMyComments 获取当前用户的评论
+getMyRecommendations 获取当前用户的推荐
+updateMyComment 更新用户评论
+deleteMyComment 删除用户评论
+updateMyRecommendation 更新用户推荐
+deleteMyRecommendation 删除用户推荐
+updateProfile 更新用户资料
+changePassword 修改密码
+resetPassword 重置密码（通过邮箱）
+*/
+
 /**
  * 用户统计数据
  */

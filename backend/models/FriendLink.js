@@ -1,5 +1,36 @@
 const mongoose = require('mongoose')
 
+/**
+ * 友情链接数据模型
+ * 定义了友情链接系统的数据结构和验证规则
+ * name 链接名称
+ * url 链接地址
+ * avatar 头像图片路径
+ * description 链接描述
+ * category 链接分类 (个人博客, 技术社区, 学习资源, 工具网站, 友情链接, 其他)
+ * tags 标签数组
+ * visitCount 访问次数
+ * lastChecked 最后检查时间
+ * status 链接状态 (正常, 待审核, 已失效)
+ * isActive 是否激活
+ * email 联系邮箱
+ * contactInfo 联系信息
+ * remark 备注信息
+ * createdAt 创建时间
+ * updatedAt 更新时间
+ * 虚拟字段：
+ * formattedUrl 格式化后的URL (自动添加https://)
+ * 方法：
+ * incrementVisit 增加访问次数
+ * checkAccessibility 检查链接有效性
+ * 静态方法：
+ * checkAllLinks 批量检查所有链接
+ * 索引：
+ * 文本索引：name, description
+ * 分类索引：category
+ * 状态索引：status, isActive
+ * 访问量索引：visitCount
+ */
 const friendLinkSchema = new mongoose.Schema({
   name: {
     type: String,

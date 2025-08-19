@@ -1,5 +1,13 @@
 import axios from 'axios'
 
+/*
+auth.js函数一览：
+resolveBaseURL 解析 API 基地址
+api 创建axios实例
+authAPI 认证相关的API请求
+authStorage 本地存储管理
+*/
+
 // 解析 API 基地址（生产默认走 api 子域）
 const resolveBaseURL = () => {
   const envUrl = import.meta.env.VITE_APP_API_URL

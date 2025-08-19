@@ -9,6 +9,28 @@ import type {
   ReviewData
 } from '../types/api'
 
+/*
+CommentApi输出函数一览：
+getComments 获取评论列表
+getCommentById 获取评论详情
+createComment 创建评论
+updateComment 更新评论
+deleteComment 删除评论
+replyComment 回复评论
+likeComment 点赞评论
+unlikeComment 取消点赞评论
+checkLikeStatus 检查点赞状态
+reportComment 举报评论
+getTargetComments 获取指定目标的评论
+getPopularComments 获取热门评论
+getLatestComments 获取最新评论
+getMyComments 获取我的评论
+reviewComment 审核评论（管理员）
+getStats 获取评论统计信息
+searchComments 搜索评论
+updateCommentVisibility 更新评论公开状态
+*/
+
 /**
  * 评论回复数据
  */

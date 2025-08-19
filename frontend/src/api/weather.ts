@@ -6,6 +6,24 @@ import type {
   WeatherParams 
 } from '../types/api'
 
+/*
+WeatherApi输出函数一览：
+getCurrentWeather 获取当前天气
+getWeatherForecast 获取天气预报
+getWeatherByIP 根据IP获取天气
+searchCities 搜索城市
+getPopularCities 获取热门城市列表
+getFollowedCitiesWeather 获取用户关注的城市天气
+followCity 添加关注城市
+unfollowCity 取消关注城市
+getHistoricalWeather 获取历史天气
+getWeatherAlerts 获取天气预警
+getAirQuality 获取空气质量
+getLifeIndex 获取生活指数
+getWeatherConfig 获取天气配置
+updateWeatherConfig 更新天气配置
+*/
+
 /**
  * 关注城市数据
  */

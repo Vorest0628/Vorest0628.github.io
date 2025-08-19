@@ -2,6 +2,19 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 
+/*
+fileUpload.js函数一览：
+isVercel 检查是否在Vercel环境中
+ensureDirectory 确保上传目录存在
+createUpload 通用文件上传配置
+imageUpload 图片上传配置
+documentUpload 文档上传配置
+avatarUpload 头像上传配置
+deleteFile 删除文件
+getFileSize 获取文件大小
+formatFileSize 格式化文件大小
+*/
+
 // 检查是否在Vercel环境中
 const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
 

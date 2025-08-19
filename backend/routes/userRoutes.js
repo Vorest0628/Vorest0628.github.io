@@ -6,6 +6,24 @@ const { auth } = require('../middleware/auth')
 const { ApiError } = require('../utils/error')
 const bcrypt = require('bcryptjs')
 
+/**
+ * 用户系统路由配置
+ * 定义了用户个人中心相关的API端点
+ * 用户统计和资料：
+ * /api/users/stats 获取当前用户统计数据 get (需要认证)
+ * /api/users/profile 更新用户资料 put (需要认证)
+ * /api/users/password 修改密码 put (需要认证)
+ * /api/users/reset-password 重置密码 post (不需要认证)
+ * 用户评论管理：
+ * /api/users/comments 获取当前用户的评论 get (需要认证)
+ * /api/users/comments/:id 更新用户评论 put (需要认证)
+ * /api/users/comments/:id 删除用户评论 delete (需要认证)
+ * 功能：
+ * - 用户个人资料管理
+ * - 密码修改和重置
+ * - 个人评论管理
+ * - 用户统计数据展示
+ */
 // 获取当前用户的统计数据
 router.get('/stats', auth, async (req, res, next) => {
   try {

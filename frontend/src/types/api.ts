@@ -1,6 +1,58 @@
-/**
- * API 通用类型定义
- */
+/*
+API 通用类型定义
+类型一览：
+User 用户
+Blog 博客
+Comment 评论
+Document 文档
+FriendLink 友情链接
+GalleryImage 图库图片
+LoginCredentials 登录凭证
+RegisterData 注册数据
+PasswordChangeData 修改密码数据
+PasswordResetData 重置密码数据
+ForgotPasswordData 忘记密码数据
+ProfileUpdateData 更新用户资料数据
+BlogCreateData 创建博客数据
+BlogUpdateData 更新博客数据
+CommentCreateData 创建评论数据
+DocumentCreateData 创建文档数据
+FriendLinkCreateData 创建友情链接数据
+FriendLinkApplyData 申请友情链接数据
+GalleryImageCreateData 创建图库图片数据
+PaginationParams 分页参数
+SearchParams 搜索参数
+BlogListParams 博客列表参数
+CommentListParams 评论列表参数
+DocumentListParams 文档列表参数
+FriendLinkListParams 友情链接列表参数
+GalleryListParams 图库列表参数
+LoginResponse 登录响应
+AuthResponse 认证响应
+BlogListResponse 博客列表响应
+CommentListResponse 评论列表响应
+DocumentListResponse 文档列表响应
+FriendLinkListResponse 友情链接列表响应
+GalleryListResponse 图库列表响应
+UploadResponse 上传响应
+StatsResponse 统计响应
+AdminDashboardData 管理员控制台数据
+WeatherData 天气数据
+WeatherForecast 天气预报
+CityInfo 城市信息
+WeatherParams 天气参数
+FileUploadConfig 文件上传配置
+ReviewData 审核数据
+ModerationData 管理数据
+VisibilityUpdateData 公开状态更新数据
+StatusUpdateData 状态更新数据
+RoleUpdateData 角色更新数据
+ReportData 举报数据
+LikeStatusResponse 点赞状态响应
+ApiError API 错误响应
+ApiSuccess API 成功响应
+ApiResponse API 响应
+*/
 
 // 基础实体类型
 export interface User {

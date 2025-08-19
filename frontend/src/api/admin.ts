@@ -19,6 +19,41 @@ import type {
   PaginationParams
 } from '../types/api'
 
+/*
+AdminApi输出函数一览：
+verifyAdmin 验证管理员权限
+getDashboard 获取管理员控制台数据
+getAllUsers 获取所有用户
+updateUserRole 更新用户角色
+deleteUser 删除用户
+getAllBlogs 获取所有博客（包括草稿）
+createBlog 创建博客
+getBlogById 获取单个博客详情
+updateBlog 更新博客
+updateBlogStatus 更新博客状态
+deleteBlog 删除博客
+importMarkdown 导入 Markdown（支持携带资源 zip/多文件）
+getAllComments 获取所有评论（包括未审核的）
+moderateComment 审核评论
+deleteComment 删除评论
+updateCommentVisibility 更新评论公开状态
+getAllImages 获取所有图片（包括未发布的）
+uploadImage 上传图片
+updateImage 更新图片信息
+deleteImage 删除图片
+getAllDocuments 获取所有文档（包括未发布的）
+createDocument 创建文档
+updateDocument 更新文档
+deleteDocument 删除文档
+uploadDocumentFile 上传文档文件
+getAllFriendLinks 获取所有友链
+createFriendLink 添加友链
+updateFriendLinkStatus 更新友链状态
+deleteFriendLink 删除友链
+*/
+
+
+
 /**
  * 管理员验证响应
  */

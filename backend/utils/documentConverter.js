@@ -10,6 +10,15 @@ const libreConvert = promisify(libre.convert)
 /**
  * 文档转换工具类
  * 支持将DOCX、PPTX等格式转换为PDF或HTML
+ * 输出函数：
+ * convertDocxToHtml 将DOCX转换为HTML
+ * convertDocxToText 将DOCX转换为纯文本
+ * convertToPdf 将文档转换为PDF
+ * convertToPdfWithCommand 使用命令行LibreOffice转换文档
+ * getConvertedFilePath 获取转换后的文件路径
+ * needsConversion 检查文件是否需要转换
+ * isConvertedFileValid 检查转换后的文件是否有效
+ * smartConvert 智能转换文档
  */
 class DocumentConverter {
   

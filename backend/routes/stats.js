@@ -6,10 +6,17 @@ const Gallery = require('../models/Gallery')
 const Visit = require('../models/Visit')
 
 /**
- * 公开统计API
+ * 公开统计API路由配置
  * 用于网站侧边栏等前端组件显示统计信息
+ * /api/stats 获取网站统计数据 get (不需要认证)
+ * /api/stats/popular 获取热门内容 get (不需要认证)
+ * /api/stats/visit 记录访问统计 post (不需要认证)
+ * 功能：
+ * - 获取网站基础数据统计（博客、评论、文档、图片数量）
+ * - 获取热门内容和最新评论
+ * - 记录用户访问统计
+ * - 计算总访问量（基础访问量 + 实际访问记录 + 博客浏览次数）
  */
-
 // 获取网站统计数据
 router.get('/', async (req, res, next) => {
   try {

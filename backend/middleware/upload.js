@@ -6,6 +6,7 @@ const { ApiError } = require('../utils/error');
  * This catches common upload errors, such as file size limits,
  * and translates them into a user-friendly ApiError.
  */
+
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {

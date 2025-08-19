@@ -7,6 +7,16 @@ const { ApiError } = require('../utils/error');
  * 提供跨博客和文档的搜索功能
  */
 
+/*
+searchController.js函数一览：
+searchAll 统一搜索接口
+searchBlogs 搜索博客
+searchDocuments 搜索文档
+getDocumentIcon 获取文档类型图标
+generateSearchSnippet 生成搜索摘要片段
+highlightKeywords 高亮搜索关键词
+*/
+
 /**
  * 统一搜索接口
  * @param {Object} req - 请求对象

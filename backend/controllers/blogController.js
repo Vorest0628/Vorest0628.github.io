@@ -2,11 +2,25 @@ const Blog = require('../models/Blog')
 const BlogLike = require('../models/BlogLike')
 const { ApiError } = require('../utils/error')
 
-/**
- * 博客控制器
- * 处理所有与博客相关的请求
- */
+/*
+博客控制器
+处理所有与博客相关的请求
 
+blogController.js函数一览：
+getBlogs 获取博客列表
+getBlogById 获取博客详情
+createBlog 创建博客
+updateBlog 更新博客
+deleteBlog 删除博客
+likeBlog 点赞博客
+unlikeBlog 取消点赞博客
+checkBlogLikeStatus 检查博客点赞状态
+getCategories 获取博客分类列表
+getAllBlogsForAdmin 管理员获取所有博客（包括草稿）
+searchBlogs 搜索博客
+generateSearchSnippet 生成搜索摘要片段
+highlightKeywords 高亮搜索关键词
+*/
 /**
  * 获取博客列表
  * @param {Object} req - 请求对象

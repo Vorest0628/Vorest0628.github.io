@@ -6,6 +6,16 @@ const { URL } = require('url')
  * 支持多种方式：Google Favicon API、直接获取、默认路径
  */
 
+/*
+favicon.js函数一览：
+getGoogleFavicon 获取Google Favicon API的URL
+getCommonFaviconPaths 获取常见的favicon路径
+extractDomain 解析URL获取域名
+checkUrlAccessibility 检查URL是否可访问
+getFavicon 获取网站favicon
+getBatchFavicons 批量获取多个网站的favicon
+*/
+
 // Google Favicon API - 最可靠的方案
 const getGoogleFavicon = (domain) => {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
