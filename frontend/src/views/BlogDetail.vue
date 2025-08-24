@@ -34,7 +34,7 @@
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
           <div class="meta-info">
-            <span class="date">发布时间：{{ formatDate(article.createdAt) }}</span>
+            <span class="date">发布时间：{{ formatDate(article.date) }}</span>
             <span class="category">分类：{{ article.category }}</span>
             <span class="views">阅读：{{ article.viewCount }} 次</span>
           </div>

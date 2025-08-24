@@ -171,8 +171,7 @@ const loadPosts = async () => {
     const response = await blogApi.getBlogs(params)
     
     if (response.success) {
-      // 处理数据结构：如果data中有blogs字段，则使用blogs，否则直接使用data
-      allPosts.value = response.data.blogs || response.data
+      allPosts.value = response.data || []
       totalPosts.value = response.total
     } else {
       throw new Error(response.message || '获取博客列表失败')

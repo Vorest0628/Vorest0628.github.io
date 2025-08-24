@@ -15,8 +15,6 @@ const mongoose = require('mongoose')
  * likeCount 点赞数
  * commentCount 评论数
  * pinnedPriority 置顶优先级
- * createdAt 创建时间
- * updatedAt 更新时间
  * 虚拟字段：
  * date 日期
  * 索引：

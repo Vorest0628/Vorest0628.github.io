@@ -117,7 +117,7 @@
               <h3 class="blog-title">{{ blog.title }}</h3>
               <p class="blog-description">{{ blog.description || blog.excerpt || '暂无描述' }}</p>
               <div class="blog-meta">
-                <span class="blog-date">{{ formatDate(blog.publishedAt || blog.createdAt) }}</span>
+                <span class="blog-date">{{ formatDate(blog.date) }}</span>
                 <span class="blog-category">{{ blog.category }}</span>
                 <span class="blog-tags" v-if="blog.tags && blog.tags.length > 0">
                   {{ blog.tags.slice(0, 3).join(', ') }}
@@ -219,10 +219,9 @@ const loadPinnedDocuments = async () => {
 // 加载置顶博客
 const loadPinnedBlogs = async () => {
   try {
-    const response = await blogApi.getBlogs({ status: 'pinned', limit: 5 })
+    const response = await blogApi.getBlogs({ status: 'pinned', page: 1, pageSize: 5 })
     if (response.success) {
-      // 确保只显示状态为pinned的博客
-      const blogs = response.data.blogs || response.data || []
+      const blogs = response.data || []
       pinnedBlogs.value = blogs.filter(blog => blog.status === 'pinned')
       return pinnedBlogs.value
     }
@@ -239,8 +238,8 @@ const loadRecentBlogs = async () => {
   try {
     const response = await blogApi.getBlogs({ 
       status: 'published', 
-      limit: 5, 
-      sort: '-publishedAt,-createdAt' 
+      page: 1,
+      pageSize: 5
     })
     if (response.success) {
       recentBlogs.value = response.data || []

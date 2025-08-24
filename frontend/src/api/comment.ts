@@ -6,7 +6,8 @@ import type {
   CommentCreateData,
   LikeStatusResponse,
   ReportData,
-  ReviewData
+  ReviewData,
+  ApiResponse
 } from '../types/api'
 
 /*
@@ -47,8 +48,8 @@ export interface CommentSearchParams {
   keyword: string
   page?: number
   pageSize?: number
-  targetType?: 'blog' | 'gallery' | 'document' | 'playlist'
-  targetId?: number
+  targetType?: 'Blog' | 'Gallery' | 'Document' | 'Playlist'
+  targetId?: string
 }
 
 /**
@@ -56,8 +57,8 @@ export interface CommentSearchParams {
  */
 export interface PopularCommentsParams {
   limit?: number
-  targetType?: 'blog' | 'gallery' | 'document' | 'playlist'
-  targetId?: number
+  targetType?: 'Blog' | 'Gallery' | 'Document' | 'Playlist'
+  targetId?: string
 }
 
 /**
@@ -93,63 +94,63 @@ export const commentApi = {
   /**
    * 获取评论详情
    */
-  getCommentById(id: number): Promise<Comment> {
-    return apiService.get<Comment>(`/comments/${id}`)
+  getCommentById(id: string): Promise<ApiResponse<Comment>> {
+    return apiService.get<ApiResponse<Comment>>(`/comments/${id}`)
   },
 
   /**
    * 创建评论
    */
-  createComment(data: CommentCreateData): Promise<Comment> {
-    return apiService.post<Comment>('/comments', data)
+  createComment(data: CommentCreateData): Promise<ApiResponse<Comment>> {
+    return apiService.post<ApiResponse<Comment>>('/comments', data)
   },
 
   /**
    * 更新评论
    */
-  updateComment(id: number, data: Partial<CommentCreateData>): Promise<Comment> {
-    return apiService.put<Comment>(`/comments/${id}`, data)
+  updateComment(id: string, data: Partial<CommentCreateData>): Promise<ApiResponse<Comment>> {
+    return apiService.put<ApiResponse<Comment>>(`/comments/${id}`, data)
   },
 
   /**
    * 删除评论
    */
-  deleteComment(id: number): Promise<{ success: boolean }> {
+  deleteComment(id: string): Promise<{ success: boolean }> {
     return apiService.delete<{ success: boolean }>(`/comments/${id}`)
   },
 
   /**
    * 回复评论
    */
-  replyComment(parentId: number, data: CommentReplyData): Promise<Comment> {
-    return apiService.post<Comment>(`/comments/${parentId}/reply`, data)
+  replyComment(parentId: string, data: CommentReplyData): Promise<ApiResponse<Comment>> {
+    return apiService.post<ApiResponse<Comment>>(`/comments/${parentId}/reply`, data)
   },
 
   /**
    * 点赞评论
    */
-  likeComment(id: number): Promise<{ success: boolean; likeCount: number }> {
-    return apiService.post<{ success: boolean; likeCount: number }>(`/comments/${id}/like`)
+  likeComment(id: string): Promise<ApiResponse<{ likeCount: number }>> {
+    return apiService.post<ApiResponse<{ likeCount: number }>>(`/comments/${id}/like`)
   },
 
   /**
    * 取消点赞评论
    */
-  unlikeComment(id: number): Promise<{ success: boolean; likeCount: number }> {
-    return apiService.delete<{ success: boolean; likeCount: number }>(`/comments/${id}/like`)
+  unlikeComment(id: string): Promise<ApiResponse<{ likeCount: number }>> {
+    return apiService.delete<ApiResponse<{ likeCount: number }>>(`/comments/${id}/like`)
   },
 
   /**
    * 检查点赞状态
    */
-  checkLikeStatus(id: number): Promise<LikeStatusResponse> {
-    return apiService.get<LikeStatusResponse>(`/comments/${id}/like-status`)
+  checkLikeStatus(id: string): Promise<ApiResponse<LikeStatusResponse>> {
+    return apiService.get<ApiResponse<LikeStatusResponse>>(`/comments/${id}/like-status`)
   },
 
   /**
    * 举报评论
    */
-  reportComment(id: number, data: ReportData): Promise<{ success: boolean }> {
+  reportComment(id: string, data: ReportData): Promise<{ success: boolean }> {
     return apiService.post<{ success: boolean }>(`/comments/${id}/report`, data)
   },
 
@@ -157,8 +158,8 @@ export const commentApi = {
    * 获取指定目标的评论
    */
   getTargetComments(
-    targetType: 'blog' | 'gallery' | 'document' | 'playlist', 
-    targetId: number, 
+    targetType: 'Blog' | 'Gallery' | 'Document' | 'Playlist', 
+    targetId: string, 
     params: CommentListParams = {}
   ): Promise<CommentListResponse> {
     return apiService.get<CommentListResponse>(`/comments/${targetType}/${targetId}`, { params })
@@ -188,7 +189,7 @@ export const commentApi = {
   /**
    * 审核评论（管理员）
    */
-  reviewComment(id: number, data: ReviewData): Promise<{ success: boolean }> {
+  reviewComment(id: string, data: ReviewData): Promise<{ success: boolean }> {
     return apiService.post<{ success: boolean }>(`/comments/${id}/review`, data)
   },
 
@@ -211,8 +212,8 @@ export const commentApi = {
   /**
    * 更新评论公开状态
    */
-  updateCommentVisibility(id: number, isPublic: boolean): Promise<Comment> {
-    return apiService.put<Comment>(`/comments/${id}`, { isPublic })
+  updateCommentVisibility(id: string, isPublic: boolean): Promise<ApiResponse<Comment>> {
+    return apiService.put<ApiResponse<Comment>>(`/comments/${id}`, { isPublic })
   }
 }
 

@@ -67,23 +67,29 @@ export interface User {
 }
 
 export interface Blog {
-  id: number
+  id: string
   title: string
+  excerpt: string
   content: string
-  summary?: string
   category: string
   tags: string[]
-  status: 'published' | 'draft'
+  status: 'draft' | 'published' | 'pinned'
   viewCount: number
   likeCount: number
   commentCount: number
-  authorId: number
-  author?: User
   coverImage?: string
-  isTop: boolean
-  publishedAt?: string
-  createdAt: string
-  updatedAt: string
+  date: string
+}
+
+// 博客列表项（列表接口不返回 content 等详情字段）
+export interface BlogListItem {
+  id: string
+  title: string
+  excerpt: string
+  category: string
+  tags: string[]
+  status: 'draft' | 'published' | 'pinned'
+  date: string
 }
 
 export interface Comment {
@@ -192,22 +198,24 @@ export interface ProfileUpdateData {
 
 export interface BlogCreateData {
   title: string
+  excerpt: string
   content: string
-  summary?: string
   category: string
   tags: string[]
-  status: 'published' | 'draft'
+  status: 'draft' | 'published' | 'pinned'
   coverImage?: string
-  isTop?: boolean
 }
 
 export interface BlogUpdateData extends Partial<BlogCreateData> {}
 
 export interface CommentCreateData {
   content: string
-  targetType: 'blog' | 'gallery' | 'document' | 'playlist'
-  targetId: number
-  parentId?: number
+  targetType: 'Blog' | 'Gallery' | 'Document' | 'Playlist'
+  targetId: string
+  // 兼容旧字段
+  parentId?: string | number
+  parentComment?: string | null
+  isPublic?: boolean
   authorName?: string
   authorEmail?: string
 }
@@ -263,7 +271,7 @@ export interface BlogListParams extends PaginationParams {
   keyword?: string
   category?: string
   tag?: string
-  status?: 'published' | 'draft'
+  status?: 'draft' | 'published' | 'pinned'
 }
 
 export interface CommentListParams extends PaginationParams {
@@ -300,11 +308,15 @@ export interface AuthResponse {
   user: User
 }
 
+// 与后端列表接口对齐：顶层携带分页字段，data 为数组
 export interface BlogListResponse {
-  items: Blog[]
+  success: boolean
+  data: BlogListItem[]
   total: number
   page: number
   pageSize: number
+  totalPages: number
+  message?: string
 }
 
 export interface CommentListResponse {
@@ -435,7 +447,6 @@ export interface ReportData {
 // 点赞状态
 export interface LikeStatusResponse {
   isLiked: boolean
-  likeCount: number
 }
 
 // API 错误响应

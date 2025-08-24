@@ -1,12 +1,14 @@
 import { apiService } from '../services/api'
 import type { 
   Blog, 
+  BlogListItem,
   BlogListParams, 
   BlogListResponse,
   BlogCreateData,
   BlogUpdateData,
   LikeStatusResponse,
-  UploadResponse
+  UploadResponse,
+  ApiResponse
 } from '../types/api'
 
 /*
@@ -30,16 +32,12 @@ uploadImage 上传博客图片
 /**
  * 博客分类响应
  */
-export interface BlogCategoriesResponse {
-  categories: string[]
-}
+// 分类/标签统一由 ApiResponse<string[]> 包装
 
 /**
  * 博客标签响应
  */
-export interface BlogTagsResponse {
-  tags: string[]
-}
+// 见上：使用 ApiResponse<string[]>
 
 /**
  * 博客搜索参数
@@ -66,78 +64,78 @@ export const blogApi = {
   /**
    * 获取博客详情
    */
-  getBlogById(id: number): Promise<Blog> {
-    return apiService.get<Blog>(`/blogs/${id}`)
+  getBlogById(id: string): Promise<ApiResponse<Blog>> {
+    return apiService.get<ApiResponse<Blog>>(`/blogs/${id}`)
   },
 
   /**
    * 创建博客
    */
-  createBlog(data: BlogCreateData): Promise<Blog> {
-    return apiService.post<Blog>('/blogs', data)
+  createBlog(data: BlogCreateData): Promise<ApiResponse<Blog>> {
+    return apiService.post<ApiResponse<Blog>>('/blogs', data)
   },
 
   /**
    * 更新博客
    */
-  updateBlog(id: number, data: BlogUpdateData): Promise<Blog> {
-    return apiService.put<Blog>(`/blogs/${id}`, data)
+  updateBlog(id: string, data: BlogUpdateData): Promise<ApiResponse<Blog>> {
+    return apiService.put<ApiResponse<Blog>>(`/blogs/${id}`, data)
   },
 
   /**
    * 删除博客
    */
-  deleteBlog(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/blogs/${id}`)
+  deleteBlog(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/blogs/${id}`)
   },
 
   /**
    * 点赞博客
    */
-  likeBlog(id: number): Promise<{ success: boolean; likeCount: number }> {
-    return apiService.post<{ success: boolean; likeCount: number }>(`/blogs/${id}/like`)
+  likeBlog(id: string): Promise<ApiResponse<{ likeCount: number }>> {
+    return apiService.post<ApiResponse<{ likeCount: number }>>(`/blogs/${id}/like`)
   },
 
   /**
    * 取消点赞博客
    */
-  unlikeBlog(id: number): Promise<{ success: boolean; likeCount: number }> {
-    return apiService.delete<{ success: boolean; likeCount: number }>(`/blogs/${id}/like`)
+  unlikeBlog(id: string): Promise<ApiResponse<{ likeCount: number }>> {
+    return apiService.delete<ApiResponse<{ likeCount: number }>>(`/blogs/${id}/like`)
   },
 
   /**
    * 检查博客点赞状态
    */
-  checkBlogLikeStatus(id: number): Promise<LikeStatusResponse> {
-    return apiService.get<LikeStatusResponse>(`/blogs/${id}/like-status`)
+  checkBlogLikeStatus(id: string): Promise<ApiResponse<LikeStatusResponse>> {
+    return apiService.get<ApiResponse<LikeStatusResponse>>(`/blogs/${id}/like-status`)
   },
 
   /**
    * 获取热门博客
    */
-  getPopularBlogs(limit: number = 5): Promise<Blog[]> {
-    return apiService.get<Blog[]>('/blogs/popular', { params: { limit } })
+  getPopularBlogs(limit: number = 5): Promise<ApiResponse<BlogListItem[]>> {
+    return apiService.get<ApiResponse<BlogListItem[]>>('/blogs/popular', { params: { limit } })
   },
 
   /**
    * 获取最新博客
    */
-  getLatestBlogs(limit: number = 5): Promise<Blog[]> {
-    return apiService.get<Blog[]>('/blogs/latest', { params: { limit } })
+  getLatestBlogs(limit: number = 5): Promise<ApiResponse<BlogListItem[]>> {
+    return apiService.get<ApiResponse<BlogListItem[]>>('/blogs/latest', { params: { limit } })
   },
 
   /**
    * 获取博客分类列表
    */
-  getCategories(): Promise<BlogCategoriesResponse> {
-    return apiService.get<BlogCategoriesResponse>('/blogs/categories')
+  getCategories(): Promise<ApiResponse<string[]>> {
+    return apiService.get<ApiResponse<string[]>>('/blogs/categories')
   },
 
   /**
    * 获取博客标签列表
    */
-  getTags(): Promise<BlogTagsResponse> {
-    return apiService.get<BlogTagsResponse>('/blogs/tags')
+  getTags(): Promise<ApiResponse<string[]>> {
+    return apiService.get<ApiResponse<string[]>>('/blogs/tags')
   },
 
   /**
@@ -152,8 +150,8 @@ export const blogApi = {
   /**
    * 上传博客图片
    */
-  uploadImage(formData: FormData): Promise<UploadResponse> {
-    return apiService.upload<UploadResponse>('/blogs/upload/image', formData)
+  uploadImage(formData: FormData): Promise<ApiResponse<UploadResponse>> {
+    return apiService.upload<ApiResponse<UploadResponse>>('/blogs/upload/image', formData)
   }
 }
 
