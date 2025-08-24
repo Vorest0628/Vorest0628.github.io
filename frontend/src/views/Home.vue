@@ -27,7 +27,7 @@
           <div class="pinned-cards">
             <div 
               v-for="doc in pinnedDocuments" 
-              :key="doc._id" 
+              :key="doc.id || doc._id" 
               class="pinned-card document-card"
               @click="navigateToDocument(doc)"
             >
@@ -67,7 +67,7 @@
             <!-- 其他置顶博客 -->
             <div 
               v-for="blog in pinnedBlogs" 
-              :key="blog._id" 
+              :key="blog.id || blog._id" 
               class="pinned-card blog-card"
               @click="navigateToBlog(blog)"
             >
@@ -109,7 +109,7 @@
         <div v-else-if="recentBlogs.length > 0" class="recent-blogs">
                      <div 
              v-for="blog in recentBlogs" 
-             :key="blog._id" 
+             :key="blog.id || blog._id" 
              class="blog-item"
              @click="navigateToBlog(blog)"
            >
@@ -279,10 +279,9 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   if (isNaN(date.getTime())) return '未知时间'
   return date.toLocaleDateString('zh-CN', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 }
 

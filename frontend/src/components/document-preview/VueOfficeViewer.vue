@@ -158,7 +158,7 @@ const initializeDocument = async () => {
       console.log('🌐 使用Vercel Blob URL:', props.document.filePath)
     } else {
       // 从API获取文档内容
-      const response = await fetch(`/api/documents/${props.document._id}/content`)
+      const response = await fetch(`/api/documents/${props.document.id || props.document._id}/content`)
       if (!response.ok) {
         throw new Error('获取文档内容失败')
       }
@@ -194,7 +194,7 @@ const retry = () => {
 }
 
 const download = () => {
-  window.open(`/api/documents/${props.document._id}/download`, '_blank')
+  window.open(`/api/documents/${props.document.id || props.document._id}/download`, '_blank')
 }
 
 // 生命周期

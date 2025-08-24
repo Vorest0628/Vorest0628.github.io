@@ -73,7 +73,7 @@
     <div v-else class="document-list">
       <div 
         v-for="doc in filteredDocuments" 
-        :key="doc._id || doc.id"
+        :key="doc.id || doc._id"
         class="document-item"
       >
         <div class="doc-icon">
@@ -404,8 +404,8 @@ const previewDocument = async (doc) => {
   document.addEventListener('keydown', handleEscKey);
 
   try {
-    console.log('🔍 开始获取文档内容:', doc.type, doc._id || doc.id);
-    const blob = await documentApi.getDocumentContent(doc._id || doc.id);
+    console.log('🔍 开始获取文档内容:', doc.type, doc.id || doc._id);
+    const blob = await documentApi.getDocumentContent(doc.id || doc._id);
     console.log('📦 Blob信息:', {
       size: blob.size,
       type: blob.type
@@ -460,11 +460,11 @@ const handleEscKey = (event) => {
 const downloadDocument = async (doc) => {
   try {
     // Record the view/download action first
-    await documentApi.recordView(doc._id || doc.id)
+    await documentApi.recordView(doc.id || doc._id)
     console.log(`下载文档: ${doc.title}`)
 
     // Use the authenticated API service to get the file as a Blob
-    const blob = await documentApi.downloadDocument(doc._id || doc.id)
+    const blob = await documentApi.downloadDocument(doc.id || doc._id)
     
     // Create a local URL for the blob
     const downloadUrl = window.URL.createObjectURL(blob)
@@ -488,7 +488,7 @@ const downloadDocument = async (doc) => {
 }
 
 const getDownloadUrl = (doc) => {
-  const docId = doc._id || doc.id
+  const docId = doc.id || doc._id
   const baseUrl = import.meta.env.VITE_APP_API_URL
     || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
       ? 'https://api.shirakawananase.top/api'
@@ -497,7 +497,7 @@ const getDownloadUrl = (doc) => {
 }
 
 const getPreviewUrl = (doc) => {
-  const docId = doc._id || doc.id
+  const docId = doc.id || doc._id
   const baseUrl = import.meta.env.VITE_APP_API_URL
     || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
       ? 'https://api.shirakawananase.top/api'

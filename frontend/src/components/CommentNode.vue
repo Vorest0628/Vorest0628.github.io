@@ -66,7 +66,7 @@
     <div v-if="comment.replies && comment.replies.length > 0" class="comment-replies">
       <CommentNode
         v-for="reply in comment.replies"
-        :key="reply._id"
+        :key="reply.id || reply._id"
         :comment="reply"
         :depth="depth + 1"
         @comment-deleted="$emit('comment-deleted', $event)"
@@ -115,7 +115,7 @@ const canDelete = computed(() => {
   // 管理员可以删除任何评论
   if (authStore.user?.role === 'admin') return true;
   // 用户可以删除自己的评论
-  return authStore.user?.id === props.comment.author?._id;
+  return authStore.user?.id === (props.comment.author?.id || props.comment.author?._id);
 });
 
 // 添加计算属性
@@ -124,15 +124,16 @@ const canManageVisibility = computed(() => {
   // 管理员可以管理任何评论的可见性
   if (authStore.user?.role === 'admin') return true;
   // 用户可以管理自己评论的可见性
-  return authStore.user?.id === props.comment.author?._id;
+  return authStore.user?.id === (props.comment.author?.id || props.comment.author?._id);
 });
 
 const handleDelete = async () => {
   if (!confirm('确定要删除这条评论吗？其所有回复也将被一并删除。')) return;
 
   try {
-    await commentApi.deleteComment(props.comment._id);
-    emit('comment-deleted', props.comment._id);
+    const id = props.comment.id || props.comment._id;
+    await commentApi.deleteComment(id);
+    emit('comment-deleted', id);
     alert('评论已删除');
   } catch (error) {
     console.error('删除评论失败:', error);
@@ -152,7 +153,7 @@ const submitReply = async () => {
       content: replyContent.value,
       targetId: props.comment.targetId,
       targetType: props.comment.targetType,
-      parentComment: props.comment._id,
+      parentComment: (props.comment.id || props.comment._id),
       isPublic: replyIsPublic.value
     };
     const response = await commentApi.createComment(replyData);
@@ -174,7 +175,8 @@ const submitReply = async () => {
 // 添加方法
 const checkLikeStatus = async () => {
   try {
-    const response = await commentApi.checkLikeStatus(props.comment._id);
+    const id = props.comment.id || props.comment._id;
+    const response = await commentApi.checkLikeStatus(id);
     if (response.success) {
       isLiked.value = response.data.isLiked;
     }
@@ -191,10 +193,10 @@ const toggleLike = async () => {
 
   try {
     if (isLiked.value) {
-      await commentApi.unlikeComment(props.comment._id);
+      await commentApi.unlikeComment(props.comment.id || props.comment._id);
       props.comment.likeCount = Math.max(0, (props.comment.likeCount || 0) - 1);
     } else {
-      await commentApi.likeComment(props.comment._id);
+      await commentApi.likeComment(props.comment.id || props.comment._id);
       props.comment.likeCount = (props.comment.likeCount || 0) + 1;
     }
     isLiked.value = !isLiked.value;
@@ -207,7 +209,7 @@ const toggleLike = async () => {
 const toggleVisibility = async () => {
   try {
     const newVisibility = !props.comment.isPublic;
-    await commentApi.updateCommentVisibility(props.comment._id, newVisibility);
+    await commentApi.updateCommentVisibility(props.comment.id || props.comment._id, newVisibility);
     props.comment.isPublic = newVisibility;
     alert(`评论已${newVisibility ? '设为公开' : '设为私有'}`);
   } catch (error) {

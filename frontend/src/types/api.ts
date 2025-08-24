@@ -56,7 +56,7 @@ ApiResponse API 响应
 
 // 基础实体类型
 export interface User {
-  id: number
+  id: string
   username: string
   email: string
   avatar?: string
@@ -93,45 +93,48 @@ export interface BlogListItem {
 }
 
 export interface Comment {
-  id: number
+  id?: string
+  _id?: string
   content: string
-  targetType: 'blog' | 'gallery' | 'document' | 'playlist'
-  targetId: number
-  authorId?: number
-  author?: User
+  targetType: 'Blog' | 'Gallery' | 'Document' | 'Playlist' | 'General'
+  targetId?: string
+  authorId?: string
+  author?: User | { _id: string; username: string }
   authorName?: string
   authorEmail?: string
-  parentId?: number
-  parent?: Comment
+  parentId?: string
+  parentComment?: string
   replies?: Comment[]
-  status: 'approved' | 'pending' | 'rejected'
-  likeCount: number
-  isPublic: boolean
-  createdAt: string
-  updatedAt: string
+  status?: 'approved' | 'pending' | 'rejected'
+  likeCount?: number
+  isPublic?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Document {
-  id: number
+  id: string
   title: string
   description?: string
-  fileName: string
   filePath: string
-  fileType: string
   fileSize: number
+  formattedSize?: string
+  type: 'PDF' | 'DOCX' | 'PPT' | 'PPTX' | 'XLSX' | 'TXT' | 'MD' | '其他'
   category: string
-  tags: string[]
-  viewCount: number
+  secondaryTags: string[]
   downloadCount: number
+  author: string
   isPublic: boolean
-  uploaderId: number
-  uploader?: User
-  createdAt: string
-  updatedAt: string
+  previewUrl?: string
+  date: string
+  lastModified?: string
+  status: 'draft' | 'published' | 'pinned'
+  pinnedPriority: number
+  views?: number
 }
 
 export interface FriendLink {
-  id: number
+  id: string
   name: string
   url: string
   description: string
@@ -147,7 +150,7 @@ export interface FriendLink {
 }
 
 export interface GalleryImage {
-  id: number
+  id: string
   title: string
   description?: string
   imageUrl: string
@@ -157,7 +160,7 @@ export interface GalleryImage {
   isPublic: boolean
   viewCount: number
   likeCount: number
-  uploaderId: number
+  uploaderId: string
   uploader?: User
   createdAt: string
   updatedAt: string
@@ -224,8 +227,9 @@ export interface DocumentCreateData {
   title: string
   description?: string
   category: string
-  tags: string[]
+  secondaryTags: string[]
   isPublic: boolean
+  status?: 'draft' | 'published' | 'pinned'
 }
 
 export interface FriendLinkCreateData {
@@ -281,9 +285,12 @@ export interface CommentListParams extends PaginationParams {
 }
 
 export interface DocumentListParams extends PaginationParams {
-  keyword?: string
   category?: string
-  fileType?: string
+  type?: string
+  status?: 'draft' | 'published' | 'pinned'
+  search?: string
+  // 兼容字段：后端使用 limit，这里保留映射
+  limit?: number
 }
 
 export interface FriendLinkListParams extends PaginationParams {
@@ -327,10 +334,15 @@ export interface CommentListResponse {
 }
 
 export interface DocumentListResponse {
-  items: Document[]
-  total: number
-  page: number
-  pageSize: number
+  success: boolean
+  data: Document[]
+  pagination: {
+    current: number
+    pageSize: number
+    total: number
+    pages: number
+  }
+  message?: string
 }
 
 export interface FriendLinkListResponse {

@@ -15,8 +15,8 @@ import type {
   RoleUpdateData,
   StatusUpdateData,
   ModerationData,
-  UploadResponse,
-  PaginationParams
+  PaginationParams,
+  ApiResponse
 } from '../types/api'
 
 /*
@@ -85,124 +85,124 @@ export const adminApi = {
   /**
    * 获取管理员控制台数据
    */
-  getDashboard(): Promise<AdminDashboardData> {
-    return apiService.get<AdminDashboardData>('/admin/dashboard')
+  getDashboard(): Promise<ApiResponse<any>> {
+    return apiService.get<ApiResponse<any>>('/admin/dashboard')
   },
 
   // ========== 用户管理 ==========
   /**
    * 获取所有用户
    */
-  getAllUsers(params?: PaginationParams): Promise<{ items: User[]; total: number; page: number; pageSize: number }> {
-    return apiService.get('/admin/users', { params })
+  getAllUsers(params?: PaginationParams): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
+    return apiService.get<ApiResponse<{ users: User[]; pagination: any }>>('/admin/users', { params })
   },
 
   /**
    * 更新用户角色
    */
-  updateUserRole(id: number, data: RoleUpdateData): Promise<User> {
-    return apiService.put<User>(`/admin/users/${id}/role`, data)
+  updateUserRole(id: string, data: RoleUpdateData): Promise<ApiResponse<{ user: User }>> {
+    return apiService.put<ApiResponse<{ user: User }>>(`/admin/users/${id}/role`, data)
   },
 
   /**
    * 删除用户
    */
-  deleteUser(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/admin/users/${id}`)
+  deleteUser(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/admin/users/${id}`)
   },
 
   // ========== 博客管理 ==========
   /**
    * 获取所有博客（包括草稿）
    */
-  getAllBlogs(params?: PaginationParams): Promise<{ items: Blog[]; total: number; page: number; pageSize: number }> {
-    return apiService.get('/admin/blogs', { params })
+  getAllBlogs(params?: PaginationParams): Promise<ApiResponse<{ blogs: Blog[]; pagination: any }>> {
+    return apiService.get<ApiResponse<{ blogs: Blog[]; pagination: any }>>('/admin/blogs', { params })
   },
 
   /**
    * 创建博客
    */
-  createBlog(data: BlogCreateData): Promise<Blog> {
-    return apiService.post<Blog>('/admin/blogs', data)
+  createBlog(data: BlogCreateData): Promise<ApiResponse<{ blog: Blog }>> {
+    return apiService.post<ApiResponse<{ blog: Blog }>>('/admin/blogs', data)
   },
 
   /**
    * 获取单个博客详情
    */
-  getBlogById(id: number): Promise<Blog> {
-    return apiService.get<Blog>(`/admin/blogs/${id}`)
+  getBlogById(id: string): Promise<ApiResponse<Blog>> {
+    return apiService.get<ApiResponse<Blog>>(`/admin/blogs/${id}`)
   },
 
   /**
    * 更新博客
    */
-  updateBlog(id: number, data: BlogUpdateData): Promise<Blog> {
-    return apiService.put<Blog>(`/admin/blogs/${id}`, data)
+  updateBlog(id: string, data: BlogUpdateData): Promise<ApiResponse<{ blog: Blog }>> {
+    return apiService.put<ApiResponse<{ blog: Blog }>>(`/admin/blogs/${id}`, data)
   },
 
   /**
    * 更新博客状态
    */
-  updateBlogStatus(id: number, data: StatusUpdateData): Promise<Blog> {
-    return apiService.put<Blog>(`/admin/blogs/${id}/status`, data)
+  updateBlogStatus(id: string, data: StatusUpdateData): Promise<ApiResponse<{ blog: Blog }>> {
+    return apiService.put<ApiResponse<{ blog: Blog }>>(`/admin/blogs/${id}/status`, data)
   },
 
   /**
    * 删除博客
    */
-  deleteBlog(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/admin/blogs/${id}`)
+  deleteBlog(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/admin/blogs/${id}`)
   },
 
   /**
    * 导入 Markdown（支持携带资源 zip/多文件）
    */
-  importMarkdown(formData: FormData): Promise<ImportMarkdownResponse> {
-    return apiService.upload<ImportMarkdownResponse>('/admin/blogs/import-markdown', formData)
+  importMarkdown(formData: FormData): Promise<ApiResponse<any>> {
+    return apiService.upload<ApiResponse<any>>('/admin/blogs/import-markdown', formData)
   },
 
   // ========== 评论管理 ==========
   /**
    * 获取所有评论（包括未审核的）
    */
-  getAllComments(params?: PaginationParams): Promise<{ items: Comment[]; total: number; page: number; pageSize: number }> {
-    return apiService.get('/admin/comments', { params })
+  getAllComments(params?: Record<string, any>): Promise<ApiResponse<{ comments: Comment[]; pagination: any }>> {
+    return apiService.get<ApiResponse<{ comments: Comment[]; pagination: any }>>('/admin/comments', { params })
   },
 
   /**
    * 审核评论
    */
-  moderateComment(id: number, data: ModerationData): Promise<Comment> {
-    return apiService.put<Comment>(`/admin/comments/${id}/moderate`, data)
+  moderateComment(id: string, data: ModerationData): Promise<ApiResponse<Comment>> {
+    return apiService.put<ApiResponse<Comment>>(`/admin/comments/${id}/moderate`, data)
   },
 
   /**
    * 删除评论
    */
-  deleteComment(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/admin/comments/${id}`)
+  deleteComment(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/admin/comments/${id}`)
   },
 
   /**
    * 更新评论公开状态
    */
-  updateCommentVisibility(id: number, isPublic: boolean): Promise<Comment> {
-    return apiService.put<Comment>(`/admin/comments/${id}/visibility`, { isPublic })
+  updateCommentVisibility(id: string, isPublic: boolean): Promise<ApiResponse<{ comment: Comment }>> {
+    return apiService.put<ApiResponse<{ comment: Comment }>>(`/admin/comments/${id}/visibility`, { isPublic })
   },
 
   // ========== 图库管理 ==========
   /**
    * 获取所有图片（包括未发布的）
    */
-  getAllImages(params?: PaginationParams): Promise<{ items: GalleryImage[]; total: number; page: number; pageSize: number }> {
-    return apiService.get('/admin/gallery', { params })
+  getAllImages(params?: PaginationParams): Promise<ApiResponse<{ images: GalleryImage[]; pagination: any }>> {
+    return apiService.get<ApiResponse<{ images: GalleryImage[]; pagination: any }>>('/admin/gallery', { params })
   },
 
   /**
    * 上传图片
    */
-  uploadImage(formData: FormData): Promise<GalleryImage> {
-    return apiService.post<GalleryImage>('/admin/gallery/upload', formData, {
+  uploadImage(formData: FormData): Promise<ApiResponse<GalleryImage>> {
+    return apiService.post<ApiResponse<GalleryImage>>('/admin/gallery/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   },
@@ -210,51 +210,51 @@ export const adminApi = {
   /**
    * 更新图片信息
    */
-  updateImage(id: number, data: Partial<GalleryImageCreateData>): Promise<GalleryImage> {
-    return apiService.put<GalleryImage>(`/admin/gallery/${id}`, data)
+  updateImage(id: string, data: Partial<GalleryImageCreateData>): Promise<ApiResponse<GalleryImage>> {
+    return apiService.put<ApiResponse<GalleryImage>>(`/admin/gallery/${id}`, data)
   },
 
   /**
    * 删除图片
    */
-  deleteImage(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/admin/gallery/${id}`)
+  deleteImage(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/admin/gallery/${id}`)
   },
 
   // ========== 文档管理 ==========
   /**
    * 获取所有文档（包括未发布的）
    */
-  getAllDocuments(params?: PaginationParams): Promise<{ items: Document[]; total: number; page: number; pageSize: number }> {
-    return apiService.get('/admin/documents', { params })
+  getAllDocuments(params?: PaginationParams): Promise<ApiResponse<{ documents: Document[]; pagination: any }>> {
+    return apiService.get<ApiResponse<{ documents: Document[]; pagination: any }>>('/admin/documents', { params })
   },
 
   /**
    * 创建文档
    */
-  createDocument(data: DocumentCreateData): Promise<Document> {
-    return apiService.post<Document>('/admin/documents', data)
+  createDocument(data: DocumentCreateData): Promise<ApiResponse<Document>> {
+    return apiService.post<ApiResponse<Document>>('/admin/documents', data)
   },
 
   /**
    * 更新文档
    */
-  updateDocument(id: number, data: Partial<DocumentCreateData>): Promise<Document> {
-    return apiService.put<Document>(`/admin/documents/${id}`, data)
+  updateDocument(id: string, data: Partial<DocumentCreateData>): Promise<ApiResponse<Document>> {
+    return apiService.put<ApiResponse<Document>>(`/admin/documents/${id}`, data)
   },
 
   /**
    * 删除文档
    */
-  deleteDocument(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/admin/documents/${id}`)
+  deleteDocument(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/admin/documents/${id}`)
   },
 
   /**
    * 上传文档文件
    */
-  uploadDocumentFile(formData: FormData): Promise<UploadResponse> {
-    return apiService.post<UploadResponse>('/documents/upload', formData, {
+  uploadDocumentFile(formData: FormData): Promise<ApiResponse<any>> {
+    return apiService.post<ApiResponse<any>>('/documents/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   },
@@ -263,29 +263,29 @@ export const adminApi = {
   /**
    * 获取所有友链
    */
-  getAllFriendLinks(params?: PaginationParams): Promise<{ items: FriendLink[]; total: number; page: number; pageSize: number }> {
-    return apiService.get('/admin/friendlinks', { params })
+  getAllFriendLinks(params?: PaginationParams): Promise<ApiResponse<{ friendLinks: FriendLink[]; pagination: any }>> {
+    return apiService.get<ApiResponse<{ friendLinks: FriendLink[]; pagination: any }>>('/admin/friendlinks', { params })
   },
 
   /**
    * 添加友链
    */
-  createFriendLink(data: FriendLinkCreateData): Promise<FriendLink> {
-    return apiService.post<FriendLink>('/admin/friendlinks', data)
+  createFriendLink(data: FriendLinkCreateData): Promise<ApiResponse<FriendLink>> {
+    return apiService.post<ApiResponse<FriendLink>>('/admin/friendlinks', data)
   },
 
   /**
    * 更新友链状态
    */
-  updateFriendLinkStatus(id: number, data: StatusUpdateData): Promise<FriendLink> {
-    return apiService.put<FriendLink>(`/admin/friendlinks/${id}/status`, data)
+  updateFriendLinkStatus(id: string, data: StatusUpdateData): Promise<ApiResponse<{ friendLink: FriendLink }>> {
+    return apiService.put<ApiResponse<{ friendLink: FriendLink }>>(`/admin/friendlinks/${id}/status`, data)
   },
 
   /**
    * 删除友链
    */
-  deleteFriendLink(id: number): Promise<{ success: boolean }> {
-    return apiService.delete<{ success: boolean }>(`/admin/friendlinks/${id}`)
+  deleteFriendLink(id: string): Promise<{ success: boolean; message?: string }> {
+    return apiService.delete<{ success: boolean; message?: string }>(`/admin/friendlinks/${id}`)
   }
 }
 

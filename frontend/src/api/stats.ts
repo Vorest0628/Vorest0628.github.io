@@ -1,5 +1,5 @@
 import { apiService } from '../services/api'
-import type { StatsResponse } from '../types/api'
+import type { StatsResponse, ApiResponse } from '../types/api'
 
 /*
 StatsApi输出函数一览：
@@ -33,9 +33,9 @@ export interface VisitData {
  * 热门内容数据
  */
 export interface PopularContent {
-  blogs: Array<{ id: number; title: string; viewCount: number }>
-  images: Array<{ id: number; title: string; viewCount: number }>
-  documents: Array<{ id: number; title: string; viewCount: number }>
+  blogs: Array<{ id: string; title: string; viewCount: number }>
+  images: Array<{ id: string; title: string; viewCount: number }>
+  documents: Array<{ id: string; title: string; viewCount: number }>
 }
 
 /**
@@ -45,15 +45,15 @@ export const statsApi = {
   /**
    * 获取网站基础统计数据
    */
-  getWebsiteStats(): Promise<StatsResponse> {
-    return apiService.get<StatsResponse>('/stats')
+  getWebsiteStats(): Promise<ApiResponse<StatsResponse>> {
+    return apiService.get<ApiResponse<StatsResponse>>('/stats')
   },
 
   /**
    * 获取热门内容统计
    */
-  getPopularContent(): Promise<PopularContent> {
-    return apiService.get<PopularContent>('/stats/popular')
+  getPopularContent(): Promise<ApiResponse<{ recentBlogs: any[]; latestComments: any[] }>> {
+    return apiService.get<ApiResponse<{ recentBlogs: any[]; latestComments: any[] }>>('/stats/popular')
   },
 
   /**

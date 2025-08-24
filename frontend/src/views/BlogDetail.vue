@@ -115,7 +115,7 @@
         <CommentNode
           v-else
           v-for="comment in comments"
-          :key="comment._id"
+          :key="comment.id || comment._id"
           :comment="comment"
           @comment-deleted="handleCommentDeleted"
           @comment-added="handleCommentAdded"
@@ -299,7 +299,7 @@ const handleCommentAdded = (newComment) => {
     // Add as a reply
     const addReply = (comments, reply) => {
       for (const comment of comments) {
-        if (comment._id === reply.parentComment) {
+        if ((comment.id || comment._id) === reply.parentComment) {
           if (!comment.replies) {
             comment.replies = [];
           }
@@ -320,7 +320,7 @@ const handleCommentAdded = (newComment) => {
 const handleCommentDeleted = (commentId) => {
   const removeComment = (comments, id) => {
     for (let i = comments.length - 1; i >= 0; i--) {
-      if (comments[i]._id === id) {
+      if ((comments[i].id || comments[i]._id) === id) {
         comments.splice(i, 1);
         return true;
       }

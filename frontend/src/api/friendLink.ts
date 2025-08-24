@@ -95,7 +95,7 @@ export const friendLinkApi = {
   /**
    * 获取友情链接详情
    */
-  getFriendLinkById(id: number): Promise<FriendLink> {
+  getFriendLinkById(id: string): Promise<FriendLink> {
     return apiService.get<FriendLink>(`/friend-links/${id}`)
   },
 
@@ -123,28 +123,28 @@ export const friendLinkApi = {
   /**
    * 更新友情链接
    */
-  updateFriendLink(id: number, data: Partial<FriendLinkCreateData>): Promise<FriendLink> {
+  updateFriendLink(id: string, data: Partial<FriendLinkCreateData>): Promise<FriendLink> {
     return apiService.put<FriendLink>(`/friend-links/${id}`, data)
   },
 
   /**
    * 删除友情链接
    */
-  deleteFriendLink(id: number): Promise<{ success: boolean }> {
+  deleteFriendLink(id: string): Promise<{ success: boolean }> {
     return apiService.delete<{ success: boolean }>(`/friend-links/${id}`)
   },
 
   /**
    * 审核友情链接申请（管理员）
    */
-  reviewFriendLink(id: number, data: ReviewData): Promise<{ success: boolean }> {
+  reviewFriendLink(id: string, data: ReviewData): Promise<{ success: boolean }> {
     return apiService.post<{ success: boolean }>(`/friend-links/${id}/review`, data)
   },
 
   /**
    * 检查友情链接状态
    */
-  checkFriendLinkStatus(id: number): Promise<{ status: 'online' | 'offline'; responseTime?: number }> {
+  checkFriendLinkStatus(id: string): Promise<{ status: 'online' | 'offline'; responseTime?: number }> {
     return apiService.post<{ status: 'online' | 'offline'; responseTime?: number }>(`/friend-links/${id}/check`)
   },
 
@@ -209,14 +209,14 @@ export const friendLinkApi = {
   /**
    * 点击友情链接（记录访问）
    */
-  clickFriendLink(id: number): Promise<{ success: boolean; clickCount: number }> {
+  clickFriendLink(id: string): Promise<{ success: boolean; clickCount: number }> {
     return apiService.post<{ success: boolean; clickCount: number }>(`/friend-links/${id}/click`)
   },
 
   /**
    * 举报友情链接
    */
-  reportFriendLink(id: number, data: ReportData): Promise<{ success: boolean }> {
+  reportFriendLink(id: string, data: ReportData): Promise<{ success: boolean }> {
     return apiService.post<{ success: boolean }>(`/friend-links/${id}/report`, data)
   }
 }

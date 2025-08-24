@@ -2,11 +2,7 @@ import { apiService } from '../services/api'
 import type { 
   LoginCredentials, 
   LoginResponse, 
-  AuthResponse,
-  Blog,
-  BlogListParams,
-  BlogListResponse,
-  SearchParams
+  AuthResponse
 } from '../types/api'
 
 /*
@@ -41,10 +37,10 @@ export interface GlobalSearchParams {
  * 全局搜索结果
  */
 export interface GlobalSearchResult {
-  blogs: Blog[]
-  documents: Array<{ id: number; title: string; description?: string }>
-  images: Array<{ id: number; title: string; description?: string }>
-  comments: Array<{ id: number; content: string; targetType: string; targetId: number }>
+  blogs: Array<{ id: string; title: string; excerpt?: string; category?: string; date?: string }>
+  documents: Array<{ id: string; title: string; description?: string }>
+  images: Array<{ id: string; title: string; description?: string }>
+  comments: Array<{ id: string; content: string; targetType: string; targetId?: string }>
   total: number
 }
 
@@ -65,28 +61,7 @@ export const authApi = {
     apiService.get<AuthResponse>('/auth/me')
 }
 
-/**
- * 博客相关 API
- */
-export const blogApi = {
-  /**
-   * 获取博客列表
-   */
-  getBlogs: (params: BlogListParams = {}): Promise<BlogListResponse> => 
-    apiService.get<BlogListResponse>('/blogs', { params }),
-  
-  /**
-   * 获取单个博客
-   */
-  getBlog: (id: number): Promise<Blog> => 
-    apiService.get<Blog>(`/blogs/${id}`),
-  
-  /**
-   * 搜索博客
-   */
-  searchBlogs: (q: string, params: Omit<SearchParams, 'q'> = {}): Promise<BlogListResponse> => 
-    apiService.get<BlogListResponse>('/blogs/search', { params: { q, ...params } })
-}
+// 注意：避免与 ./blog 重复，这里不再定义 blog API，使用下方的模块导出
 
 /**
  * 全局搜索 API

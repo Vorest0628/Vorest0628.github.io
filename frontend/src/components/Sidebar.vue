@@ -32,11 +32,11 @@
           <p>加载中...</p>
         </div>
         <ul v-else-if="recentBlogs.length > 0">
-          <li v-for="blog in recentBlogs" :key="blog._id">
-            <a href="#" @click.prevent="goToBlogBySlug(blog.slug || blog._id)">
+          <li v-for="blog in recentBlogs" :key="blog.id || blog._id">
+            <a href="#" @click.prevent="goToBlogBySlug(blog.slug || blog.id || blog._id)">
               {{ blog.title }}
             </a>
-            <span class="post-date">{{ formatDate(blog.createdAt) }}</span>
+            <span class="post-date">{{ formatDate(blog.createdAt || blog.date) }}</span>
           </li>
         </ul>
         <div v-else class="empty-content">
@@ -117,16 +117,17 @@ const getStats = async () => {
     
     if (response.success) {
       // 合并API数据和默认值，确保所有字段都有值
+      const s = response.data
       stats.value = {
-        visitCount: response.data?.visitCount || 0,
-        blogsCount: response.data?.blogsCount || 0,
-        commentsCount: response.data?.commentsCount || 0,
-        blogCommentsCount: response.data?.blogCommentsCount || 0,
-        messageBoardCommentsCount: response.data?.messageBoardCommentsCount || 0,
-        documentsCount: response.data?.documentsCount || 0,
-        imagesCount: response.data?.imagesCount || 0,
-        songsCount: response.data?.songsCount || 0,
-        totalContent: response.data?.totalContent || 0
+        visitCount: s?.visitCount || 0,
+        blogsCount: s?.blogsCount || 0,
+        commentsCount: s?.commentsCount || 0,
+        blogCommentsCount: s?.blogCommentsCount || 0,
+        messageBoardCommentsCount: s?.messageBoardCommentsCount || 0,
+        documentsCount: s?.documentsCount || 0,
+        imagesCount: s?.imagesCount || 0,
+        songsCount: s?.songsCount || 0,
+        totalContent: s?.totalContent || 0
       }
     } else {
       console.error('获取统计数据失败:', response.message)

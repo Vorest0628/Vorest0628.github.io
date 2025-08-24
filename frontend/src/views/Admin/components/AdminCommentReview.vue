@@ -34,7 +34,7 @@
     </div>
     
     <div v-else class="comment-list">
-      <div v-for="comment in comments" :key="comment._id || comment.id" class="comment-card">
+      <div v-for="comment in comments" :key="comment.id || comment._id" class="comment-card">
         <div class="comment-info">
           <div class="comment-header">
             <div class="user-info">
@@ -86,7 +86,7 @@
             🔗 跳转
           </button>
           <button 
-            @click="deleteComment(comment._id || comment.id)" 
+            @click="deleteComment(comment.id || comment._id)" 
             class="delete-btn"
           >
             🗑️ 删除
@@ -168,7 +168,7 @@ const deleteComment = async (id) => {
 const toggleVisibility = async (comment) => {
   try {
     const newVisibility = !comment.isPublic
-    const response = await adminApi.updateCommentVisibility(comment._id || comment.id, newVisibility)
+    const response = await adminApi.updateCommentVisibility((comment.id || comment._id), newVisibility)
     if (response.success) {
       comment.isPublic = newVisibility
       alert(`评论已${newVisibility ? '设为公开' : '设为私有'}`)
@@ -186,7 +186,7 @@ const jumpToSource = (comment) => {
   if (comment.targetType === 'blog' || comment.targetType === 'Blog') {
     if (comment.targetId) {
       // 跳转到博客详情页
-      const blogId = typeof comment.targetId === 'object' ? comment.targetId._id : comment.targetId
+      const blogId = typeof comment.targetId === 'object' ? (comment.targetId.id || comment.targetId._id) : comment.targetId
       router.push(`/blog/${blogId}`)
     } else {
       alert('博客ID缺失，无法跳转')

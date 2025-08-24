@@ -18,7 +18,7 @@
 
     <!-- 评论列表 -->
     <div v-else class="comments-list">
-      <div v-for="comment in comments" :key="comment._id" class="comment-card">
+      <div v-for="comment in comments" :key="comment.id || comment._id" class="comment-card">
         <div class="comment-header">
           <div class="comment-meta">
             <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
@@ -56,7 +56,7 @@
             {{ comment.isPublic ? '设为私有' : '设为公开' }}
           </button>
           <button @click="jumpToSource(comment)" class="jump-btn">跳转到来源</button>
-          <button @click="deleteComment(comment._id)" class="delete-btn">删除</button>
+          <button @click="deleteComment(comment.id || comment._id)" class="delete-btn">删除</button>
         </div>
       </div>
       
@@ -140,7 +140,7 @@ const loadComments = async () => {
           _id: '1',
           content: '这是一条博客评论测试',
           isPublic: true,
-          targetType: 'blog',
+          targetType: 'Blog',
           targetId: 'blog123',
           targetTitle: '前端开发技巧分享',
           createdAt: new Date().toISOString(),
@@ -150,7 +150,7 @@ const loadComments = async () => {
           _id: '2',
           content: '这是对另一条评论的回复',
           isPublic: true,
-          targetType: 'blog',
+          targetType: 'Blog',
           targetId: 'blog456',
           targetTitle: 'Vue3 开发实战',
           createdAt: new Date(Date.now() - 86400000).toISOString(),
@@ -162,7 +162,7 @@ const loadComments = async () => {
           _id: '3',
           content: '文档评论测试',
           isPublic: true,
-          targetType: 'document',
+          targetType: 'Document',
           targetId: 'doc789',
           targetTitle: '开发文档说明',
           createdAt: new Date(Date.now() - 172800000).toISOString(),
@@ -182,7 +182,7 @@ const jumpToSource = (comment) => {
   if (comment.targetType === 'blog' || comment.targetType === 'Blog') {
     if (comment.targetId) {
       // 跳转到博客详情页
-      const blogId = typeof comment.targetId === 'object' ? comment.targetId._id : comment.targetId
+      const blogId = typeof comment.targetId === 'object' ? (comment.targetId.id || comment.targetId._id) : comment.targetId
       router.push(`/blog/${blogId}`)
     } else {
       alert('博客ID缺失，无法跳转')
@@ -264,10 +264,10 @@ const saveEdit = async () => {
   
   saving.value = true
   try {
-    const response = await userApi.updateMyComment(editingComment.value._id, editForm.value)
+    const response = await userApi.updateMyComment((editingComment.value.id || editingComment.value._id), editForm.value)
     if (response.success) {
       // 更新本地数据
-      const index = comments.value.findIndex(c => c._id === editingComment.value._id)
+      const index = comments.value.findIndex(c => (c.id || c._id) === (editingComment.value.id || editingComment.value._id))
       if (index !== -1) {
         comments.value[index] = { ...comments.value[index], ...editForm.value }
       }
@@ -287,7 +287,7 @@ const saveEdit = async () => {
 // 切换公开状态
 const togglePublic = async (comment) => {
   try {
-    const response = await userApi.updateMyComment(comment._id, { isPublic: !comment.isPublic })
+    const response = await userApi.updateMyComment((comment.id || comment._id), { isPublic: !comment.isPublic })
     if (response.success) {
       comment.isPublic = !comment.isPublic
       alert(`评论已${comment.isPublic ? '公开' : '设为私有'}`)
@@ -307,7 +307,7 @@ const deleteComment = async (commentId) => {
   try {
     const response = await userApi.deleteMyComment(commentId)
     if (response.success) {
-      comments.value = comments.value.filter(c => c._id !== commentId)
+      comments.value = comments.value.filter(c => (c.id || c._id) !== commentId)
       alert('评论删除成功！')
     } else {
       throw new Error(response.message || '删除失败')

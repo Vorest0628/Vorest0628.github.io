@@ -59,7 +59,7 @@ export const galleryApi = {
   /**
    * 获取图片详情
    */
-  getImageById(id: number): Promise<GalleryImage> {
+  getImageById(id: string): Promise<GalleryImage> {
     return apiService.get<GalleryImage>(`/gallery/${id}`)
   },
 
@@ -79,14 +79,14 @@ export const galleryApi = {
   /**
    * 更新图片信息 (ADMIN)
    */
-  updateImage(id: number, data: Partial<GalleryImageCreateData>): Promise<GalleryImage> {
+  updateImage(id: string, data: Partial<GalleryImageCreateData>): Promise<GalleryImage> {
     return apiService.put<GalleryImage>(`/gallery/${id}`, data)
   },
 
   /**
    * 删除图片 (ADMIN)
    */
-  deleteImage(id: number): Promise<{ success: boolean }> {
+  deleteImage(id: string): Promise<{ success: boolean }> {
     return apiService.delete<{ success: boolean }>(`/gallery/${id}`)
   },
 
