@@ -77,12 +77,14 @@
                 {{ tag }}
               </span>
             </div>
+          </div>
+          <div class="post-aside" @click.stop>
+            <div class="post-cover" v-if="getCoverSrc(post)">
+              <img :src="getCoverSrc(post)" alt="预览图" loading="lazy" decoding="async" @error="onCoverError(post)" />
+            </div>
             <div class="post-footer">
               <span class="read-more">阅读更多 →</span>
             </div>
-          </div>
-          <div class="post-cover" v-if="getCoverSrc(post)" @click.stop>
-            <img :src="getCoverSrc(post)" alt="预览图" loading="lazy" decoding="async" @error="onCoverError(post)" />
           </div>
         </div>
       </article>
@@ -351,29 +353,59 @@ h1 {
   border: 1px solid #eee; /* 简化边框 */
   border-left: 3px solid skyblue; /* 减小左边框 */
   box-shadow: none; /* 去除阴影 */
+  min-height: 200px;
 }
 
 .post-main {
   display: flex;
   gap: 16px;
+  height: 100%;
 }
 
 .post-body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-aside {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .post-cover {
-  width: 220px;
-  flex-shrink: 0;
-  align-self: center;
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 比例盒，保证等高同时展示完整图的缩放 */
+  background: #f8f8f8;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.3s;
 }
 
 .post-cover img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   border-radius: 6px;
   display: block;
+  object-fit: contain; /* 在固定比例盒内完整展示图片 */
+  background-color: #f8f8f8;
+  transition: all 0.3s;
+}
+
+.blog-post:hover .post-cover {
+  background: #f0f0f0;
+}
+
+.blog-post:hover .post-cover img {
+  background-color: #f0f0f0;
 }
 
 .blog-post:hover {
@@ -386,6 +418,12 @@ h1 {
   color: #333;
   margin-bottom: 10px;
   font-size: 1.3rem; /* 减小字体 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 .post-meta {
@@ -408,6 +446,12 @@ h1 {
   color: #333; /* 统一颜色 */
   line-height: 1.6;
   margin-bottom: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .post-tags {
@@ -427,6 +471,7 @@ h1 {
 
 .post-footer {
   text-align: right;
+  margin-top: 8px;
 }
 
 .read-more {
@@ -533,12 +578,16 @@ h1 {
   
   .blog-post {
     padding: 20px;
+    min-height: unset;
   }
   .post-main {
     flex-direction: column;
   }
-  .post-cover {
+  .post-aside {
     width: 100%;
+  }
+  .post-cover {
+    padding-bottom: 56.25%;
   }
   
   .post-meta {

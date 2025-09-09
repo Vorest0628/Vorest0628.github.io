@@ -30,25 +30,28 @@
     <!-- 文章内容 -->
     <article v-else class="article">
       <!-- 文章头部 -->
-      <header class="article-header">
-        <div v-if="coverSrc" class="article-cover">
+      <div v-if="coverSrc" class="article-cover">
           <img :src="coverSrc" alt="封面图" loading="lazy" decoding="async" @error="onDetailCoverError" />
-        </div>
-        <h1>{{ article.title }}</h1>
-        <div class="article-meta">
-          <div class="meta-info">
-            <span class="date">发布时间：{{ formatDate(article.date) }}</span>
-            <span class="category">分类：{{ article.category }}</span>
-            <span class="views">阅读：{{ article.viewCount }} 次</span>
-          </div>
-          <div class="article-tags">
-            <span 
-              v-for="tag in article.tags" 
-              :key="tag"
-              class="tag"
-            >
-              # {{ tag }}
-            </span>
+        </div> 
+      <header class="article-header">
+        
+        <div class="article-info">
+          <h1>{{ article.title }}</h1>
+          <div class="article-meta">
+            <div class="meta-info">
+              <span class="date">发布时间：{{ formatDate(article.date) }}</span>
+              <span class="category">分类：{{ article.category }}</span>
+              <span class="views">阅读：{{ article.viewCount }} 次</span>
+            </div>
+            <div class="article-tags">
+              <span 
+                v-for="tag in article.tags" 
+                :key="tag"
+                class="tag"
+              >
+                # {{ tag }}
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -489,14 +492,14 @@ watch(() => route.params.id, (newId) => {
 }
 
 .article-cover img {
-  width: 100%;
-  height: auto;
+  width: auto;
+  height: 30rem;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
   display: block;
+  margin: 1.5rem auto;
 }
 
-.article-header h1 {
+.article-info h1 {
   font-size: 2.8rem;
   font-weight: 700;
   color: #333;
