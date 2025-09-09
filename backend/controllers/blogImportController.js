@@ -28,7 +28,11 @@ const uploadImage = [
       if (!req.file) return res.status(400).json({ success: false, message: '请选择图片' })
       const { buffer, mimetype, originalname } = req.file
       const meta = await sharp(buffer).metadata()
-      const key = `blog-images/${Date.now()}-${originalname}`
+      // 将文件名限制在 ASCII 安全字符，避免 Blob 存储对特殊字符路径返回 400
+      const sanitizedName = String(originalname || 'image')
+        .toLowerCase()
+        .replace(/[^a-z0-9_.-]/g, '-')
+      const key = `blog-images/${Date.now()}-${sanitizedName}`
       const url = await uploadBufferToBlob(key, buffer, mimetype)
       return res.json({
         success: true,
