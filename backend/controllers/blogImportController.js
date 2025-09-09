@@ -91,6 +91,9 @@ const importMarkdown = [
         blog.tags = tags.length ? tags : blog.tags
         blog.status = status || blog.status
         blog.content = content // 暂存原始内容，随后重写
+        if (typeof req.body.coverImage === 'string') {
+          blog.coverImage = req.body.coverImage
+        }
       } else {
         // 创建模式：新建博客
         blog = await Blog.create({
@@ -100,7 +103,8 @@ const importMarkdown = [
           category: category || '未分类',
           tags: tags,
           status,
-          author: req.user.id
+          author: req.user.id,
+          coverImage: typeof req.body.coverImage === 'string' ? req.body.coverImage : ''
         })
       }
 
@@ -108,6 +112,7 @@ const importMarkdown = [
       const imageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)/g
       const blogId = String(blog._id)
 
+      let firstRewrittenUrl = ''
       const rewritten = await replaceAsync(content, imageRegex, async (match, altText, href) => {
         console.log(`🔍 处理图片: ${match}`)
         console.log(`  - altText: "${altText}"`)
@@ -172,10 +177,15 @@ const importMarkdown = [
 
         const routeUrl = `/api/blog/${blogId}/${safeFilename}`
         console.log(`🔄 重写链接: ${href} -> ${routeUrl}`)
+        if (!firstRewrittenUrl) firstRewrittenUrl = routeUrl
         return match.replace(href, routeUrl)
       })
 
       blog.content = rewritten
+      // 若未显式传入封面且导入过程中成功重写了第一张图片，则使用其作为封面
+      if ((!blog.coverImage || blog.coverImage === '') && firstRewrittenUrl) {
+        blog.coverImage = firstRewrittenUrl
+      }
       await blog.save()
 
       const populated = await Blog.findById(blog._id).populate('author', 'username')

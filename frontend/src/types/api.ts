@@ -90,6 +90,7 @@ export interface BlogListItem {
   tags: string[]
   status: 'draft' | 'published' | 'pinned'
   date: string
+  coverImage?: string
 }
 
 export interface Comment {

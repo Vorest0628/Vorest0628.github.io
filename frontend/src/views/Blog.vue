@@ -56,30 +56,34 @@
         class="blog-post"
         @click="goToPost(post.id)"
       >
-        <div class="post-header">
-          <h2>{{ post.title }}</h2>
-          <div class="post-meta">
-            <span class="post-date">{{ formatDate(post.date) }}</span>
-            <span class="post-category">{{ post.category }}</span>
+        <div class="post-main">
+          <div class="post-body">
+            <div class="post-header">
+              <h2>{{ post.title }}</h2>
+              <div class="post-meta">
+                <span class="post-date">{{ formatDate(post.date) }}</span>
+                <span class="post-category">{{ post.category }}</span>
+              </div>
+            </div>
+            <div class="post-content">
+              <p>{{ post.excerpt }}</p>
+            </div>
+            <div class="post-tags">
+              <span 
+                v-for="tag in post.tags" 
+                :key="tag"
+                class="tag"
+              >
+                {{ tag }}
+              </span>
+            </div>
+            <div class="post-footer">
+              <span class="read-more">阅读更多 →</span>
+            </div>
           </div>
-        </div>
-        
-        <div class="post-content">
-          <p>{{ post.excerpt }}</p>
-        </div>
-        
-        <div class="post-tags">
-          <span 
-            v-for="tag in post.tags" 
-            :key="tag"
-            class="tag"
-          >
-            {{ tag }}
-          </span>
-        </div>
-        
-        <div class="post-footer">
-          <span class="read-more">阅读更多 →</span>
+          <div class="post-cover" v-if="getCoverSrc(post)" @click.stop>
+            <img :src="getCoverSrc(post)" alt="预览图" loading="lazy" decoding="async" @error="onCoverError(post)" />
+          </div>
         </div>
       </article>
     </div>
@@ -247,6 +251,23 @@ const formatDate = (dateString) => {
   })
 }
 
+// 解析封面地址（与详情页策略保持一致）
+const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
+const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
+const getCoverSrc = (post) => {
+  const href = post?.coverImage
+  if (!href) return ''
+  const isAbs = /^(https?:|data:)/i.test(href)
+  const isApiRoute = /^\/api\/blog\//i.test(href)
+  if (isAbs) return href
+  if (isApiRoute) return API_ORIGIN ? `${API_ORIGIN}${href}` : href
+  return ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
+}
+const onCoverError = (post) => {
+  // 控制台输出错误信息，便于诊断
+  console.error('封面图加载失败或未设置:', post?.id, post?.coverImage)
+}
+
 // 组件挂载时加载数据
 onMounted(async () => {
   await loadCategories()
@@ -330,6 +351,29 @@ h1 {
   border: 1px solid #eee; /* 简化边框 */
   border-left: 3px solid skyblue; /* 减小左边框 */
   box-shadow: none; /* 去除阴影 */
+}
+
+.post-main {
+  display: flex;
+  gap: 16px;
+}
+
+.post-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-cover {
+  width: 220px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.post-cover img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
 }
 
 .blog-post:hover {
@@ -489,6 +533,12 @@ h1 {
   
   .blog-post {
     padding: 20px;
+  }
+  .post-main {
+    flex-direction: column;
+  }
+  .post-cover {
+    width: 100%;
   }
   
   .post-meta {

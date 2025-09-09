@@ -114,6 +114,18 @@
                 <div v-html="markdownPreview" class="markdown-preview"></div>
               </div>
             </div>
+            <!-- 上传封面：位于内容下方、标签上方 -->
+            <div class="form-group">
+              <label>封面图（可选）</label>
+              <div class="cover-row">
+                <input v-model="currentBlog.coverImage" type="text" placeholder="封面图 URL 或相对路径" />
+                <input type="file" ref="coverInput" accept="image/*" style="display:none" @change="handleCoverUpload">
+                <button type="button" class="upload-md-btn" @click="triggerCoverSelect">上传封面</button>
+              </div>
+              <div v-if="currentBlog.coverImage" class="cover-preview">
+                <img :src="resolveCover(currentBlog.coverImage)" alt="封面预览" @error="onCoverPreviewError" />
+              </div>
+            </div>
             <div class="form-group">
               <label>标签</label>
               <input v-model="currentBlog.tags" type="text" placeholder="用逗号分隔多个标签" />
@@ -180,6 +192,7 @@ const markdownFileInput = ref(null)
 const markdownTextarea = ref(null)
 const assetsInput = ref(null)
 const selectedAssetsFiles = ref([])
+const coverInput = ref(null)
 // 预览时用于从相对路径映射到本地对象URL
 const assetsUrlMap = ref(new Map())
 const availableCategories = ref(['前端开发', 'AI技术', '游戏', '音乐'])
@@ -192,7 +205,8 @@ const currentBlog = reactive({
   category: '',
   newCategoryText: '',
   tags: '',
-  status: 'draft'
+  status: 'draft',
+  coverImage: ''
 })
 
 // 与博客详情页一致的图片渲染与安全清理
@@ -371,7 +385,8 @@ const editBlog = (blog) => {
     category: blog.category,
     newCategoryText: '',
     tags: blog.tags?.join(',') || '',
-    status: blog.status || 'draft'
+    status: blog.status || 'draft',
+    coverImage: blog.coverImage || ''
   })
   showEditModal.value = true
 }
@@ -394,7 +409,8 @@ const saveBlog = async () => {
       content: currentBlog.content,
       category: finalCategory,
       tags: currentBlog.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      status: currentBlog.status
+      status: currentBlog.status,
+      coverImage: currentBlog.coverImage || ''
     }
     
     console.log('📝 准备发送的博客数据:', JSON.stringify(blogData, null, 2))
@@ -539,13 +555,17 @@ const closeModal = () => {
     category: '',
     newCategoryText: '',
     tags: '',
-    status: 'draft'
+    status: 'draft',
+    coverImage: ''
   })
   // 清除选中的资源文件
   selectedAssetsFiles.value = []
   assetsUrlMap.value = new Map()
   if (assetsInput.value) {
     assetsInput.value.value = ''
+  }
+  if (coverInput.value) {
+    coverInput.value.value = ''
   }
 }
 
@@ -599,6 +619,39 @@ const uploadAndInsertImage = async (file) => {
     console.error('❌ 图片上传失败:', error)
     alert('图片上传失败: ' + error.message)
   }
+}
+
+// 触发选择封面
+const triggerCoverSelect = () => {
+  coverInput.value?.click()
+}
+
+// 处理封面上传
+const handleCoverUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    const result = await uploadImage(file)
+    currentBlog.coverImage = result.url
+  } catch (e) {
+    console.error('封面上传失败:', e)
+    alert('封面上传失败: ' + e.message)
+  }
+}
+
+// 管理端预览解析与错误日志
+const resolveCover = (href) => {
+  const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
+  const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
+  if (!href) return ''
+  const isAbs = /^(https?:|data:)/i.test(href)
+  const isApiRoute = /^\/api\/blog\//i.test(href)
+  if (isAbs) return href
+  if (isApiRoute) return API_ORIGIN ? `${API_ORIGIN}${href}` : href
+  return ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
+}
+const onCoverPreviewError = () => {
+  console.error('封面预览加载失败:', currentBlog.coverImage)
 }
 
 // 格式化日期
@@ -847,6 +900,20 @@ onMounted(() => {
 .form-group textarea {
   resize: vertical;
   font-family: inherit;
+}
+
+.cover-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cover-preview img {
+  width: 240px;
+  height: auto;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  display: block;
 }
 
 .mt-2 {

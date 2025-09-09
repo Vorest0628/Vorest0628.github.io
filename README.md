@@ -43,6 +43,7 @@
   - `pdfjs-dist` (PDF)
 - **Markdown解析**: `marked`
 - **粒子效果**: `particles.js`
+ - **安全**: `dompurify`
 
 ### 后端 (Backend)
 - **框架**: `Node.js` + `Express`
@@ -52,31 +53,33 @@
 - **Serverless部署适配**: `@vercel/blob` (用于文件存储)
 - **密码加密**: `bcryptjs`
 - **图片处理**: `sharp`
+ - **文档处理**: `libreoffice-convert`, `pdf-lib`, `pdf2pic`, `mammoth`
+ - **跨域**: `cors`
 
 ### 开发与部署
 - **并发任务**: `concurrently`
 - **热重载**: `nodemon`
 - **代码规范**: `ESLint`
 - **版本控制**: `Git`
-- **部署平台**: `Vercel` (前后端), `MongoDB Atlas` (数据库)
+- **部署平台**: `Vercel` (后端), `GitHub Pages` (前端), `MongoDB Atlas` (数据库), `Cloudflare Workers` (API代理)
 
 ## 🚀 快速开始
 
 如果你想本地部署，请：
 ### 环境要求
-- Node.js >= 16.0.0
-- npm >= 8.0.0
+- Node.js ≥ 18.0.0（Vite 6 要求）
+- npm ≥ 8.0.0
 - MongoDB (本地或云端)
 
 ### 安装与启动
 1.  **克隆项目**
-    ```bash
+    ```powershell
     git clone https://github.com/Vorest0628/my-website.git
     cd my-website
     ```
 
 2.  **一键安装所有依赖**
-    ```bash
+    ```powershell
     npm run install:all
     ```
 
@@ -86,7 +89,7 @@
     - 根据您的本地环境修改这两个 `.env` 文件，配置数据库连接、JWT密钥等。
 
 4.  **启动开发环境**
-    ```bash
+    ```powershell
     npm run dev
     ```
     项目将在本地启动，前端访问 `http://localhost:5173`，后端API服务在 `http://localhost:3000`。
@@ -102,6 +105,7 @@ my-website/
 │   ├── 📂 middleware/     # 中间件 (认证、权限)
 │   ├── 📂 utils/          # 工具函数
 │   ├── ⚙️ app.js           # 应用入口
+│   ├── 📄 vercel.json      # Vercel 路由/构建配置
 │   └── 🔧 setting.env     # 环境变量
 ├── 📂 frontend/           # 前端 (Vue 3 + Vite)
 │   ├── 📂 src/
@@ -113,6 +117,8 @@ my-website/
 │   │   ├── 📂 views/      # 页面组件
 │   │   └── ⚡ main.js      # 应用入口
 │   └── ⚡ vite.config.js  # Vite 配置
+├── 📄 cloudflare-worker.js # Cloudflare Worker API 代理
+├── 📄 CNAME                # 自定义域名（如使用 GitHub Pages）
 ├── 📄 .gitignore
 ├── 📄 package.json        # 根项目配置
 └── 📖 README.md           # 就是你现在看到的这个文件
@@ -142,6 +148,17 @@ my-website/
     - 推荐使用 MongoDB Atlas 作为云数据库。
     - 创建免费的数据库集群，并将连接字符串配置到后端环境变量 `MONGODB_URI` 中。
     - **重要**: 确保在 MongoDB Atlas 的网络访问设置中，允许来自所有IP地址（`0.0.0.0/0`）的连接，以便 Vercel Serverless 函数可以访问。
+
+5.  **Cloudflare Worker 代理（可选但推荐）**
+    - 目的：绕过大陆地区访问 Vercel 的不稳定，提升 API 可用性。
+    - 步骤：
+      1) 打开仓库根目录的 `cloudflare-worker.js`，将常量 `API_ORIGIN` 设置为你的 Vercel 后端域名（例如 `https://your-backend.vercel.app`）。
+      2) 在 Cloudflare Dashboard 新建 Worker，粘贴脚本并发布；可绑定自定义域名或使用 `*.workers.dev` 子域。
+      3) 前端将 `frontend/setting.env` 中的 `VITE_APP_API_URL` 指向 Worker 域名的 `/api` 路径，例如：
+         ```
+         VITE_APP_API_URL=https://your-worker.workers.dev/api
+         ```
+      4) 确认后端的 `CORS_ORIGIN` 覆盖到你的前端实际域名（含 GitHub Pages/Vercel 域名）。
 
 ## 🤝 贡献
 

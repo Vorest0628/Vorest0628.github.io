@@ -393,7 +393,7 @@ router.get('/blogs', auth, checkRole('admin'), async (req, res, next) => {
 // 内容管理 - 创建博客文章
 router.post('/blogs', auth, checkRole('admin'), async (req, res, next) => {
   try {
-    const { title, excerpt, content, category, tags, status = 'draft' } = req.body
+    const { title, excerpt, content, category, tags, status = 'draft', coverImage = '' } = req.body
 
     // 验证必填字段
     if (!title || !excerpt || !content || !category) {
@@ -412,6 +412,7 @@ router.post('/blogs', auth, checkRole('admin'), async (req, res, next) => {
       tags: Array.isArray(tags) ? tags : [],
       status,
       pinnedPriority,
+      coverImage,
       author: req.user.id
     })
 
@@ -455,7 +456,7 @@ router.get('/blogs/:id', auth, checkRole('admin'), async (req, res, next) => {
 router.put('/blogs/:id', auth, checkRole('admin'), async (req, res, next) => {
   try {
     const { id } = req.params
-    const { title, excerpt, content, category, tags, status } = req.body
+    const { title, excerpt, content, category, tags, status, coverImage } = req.body
 
     // 验证必填字段
     if (!title || !excerpt || !content || !category) {
@@ -474,6 +475,9 @@ router.put('/blogs/:id', auth, checkRole('admin'), async (req, res, next) => {
       updateData.status = status
       // 设置置顶优先级
       updateData.pinnedPriority = status === 'pinned' ? 1 : 0
+    }
+    if (coverImage !== undefined) {
+      updateData.coverImage = coverImage
     }
 
     const blog = await Blog.findByIdAndUpdate(

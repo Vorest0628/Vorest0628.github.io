@@ -92,6 +92,7 @@ exports.getBlogs = async (req, res, next) => {
       category: blog.category,
       tags: blog.tags,
       status: blog.status, // 添加状态字段
+      coverImage: blog.coverImage,
       date: blog.date
     }))
 
@@ -137,6 +138,7 @@ exports.getBlogById = async (req, res, next) => {
       content: blog.content,
       category: blog.category,
       tags: blog.tags,
+      coverImage: blog.coverImage,
       date: blog.date,
       viewCount: blog.viewCount,
       likeCount: blog.likeCount,
@@ -175,6 +177,7 @@ exports.createBlog = async (req, res, next) => {
       tags: req.body.tags || [],
       status,
       pinnedPriority: status === 'pinned' ? 1 : 0,
+      coverImage: req.body.coverImage || '',
       author: req.user.id
     }
 
@@ -190,6 +193,7 @@ exports.createBlog = async (req, res, next) => {
       category: blog.category,
       tags: blog.tags,
       status: blog.status,
+      coverImage: blog.coverImage,
       date: blog.date
     }
 
@@ -246,6 +250,7 @@ exports.updateBlog = async (req, res, next) => {
       content: updatedBlog.content,
       category: updatedBlog.category,
       tags: updatedBlog.tags,
+      coverImage: updatedBlog.coverImage,
       date: updatedBlog.date
     }
 
@@ -475,6 +480,7 @@ exports.getAllBlogsForAdmin = async (req, res, next) => {
       category: blog.category,
       tags: blog.tags,
       status: blog.status,
+      coverImage: blog.coverImage,
       createdAt: blog.createdAt,
       updatedAt: blog.updatedAt,
       date: blog.date,

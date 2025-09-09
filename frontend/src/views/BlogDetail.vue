@@ -31,6 +31,9 @@
     <article v-else class="article">
       <!-- 文章头部 -->
       <header class="article-header">
+        <div v-if="coverSrc" class="article-cover">
+          <img :src="coverSrc" alt="封面图" loading="lazy" decoding="async" @error="onDetailCoverError" />
+        </div>
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
           <div class="meta-info">
@@ -202,6 +205,20 @@ const renderedContent = computed(() => {
   const html = marked(article.value.content)
   return DOMPurify.sanitize(html)
 });
+
+// 详情封面地址解析与错误日志
+const coverSrc = computed(() => {
+  const href = article.value?.coverImage
+  if (!href) return ''
+  const isAbs = /^(https?:|data:)/i.test(href)
+  const isApiRoute = /^\/api\/blog\//i.test(href)
+  if (isAbs) return href
+  if (isApiRoute && API_ORIGIN) return `${API_ORIGIN}${href}`
+  return ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
+})
+const onDetailCoverError = () => {
+  console.error('文章封面图加载失败或未设置:', article.value?.id, article.value?.coverImage)
+}
 
 // 计算总评论数 (包括回复)
 const commentCount = computed(() => {
@@ -469,6 +486,14 @@ watch(() => route.params.id, (newId) => {
   padding-bottom: 2rem;
   border-bottom: 1px solid #eee;
   margin-bottom: 2rem;
+}
+
+.article-cover img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: block;
 }
 
 .article-header h1 {
