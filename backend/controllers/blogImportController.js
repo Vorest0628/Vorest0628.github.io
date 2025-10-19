@@ -48,6 +48,9 @@ const importMarkdown = [
   upload.any(),
   async (req, res, next) => {
     try {
+      //先收集资源，如markdown文件，zip文件，其他文件
+
+
       const mdFile = (req.files || []).find(f => /\.md$/i.test(f.originalname))
       if (!mdFile) return res.status(400).json({ success: false, message: '请提供 .md 文件' })
       let content = mdFile.buffer.toString('utf-8')
@@ -56,9 +59,11 @@ const importMarkdown = [
       const assetMap = new Map() // 相对路径(标准化) -> Buffer
       const otherFiles = (req.files || []).filter(f => f !== mdFile)
       
+      // 遍历所有除 Markdown 文件外的其他上传文件，收集资源到 assetMap
+      // 如果是 zip 文件，则解压并将其中的所有文件（非目录）加入 assetMap
+      // 否则直接将文件以原名（路径分隔符标准化为 /）作为 key，buffer 作为 value 存入 assetMap
       for (const f of otherFiles) {
-
-        if (/\.zip$/i.test(f.originalname)) {
+        if (/\.zip$/i.test(f.originalname)) { 
           const zip = await JSZip.loadAsync(f.buffer)
           const entries = Object.keys(zip.files)
 
@@ -73,6 +78,9 @@ const importMarkdown = [
           assetMap.set(f.originalname.replace(/\\/g, '/'), f.buffer)
         }
       }
+
+      //找到blogid对应的博客，如果存在则更新，如果不存在则创建
+
 
       // 读取额外字段
       const { title = '', excerpt = '', category = '', status = 'draft', blogId: existingBlogId } = req.body
@@ -113,21 +121,23 @@ const importMarkdown = [
       }
 
       const warnings = []
-      const imageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)/g
+      const imageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)/g //imageRegex表示图片链接的正则表达式
       const blogId = String(blog._id)
 
+      //重写图片链接
       let firstRewrittenUrl = ''
       const rewritten = await replaceAsync(content, imageRegex, async (match, altText, href) => {
         console.log(`🔍 处理图片: ${match}`)
         console.log(`  - altText: "${altText}"`)
         console.log(`  - href: "${href}"`)
         
-        const isAbs = /^(https?:|data:)/i.test(href)
+        const isAbs = /^(https?:|data:)/i.test(href) //isAbs表示img是否是绝对链接
         if (isAbs) {
           console.log(`  - 跳过绝对链接: ${href}`)
           return match
         }
         
+        //本地img的链接
         const norm = String(href).trim().replace(/^\.\//, '').replace(/\\/g, '/').replace(/^\//, '')
         console.log(`  - 标准化路径: "${norm}"`)
         
