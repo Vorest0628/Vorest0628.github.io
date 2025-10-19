@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { blogApi } from '@/api/blog'
 import { commentApi } from '@/api/comment'
@@ -237,6 +237,20 @@ const commentCount = computed(() => {
 });
 
 
+// 更新页面 meta description
+const updateMetaDescription = (description) => {
+  // 查找或创建 meta description 标签
+  let metaDesc = document.querySelector('meta[name="description"]')
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta')
+    metaDesc.setAttribute('name', 'description')
+    document.head.appendChild(metaDesc)
+  }
+  // 设置内容，限制长度为 160 字符以符合 SEO 最佳实践
+  const content = description ? description.substring(0, 160) : '个人网站博客文章'
+  metaDesc.setAttribute('content', content)
+}
+
 // 加载文章数据
 const loadArticle = async (articleId) => {
   loading.value = true
@@ -249,6 +263,10 @@ const loadArticle = async (articleId) => {
     
     if (res.success) {
       article.value = res.data
+      // 更新页面的 meta description
+      if (article.value.excerpt) {
+        updateMetaDescription(article.value.excerpt)
+      }
       await loadComments(articleId)
       await checkLikeStatus() // 检查点赞状态
     } else {
@@ -429,6 +447,11 @@ watch(() => route.params.id, (newId) => {
     loadArticle(newId)
   }
 }, { immediate: true })
+
+// 组件卸载时恢复默认的 meta description
+onUnmounted(() => {
+  updateMetaDescription('个人网站 - 博客、文档库、图库')
+})
 
 </script>
 
