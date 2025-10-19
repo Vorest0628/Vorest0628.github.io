@@ -450,7 +450,7 @@ watch(() => route.params.id, (newId) => {
 
 // 组件卸载时恢复默认的 meta description
 onUnmounted(() => {
-  updateMetaDescription('个人网站 - 博客、文档库、图库')
+  updateMetaDescription("Vorest's Personal Website")
 })
 
 </script>
