@@ -285,15 +285,36 @@ const formatDate = (dateString) => {
   })
 }
 
-// 获取文档摘要
-const getDocumentExcerpt = (doc) => {
-  if (doc.description) return doc.description
-  if (doc.content) {
-    return doc.content.length > 100 
-      ? doc.content.substring(0, 100) + '...' 
-      : doc.content
+// 智能预加载路由组件
+const prefetchCommonRoutes = () => {
+  // 预加载的常用路由列表（优先级排序）
+  const routesToPrefetch = [
+    () => import('../views/Blog.vue'),
+    () => import('../views/DocumentLibrary.vue'),
+    () => import('../views/Gallery.vue'),
+    () => import('../views/FriendLinks.vue')
+  ]
+  
+  if (typeof requestIdleCallback !== 'undefined') {
+    // 使用 requestIdleCallback，在浏览器空闲时预加载
+    routesToPrefetch.forEach((importFn, index) => {
+      requestIdleCallback(() => {
+        console.log(`预加载路由组件 ${index + 1}`)
+        importFn().catch(err => {
+          console.warn('路由预加载失败:', err)
+        })
+      }, { timeout: 3000 + index * 500 })  // 分散加载，避免竞争
+    })
+  } else {
+    // 降级方案：使用 setTimeout
+    routesToPrefetch.forEach((importFn, index) => {
+      setTimeout(() => {
+        importFn().catch(err => {
+          console.warn('路由预加载失败:', err)
+        })
+      }, 2000 + index * 300)  // 2秒后开始预加载
+    })
   }
-  return '暂无描述'
 }
 
 // 组件挂载
@@ -304,6 +325,9 @@ onMounted(() => {
   timeInterval = setInterval(updateDateTime, 1000)
   // 加载内容
   loadContent()
+  
+  // 智能预加载常用页面组件 - 空闲时预加载，不影响首屏性能
+  prefetchCommonRoutes()
 })
 
 // 组件卸载

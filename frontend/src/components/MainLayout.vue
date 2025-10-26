@@ -8,8 +8,8 @@
 -->
 <template>
     <div class="app">
-      <!-- 粒子背景 -->
-      <ParticlesBackground />
+      <!-- 粒子背景 - 文此加载，提高首屏性能 -->
+      <ParticlesBackground v-if="showParticles" />
       
       <!-- 主要内容区域 -->
       <div class="container">
@@ -53,23 +53,45 @@
   </template>
   
   <script setup>
-  import { onMounted } from 'vue'
+  import { onMounted, ref, defineAsyncComponent } from 'vue'
   // 导入布局组件
   import Header from './Header.vue'
   import Sidebar from './Sidebar.vue'
   import Footer from './Footer.vue'
   import Navigation from './Navigation.vue'
-  import ParticlesBackground from './ParticlesBackground.vue'
-
+  
+  // 文此加载 ParticlesBackground 组件，降低首屏扶嫞CSS
+  const ParticlesBackground = defineAsyncComponent(() =>
+    import('./ParticlesBackground.vue')
+  )
+  
+  const showParticles = ref(false)
+  
   // 导入背景图片 - 使用Vite的URL导入
   import backgroundImageUrl from '../assets/image/background-bottom.jpg?url'
 
-  // 设置背景图片
+  // 空闲时慣批加载粒子特效，不阻塞首屏
   onMounted(() => {
-    // 启用背景图片
-    document.documentElement.classList.add('with-background-image')
-    // 动态设置背景图片URL
-    document.documentElement.style.setProperty('--background-image', `url(${backgroundImageUrl})`)
+    // 功能特效不是关键路径上的东西，正常情况下可以在1-2一后加载
+    const loadParticles = () => {
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(() => {
+          showParticles.value = true
+          // 启用背景图片
+          document.documentElement.classList.add('with-background-image')
+          document.documentElement.style.setProperty('--background-image', `url(${backgroundImageUrl})`)
+        }, { timeout: 2000 })  // 2秒后强制加载
+      } else {
+        // 不支持requestIdleCallback的浏览器，使用setTimeout
+        setTimeout(() => {
+          showParticles.value = true
+          document.documentElement.classList.add('with-background-image')
+          document.documentElement.style.setProperty('--background-image', `url(${backgroundImageUrl})`)
+        }, 1500)
+      }
+    }
+    
+    loadParticles()
   })
   </script>
   
