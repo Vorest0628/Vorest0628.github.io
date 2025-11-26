@@ -88,7 +88,26 @@
             </div>
             <div class="form-group">
               <label>摘要</label>
-              <textarea v-model="currentBlog.excerpt" rows="3"></textarea>
+              <div class="excerpt-wrapper">
+                <textarea v-model="currentBlog.excerpt" rows="3" placeholder="请输入博客摘要，或点击AI生成按钮自动生成..."></textarea>
+                <button type="button" class="ai-summary-btn" @click="generateAiExcerpt" :disabled="aiGenerating || !currentBlog.content">
+                  <span v-if="!aiGenerating">
+                    <span class="ai-icon">✨</span> AI生成摘要
+                  </span>
+                  <span v-else class="loading-text">
+                    <span class="spinner"></span> AI思考中...
+                  </span>
+                </button>
+              </div>
+              <div v-if="!currentBlog.content" class="hint-text">
+                💡 提示：请先填写博客内容后再使用AI生成摘要
+              </div>
+              <div v-if="aiError" class="error-text">
+                ❌ {{ aiError }}
+              </div>
+              <div v-if="aiSuccess" class="success-text">
+                ✅ AI摘要生成成功！
+              </div>
             </div>
             <div class="form-group">
               <div class="content-header">
@@ -178,6 +197,7 @@ import { uploadImage } from '../../../api/upload'
 import { useAuthStore } from '../../../store/modules/auth'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import { OpenAI } from 'openai'
 
 const authStore = useAuthStore()
 const blogs = ref([])
@@ -188,6 +208,9 @@ const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const loading = ref(false)
 const error = ref('')
+const aiGenerating = ref(false)
+const aiError = ref('')
+const aiSuccess = ref(false)
 const markdownFileInput = ref(null)
 const markdownTextarea = ref(null)
 const assetsInput = ref(null)
@@ -311,6 +334,71 @@ const handleMarkdownUpload = (event) => {
     alert("文件读取失败");
   };
   reader.readAsText(file);
+};
+
+const generateAiExcerpt = async () => {
+  // 清除之前的状态
+  aiError.value = '';
+  aiSuccess.value = false;
+  
+  // 验证内容是否存在
+  if (!currentBlog.content || currentBlog.content.trim() === '') {
+    aiError.value = '请先填写博客内容';
+    return;
+  }
+  
+  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
+  
+  if (!apiKey) {
+    aiError.value = '未配置AI API密钥，请在.env文件中配置VITE_DEEPSEEK_API_KEY';
+    return;
+  }
+  
+  const openai = new OpenAI({
+    baseURL: 'https://api.deepseek.com',
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true
+  });
+
+  aiGenerating.value = true;
+  
+  try {
+    const summaryInput = "你是一名爱好写博客的技术人，现在需要概括一下文章，进而生成一下博客概要，不超过150字：\n 以下是源文章：" + currentBlog.content;
+    
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "system", content: summaryInput }],
+      model: "deepseek-chat",
+    });
+    
+    currentBlog.excerpt = completion.choices[0].message.content;
+    aiSuccess.value = true;
+    
+    // 3秒后自动隐藏成功提示
+    setTimeout(() => {
+      aiSuccess.value = false;
+    }, 3000);
+    
+  } catch (error) {
+    console.error("AI生成摘要失败:", error);
+    
+    // 根据错误类型显示不同的错误信息
+    if (error.message?.includes('network')) {
+      aiError.value = '网络连接失败，请检查网络后重试';
+    } else if (error.message?.includes('API key')) {
+      aiError.value = 'API密钥无效，请检查配置';
+    } else if (error.message?.includes('quota')) {
+      aiError.value = 'API调用额度不足，请稍后重试';
+    } else {
+      aiError.value = 'AI生成失败，请稍后重试';
+    }
+    
+    // 5秒后自动隐藏错误提示
+    setTimeout(() => {
+      aiError.value = '';
+    }, 5000);
+  } finally {
+    aiGenerating.value = false;
+  }
 };
 
 const handleAssetsSelect = async (event) => {
@@ -1020,5 +1108,131 @@ onMounted(() => {
 
 .markdown-preview > :last-child {
   margin-bottom: 0;
+}
+
+/* AI生成摘要相关样式 */
+.excerpt-wrapper {
+  position: relative;
+}
+
+.excerpt-wrapper textarea {
+  padding-right: 0;
+  margin-bottom: 0.75rem;
+}
+
+.ai-summary-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.ai-summary-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.ai-summary-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ai-summary-btn:disabled {
+  background: linear-gradient(135deg, #ccc 0%, #999 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.ai-icon {
+  font-size: 1.1rem;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hint-text {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #e3f2fd;
+  border-left: 3px solid #2196f3;
+  color: #1976d2;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+.error-text {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #ffebee;
+  border-left: 3px solid #f44336;
+  color: #c62828;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  line-height: 1.5;
+  animation: slideIn 0.3s ease-out;
+}
+
+.success-text {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #e8f5e9;
+  border-left: 3px solid #4caf50;
+  color: #2e7d32;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  line-height: 1.5;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
