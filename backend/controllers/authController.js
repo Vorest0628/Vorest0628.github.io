@@ -144,16 +144,27 @@ exports.getCurrentUser = async (req, res, next) => {
 // 获取 DeepSeek API 配置（仅限管理员）
 exports.getAiConfig = async (req, res, next) => {
   try {
+    console.log('🔑 getAiConfig 被调用');
+    console.log('👤 用户信息:', req.user);
+    
     // 检查用户是否为管理员
     if (req.user.role !== 'admin') {
+      console.log('❌ 非管理员用户访问，角色:', req.user.role);
       throw new ApiError(403, '没有权限访问此资源')
     }
 
     // 从环境变量获取 DeepSeek API Key
     const apiKey = process.env.DEEPSEEK_API_KEY
     
-    console.log('DeepSeek API Key:', apiKey)
+    console.log('🔍 环境变量检查:');
+    console.log('  - DEEPSEEK_API_KEY 存在:', !!apiKey);
+    console.log('  - DEEPSEEK_API_KEY 长度:', apiKey ? apiKey.length : 0);
+    console.log('  - DEEPSEEK_API_KEY 前缀:', apiKey ? apiKey.substring(0, 10) + '...' : '未配置');
+    console.log('  - NODE_ENV:', process.env.NODE_ENV);
+    console.log('  - VERCEL:', process.env.VERCEL);
+    
     if (!apiKey) {
+      console.log('⚠️ 服务端未配置 DEEPSEEK_API_KEY');
       return res.json({
         success: true,
         data: {
@@ -163,7 +174,8 @@ exports.getAiConfig = async (req, res, next) => {
       })
     }
 
-    // 返回加密后的 API Key（只返回部分用于验证，实际使用时返回完整的）
+    console.log('✅ API Key 配置正常，返回给前端');
+    // 返回完整的 API Key
     res.json({
       success: true,
       data: {
@@ -173,6 +185,7 @@ exports.getAiConfig = async (req, res, next) => {
       }
     })
   } catch (error) {
+    console.error('❌ getAiConfig 错误:', error);
     next(error)
   }
 }
