@@ -353,7 +353,12 @@ const generateAiExcerpt = async () => {
   try {
     // 从后端获取 AI 配置
     console.log('🔑 正在从后端获取 AI 配置...');
-    const configResponse = await authApi.getAiConfig();
+    const response = await authApi.getAiConfig();
+    console.log('📦 后端返回的完整响应:', response);
+    
+    // 提取实际数据（后端返回格式：{ success: true, data: { available, apiKey, baseURL } }）
+    const configResponse = response.data || response;
+    console.log('📦 提取的配置数据:', configResponse);
     
     if (!configResponse.available) {
       aiError.value = configResponse.message || '服务端未配置 AI API Key，AI 摘要功能不可用';
@@ -362,6 +367,7 @@ const generateAiExcerpt = async () => {
     }
     
     console.log('✅ AI 配置获取成功');
+    console.log('🔑 API Key 前缀:', configResponse.apiKey ? configResponse.apiKey.substring(0, 10) + '...' : '无');
     
     // 使用后端返回的 API Key 和 baseURL
     const openai = new OpenAI({

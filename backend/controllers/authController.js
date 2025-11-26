@@ -8,6 +8,7 @@ generateToken 生成JWT令牌
 register 注册新用户
 login 用户登录
 getCurrentUser 获取当前用户信息
+getAiConfig 获取AI配置（仅限管理员）
 */
 
 // 生成JWT令牌
@@ -151,6 +152,7 @@ exports.getAiConfig = async (req, res, next) => {
     // 从环境变量获取 DeepSeek API Key
     const apiKey = process.env.DEEPSEEK_API_KEY
     
+    console.log('DeepSeek API Key:', apiKey)
     if (!apiKey) {
       return res.json({
         success: true,
