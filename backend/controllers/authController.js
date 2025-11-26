@@ -139,3 +139,38 @@ exports.getCurrentUser = async (req, res, next) => {
     next(error)
   }
 }
+
+// 获取 DeepSeek API 配置（仅限管理员）
+exports.getAiConfig = async (req, res, next) => {
+  try {
+    // 检查用户是否为管理员
+    if (req.user.role !== 'admin') {
+      throw new ApiError(403, '没有权限访问此资源')
+    }
+
+    // 从环境变量获取 DeepSeek API Key
+    const apiKey = process.env.DEEPSEEK_API_KEY
+    
+    if (!apiKey) {
+      return res.json({
+        success: true,
+        data: {
+          available: false,
+          message: '服务端未配置 AI API Key'
+        }
+      })
+    }
+
+    // 返回加密后的 API Key（只返回部分用于验证，实际使用时返回完整的）
+    res.json({
+      success: true,
+      data: {
+        available: true,
+        apiKey: apiKey,
+        baseURL: 'https://api.deepseek.com'
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+}

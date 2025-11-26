@@ -9,10 +9,12 @@ const { auth } = require('../middleware/auth')
  * /api/auth/register 用户注册 post
  * /api/auth/login 用户登录 post
  * /api/auth/me 获取当前用户信息 get (需要认证)
+ * /api/auth/ai-config 获取AI配置 get (需要认证，仅限管理员)
  * 功能：
  * - 新用户注册
  * - 用户登录认证
  * - 获取当前登录用户信息
+ * - 管理员获取AI API配置
  */
 // 注册新用户
 router.post('/register', authController.register)
@@ -22,5 +24,8 @@ router.post('/login', authController.login)
 
 // 获取当前用户信息（需要认证）
 router.get('/me', auth, authController.getCurrentUser)
+
+// 获取 AI 配置（仅限管理员）
+router.get('/ai-config', auth, authController.getAiConfig)
 
 module.exports = router 

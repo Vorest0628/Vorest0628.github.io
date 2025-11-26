@@ -14,11 +14,6 @@ dist-ssr
 coverage
 *.local
 
-# Environment files with sensitive data
-.env
-.env.local
-.env.*.local
-
 /cypress/videos/
 /cypress/screenshots/
 

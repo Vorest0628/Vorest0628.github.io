@@ -195,6 +195,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { adminApi } from '../../../api/admin'
 import { uploadImage } from '../../../api/upload'
 import { useAuthStore } from '../../../store/modules/auth'
+import { authApi } from '../../../api/auth'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { OpenAI } from 'openai'
@@ -347,24 +348,31 @@ const generateAiExcerpt = async () => {
     return;
   }
   
-  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
-  
-  if (!apiKey) {
-    aiError.value = '未配置AI API密钥，请在.env文件中配置VITE_DEEPSEEK_API_KEY';
-    return;
-  }
-  
-  const openai = new OpenAI({
-    baseURL: 'https://api.deepseek.com',
-    apiKey: apiKey,
-    dangerouslyAllowBrowser: true
-  });
-
   aiGenerating.value = true;
   
   try {
+    // 从后端获取 AI 配置
+    console.log('🔑 正在从后端获取 AI 配置...');
+    const configResponse = await authApi.getAiConfig();
+    
+    if (!configResponse.available) {
+      aiError.value = configResponse.message || '服务端未配置 AI API Key，AI 摘要功能不可用';
+      console.warn('⚠️ AI 配置不可用:', configResponse.message);
+      return;
+    }
+    
+    console.log('✅ AI 配置获取成功');
+    
+    // 使用后端返回的 API Key 和 baseURL
+    const openai = new OpenAI({
+      baseURL: configResponse.baseURL || 'https://api.deepseek.com',
+      apiKey: configResponse.apiKey,
+      dangerouslyAllowBrowser: true
+    });
+    
     const summaryInput = "你是一名爱好写博客的技术人，现在需要概括一下文章，进而生成一下博客概要，不超过150字：\n 以下是源文章：" + currentBlog.content;
     
+    console.log('🤖 正在调用 AI 生成摘要...');
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: summaryInput }],
       model: "deepseek-chat",
@@ -372,6 +380,7 @@ const generateAiExcerpt = async () => {
     
     currentBlog.excerpt = completion.choices[0].message.content;
     aiSuccess.value = true;
+    console.log('✨ AI 摘要生成成功');
     
     // 3秒后自动隐藏成功提示
     setTimeout(() => {
@@ -379,17 +388,21 @@ const generateAiExcerpt = async () => {
     }, 3000);
     
   } catch (error) {
-    console.error("AI生成摘要失败:", error);
+    console.error("❌ AI生成摘要失败:", error);
     
     // 根据错误类型显示不同的错误信息
-    if (error.message?.includes('network')) {
+    if (error.response?.status === 403) {
+      aiError.value = '没有权限使用 AI 功能，请确认您是管理员';
+    } else if (error.response?.status === 401) {
+      aiError.value = '登录已过期，请重新登录后再试';
+    } else if (error.message?.includes('network')) {
       aiError.value = '网络连接失败，请检查网络后重试';
     } else if (error.message?.includes('API key')) {
-      aiError.value = 'API密钥无效，请检查配置';
+      aiError.value = 'API密钥无效，请联系管理员检查后端配置';
     } else if (error.message?.includes('quota')) {
       aiError.value = 'API调用额度不足，请稍后重试';
     } else {
-      aiError.value = 'AI生成失败，请稍后重试';
+      aiError.value = 'AI生成失败：' + (error.message || '请稍后重试');
     }
     
     // 5秒后自动隐藏错误提示

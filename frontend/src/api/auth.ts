@@ -17,6 +17,7 @@ AuthApi输出函数一览：
 register 用户注册
 login 用户登录
 getCurrentUser 获取当前用户信息
+getAiConfig 获取AI配置（仅管理员）
 refreshToken 刷新令牌
 changePassword 修改密码
 updateProfile 更新用户资料
@@ -58,6 +59,13 @@ export const authApi = {
    */
   getCurrentUser(): Promise<AuthResponse> {
     return apiService.get<AuthResponse>('/auth/me')
+  },
+
+  /**
+   * 获取 AI 配置（仅限管理员）
+   */
+  getAiConfig(): Promise<{ available: boolean; apiKey?: string; baseURL?: string; message?: string }> {
+    return apiService.get<{ available: boolean; apiKey?: string; baseURL?: string; message?: string }>('/auth/ai-config')
   },
 
   /**
