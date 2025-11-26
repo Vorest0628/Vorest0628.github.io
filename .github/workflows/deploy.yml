@@ -35,6 +35,8 @@ jobs:
       
     - name: Build
       working-directory: ./frontend
+      env:
+        VITE_DEEPSEEK_API_KEY: ${{ secrets.VITE_DEEPSEEK_API_KEY }}
       run: npm run build
       
     - name: Deploy to GitHub Pages
