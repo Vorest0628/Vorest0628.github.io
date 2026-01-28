@@ -1,7 +1,24 @@
 <template>
-  <router-view />
+  <div>
+    <!-- 自定义鼠标组件 -->
+    <CustomCursor 
+      :dot-size="20"
+      :expanded-size="40"
+      dot-color="rgba(193, 234, 255, 0.5)"
+      ring-color="rgba(0, 117, 176, 0.5)"
+      :transition-duration="200"
+      :smooth-follow="true"
+      :smooth-factor="0.6"
+      :opacity="0.85"
+    />
+    
+    <router-view />
+  </div>
 </template>
 
+<script setup>
+import CustomCursor from '@/components/style/CustomCursor.vue'
+</script>
 <style>
 /* 全局样式 */
 html {
@@ -105,6 +122,8 @@ main {
   margin: 0 auto;
   padding: 2rem;
 }
+
+/* 自定义鼠标相关样式已移至 CustomCursor.vue 组件 */
 
 @media (min-width: 1024px) {
   header {

@@ -8,12 +8,12 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   return {
-  plugins: [vue(), viteCompression({
-    verbose: true,
-    disable: false,
-    threshold: 10240,  // 10KB以上才压缩
-    algorithm: 'brotli',  // 使用 Brotli 压缩（较gzip优疾）
-    ext: '.br'
+    plugins: [vue(), viteCompression({  // vue插件
+      verbose: true,
+      disable: false,
+      threshold: 10240,  // 10KB以上才压缩
+      algorithm: 'brotli',  // 使用 Brotli 压缩（较gzip优疾）
+      ext: '.br'
   })],
     
     // GitHub Pages 部署配置
