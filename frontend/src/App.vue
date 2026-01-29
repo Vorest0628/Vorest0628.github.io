@@ -4,12 +4,12 @@
     <CustomCursor 
       :dot-size="20"
       :expanded-size="40"
-      dot-color="rgba(193, 234, 255, 0.5)"
-      ring-color="rgba(0, 117, 176, 0.5)"
+      dot-color="snow"
+      ring-color="rgba(0, 117, 176, 0.9)"
       :transition-duration="200"
-      :smooth-follow="true"
-      :smooth-factor="0.6"
-      :opacity="0.85"
+      :smooth-follow="false"
+      :smooth-factor="0.95"
+      :opacity="0.5"
     />
     
     <router-view />

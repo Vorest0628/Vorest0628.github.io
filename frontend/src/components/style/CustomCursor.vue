@@ -29,6 +29,14 @@
       :class="{ 'active': isHoveringLink }"
     ></div>
     
+    <!-- 点击波澜效果 -->
+    <div 
+      v-for="ripple in ripples" 
+      :key="ripple.id" 
+      class="cursor-ripple"
+      :style="{ animationDuration: ripple.duration + 'ms' }"
+    ></div>
+    
     <!-- 自定义箭头（中心位置） -->
     <div class="cursor-arrow" :class="`arrow-${cursorType}`">
       <!-- 默认箭头（普通状态） -->
@@ -119,9 +127,16 @@ const isHoveringInput = ref(false)
 const isVisible = ref(true)
 const isMobile = ref(false)
 const cursorType = ref('default') // 'default', 'link', 'input', 'button'
+const ripples = ref([]) // 波澜效果数组
+
+// 波澜 ID 计数器
+let rippleIdCounter = 0
 
 // 动画帧 ID
 let rafId = null
+
+// 全局样式元素（用于隐藏原生鼠标指针）
+let globalStyleElement = null
 
 // 计算属性：鼠标样式
 const cursorStyle = computed(() => ({
@@ -276,12 +291,27 @@ const handleContextMenu = () => {
 }
 
 /**
- * 处理鼠标点击事件（取消右键菜单后恢复）
+ * 处理鼠标点击事件（触发波澜效果 + 取消右键菜单后恢复）
  */
 const handleClick = () => {
+  // 恢复显示（右键菜单取消后）
   if (!isVisible.value) {
     isVisible.value = true
   }
+  
+  // 创建波澜效果
+  const rippleId = ++rippleIdCounter
+  const rippleDuration = 600 // 波澜动画时长（毫秒）
+  
+  ripples.value.push({
+    id: rippleId,
+    duration: rippleDuration
+  })
+  
+  // 动画结束后移除波澜元素
+  setTimeout(() => {
+    ripples.value = ripples.value.filter(r => r.id !== rippleId)
+  }, rippleDuration)
 }
 
 /**
@@ -312,8 +342,15 @@ onMounted(() => {
   
   console.log('✅ 自定义鼠标组件已启用')
   
-  // 隐藏系统鼠标指针
-  document.body.style.cursor = 'none'
+  // 创建全局样式，隐藏所有元素的原生鼠标指针
+  globalStyleElement = document.createElement('style')
+  globalStyleElement.id = 'custom-cursor-global-style'
+  globalStyleElement.textContent = `
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  `
+  document.head.appendChild(globalStyleElement)
   
   // 绑定事件监听器（使用 passive 优化性能）
   document.addEventListener('mousemove', handleMouseMove, { passive: true })
@@ -332,8 +369,11 @@ onMounted(() => {
 onUnmounted(() => {
   if (isMobile.value) return
   
-  // 恢复系统鼠标指针
-  document.body.style.cursor = 'auto'
+  // 移除全局样式，恢复原生鼠标指针
+  if (globalStyleElement && globalStyleElement.parentNode) {
+    globalStyleElement.parentNode.removeChild(globalStyleElement)
+    globalStyleElement = null
+  }
   
   // 移除事件监听器
   document.removeEventListener('mousemove', handleMouseMove)
@@ -454,7 +494,7 @@ onUnmounted(() => {
 .cursor-link .cursor-arrow .arrow-icon {
   width: 22px;
   height: 22px;
-  color: #00aaff;
+  color: cyan;
   transform: translate(-11px, -11px) scale(1.1);
 }
 
@@ -508,13 +548,11 @@ onUnmounted(() => {
 /* TODO: 以下区域可自定义样式 */
 
 /* 示例：鼠标圆点发光效果 */
-/*
 .cursor-dot {
   box-shadow: 0 0 20px var(--dot-color),
               0 0 40px var(--dot-color),
               0 0 60px rgba(0, 170, 255, 0.3);
 }
-*/
 
 /* 示例：外圈旋转动画 */
 /*
@@ -534,20 +572,31 @@ onUnmounted(() => {
 */
 
 /* 示例：点击涟漪效果 */
-/*
 @keyframes ripple {
   0% {
     width: var(--dot-size);
     height: var(--dot-size);
-    opacity: 1;
+    opacity: 0.8;
   }
   100% {
-    width: calc(var(--dot-size) * 4);
-    height: calc(var(--dot-size) * 4);
+    width: calc(var(--dot-size) * 5);
+    height: calc(var(--dot-size) * 5);
     opacity: 0;
   }
 }
-*/
+
+/* 波澜元素样式 */
+.cursor-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--ring-color);
+  background: radial-gradient(circle, transparent 30%, var(--dot-color) 100%);
+  pointer-events: none;
+  animation: ripple 600ms ease-out forwards;
+}
 
 /* ======================================== */
 </style>
