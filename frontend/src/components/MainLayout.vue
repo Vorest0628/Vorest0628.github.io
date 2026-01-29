@@ -13,9 +13,6 @@
       
       <!-- 主要内容区域 -->
       <div class="container">
-        <!-- 头部组件 -->
-        <Header />
-
         <!-- 导航组件 -->
         <Navigation />
 
@@ -49,16 +46,24 @@
         <!-- 页脚组件 -->
         <Footer />
       </div>
+
+      <!-- 全局登录模态框 -->
+      <LoginModal 
+        :visible="showLoginModal" 
+        @close="showLoginModal = false"
+        @success="handleLoginSuccess"
+      />
     </div>
   </template>
   
   <script setup>
   import { onMounted, ref, defineAsyncComponent } from 'vue'
+  import { useAuthStore } from '@/store/modules/auth'
   // 导入布局组件
-  import Header from './Header.vue'
   import Sidebar from './Sidebar.vue'
   import Footer from './Footer.vue'
   import Navigation from './Navigation.vue'
+  import LoginModal from './LoginModal.vue'
   
   // 文此加载 ParticlesBackground 组件，降低首屏扶嫞CSS
   const ParticlesBackground = defineAsyncComponent(() =>
@@ -66,12 +71,33 @@
   )
   
   const showParticles = ref(false)
+  const showLoginModal = ref(false)
+  const authStore = useAuthStore()
   
   // 导入背景图片 - 使用Vite的URL导入
   import backgroundImageUrl from '../assets/image/background-bottom.jpg?url'
 
+  // 处理登录成功
+  const handleLoginSuccess = () => {
+    console.log('登录成功！欢迎,', authStore.user.username)
+    if (authStore.isAdmin) {
+      console.log('管理员权限已激活，您可以访问管理面板')
+    }
+  }
+
+  // 处理全局登录事件
+  const handleGlobalLogin = () => {
+    showLoginModal.value = true
+  }
+
   // 空闲时慣批加载粒子特效，不阻塞首屏
   onMounted(() => {
+    // 初始化认证状态
+    authStore.initAuth()
+    
+    // 监听全局登录事件
+    window.addEventListener('show-login', handleGlobalLogin)
+    
     // 功能特效不是关键路径上的东西，正常情况下可以在1-2一后加载
     const loadParticles = () => {
       if (typeof requestIdleCallback !== 'undefined') {
@@ -113,7 +139,6 @@
     margin: 0 auto;
     display: grid;
     grid-template-areas: 
-      "header header"
       "nav nav"
       "main sidebar"
       "footer footer";
@@ -153,7 +178,6 @@
   @media (max-width: 768px) {
     .container {
       grid-template-areas:
-        "header"
         "nav"
         "main"
         "sidebar"

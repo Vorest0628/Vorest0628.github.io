@@ -8,14 +8,7 @@
 <template>
   <footer class="main-footer">
     <div class="footer-content">
-      <!-- 页脚导航 -->
-      <div class="footer-nav">
-        <ul>
-          <li><router-link to="/about">关于</router-link></li>
-          <li><router-link to="/gallery">图库</router-link></li>
-          <li><router-link to="/documents">文档库</router-link></li>
-        </ul>
-      </div>
+      <!-- 页脚导航 - 已删除原有的导航链接 -->
 
       <div class="footer-nav">
         <p>
