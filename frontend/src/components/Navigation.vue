@@ -438,43 +438,113 @@ const updateNavHeight = () => {
   box-shadow: 0 2px 8px rgba(45, 167, 224, 0.3);
 }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
+/* 响应式设计 - 根据内容宽度智能适配 */
+
+/* 中等宽度屏幕 (900px - 1200px) - 缩小间距但保持横向 */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .main-nav {
+    gap: 12px;
+    padding: 12px 20px;
+  }
+
+  .site-brand a {
+    font-size: 1.1rem;
+  }
+
+  .nav-menu {
+    gap: 8px;
+  }
+
+  .nav-menu > li > a,
+  .nav-menu > li > .dropdown-toggle,
+  .toolbox-btn {
+    padding: 7px 14px;
+    font-size: 0.9rem;
+  }
+
+  .user-actions {
+    gap: 8px;
+  }
+
+  .login-btn, .logout-btn, .user-panel-btn {
+    padding: 7px 12px;
+    font-size: 0.85rem;
+  }
+
+  .search-form input[type="search"] {
+    min-width: 120px;
+  }
+}
+
+/* 小屏幕 (700px - 900px) - 开始折叠，搜索框和按钮换行 */
+@media (max-width: 900px) and (min-width: 701px) {
   .main-nav {
     flex-wrap: wrap;
-    gap: 15px;
-    padding: 15px 20px;
-    left: 10px;
-    right: 10px;
-    width: auto;
-    max-width: none;
+    gap: 10px;
+    padding: 10px 15px;
+    justify-content: center;
+  }
+
+  .site-brand {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .site-brand a {
+    font-size: 1rem;
   }
 
   .nav-menu {
     order: 2;
-    width: 100%;
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .nav-menu > li > a,
+  .nav-menu > li > .dropdown-toggle,
+  .toolbox-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
   }
 
   .user-actions {
-    order: 1;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .login-btn, .logout-btn, .user-panel-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .search-form {
+    max-width: 300px;
   }
 }
 
-@media (max-width: 768px) {
+/* 移动端 (<=700px) - 完全纵向布局 */
+@media (max-width: 700px) {
   .main-nav {
     flex-direction: column;
-    padding: 15px;
-    gap: 10px;
-    left: 5px;
-    right: 5px;
-    top: 10px;
-    width: auto;
-    max-width: none;
+    padding: 8px 10px;
+    gap: 6px;
+    left: 0;
+    right: 0;
+    top: 5px;
+    width: 100%;
+    max-width: 100%;
+    transform: none;
+    border-radius: 0;
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .nav-placeholder {
     height: auto;
-    min-height: 50px;
+    min-height: 30px;
   }
 
   .site-brand {
@@ -482,45 +552,66 @@ const updateNavHeight = () => {
     text-align: center;
   }
 
+  .site-brand a {
+    font-size: 1rem;
+  }
+
   .nav-menu {
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .nav-menu > li {
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
   }
 
   .nav-menu > li > a,
   .nav-menu > li > .dropdown-toggle,
   .toolbox-btn {
-    width: 100%;
-    text-align: center;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    min-width: auto;
   }
 
   .dropdown-menu {
-    position: static;
-    margin-top: 5px;
-    width: 100%;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: auto;
+    width: 200px;
   }
 
   .user-actions {
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
+    justify-content: center;
+    gap: 6px;
   }
 
   .login-btn, .logout-btn, .user-panel-btn {
-    width: 100%;
-    justify-content: center;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-width: auto;
   }
 
   .search-form {
     width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
   }
 
   .search-form input[type="search"] {
     flex: 1;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .search-form button[type="submit"] {
+    padding: 6px 10px;
   }
 }
 </style>
