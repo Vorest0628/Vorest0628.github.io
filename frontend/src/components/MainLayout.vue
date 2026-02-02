@@ -7,7 +7,19 @@
   4. 提供统一的页面结构
 -->
 <template>
-    <div class="app">
+    <!-- 首次加载动画 -->
+    <transition name="initial-load">
+      <div v-if="isInitialLoading" class="initial-loading-overlay">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring"></div>
+          <p class="loading-text">加载中...</p>
+        </div>
+      </div>
+    </transition>
+
+    <div class="app" :class="{ 'app-loaded': !isInitialLoading }">
       <!-- 粒子背景 - 文此加载，提高首屏性能 -->
       <ParticlesBackground v-if="showParticles" />
       
@@ -18,25 +30,34 @@
 
         <!-- 主内容区 -->
         <main class="main-content">
-          <router-view v-slot="{ Component }">
-            <!-- 根据keepAlive配置决定是否使用缓存 -->
-            <keep-alive>
+          <router-view v-slot="{ Component, route }">
+            <transition name="page-fade" mode="out-in">
+              <!-- 根据keepAlive配置决定是否使用缓存 -->
+              <keep-alive>
+                <component 
+                  :is="Component" 
+                  v-if="Component && route.meta.keepAlive"
+                  :key="route.fullPath"
+                />
+              </keep-alive>
+            </transition>
+            <transition name="page-fade" mode="out-in">
+              <!-- 不使用缓存的组件 -->
               <component 
                 :is="Component" 
-                v-if="Component && $route.meta.keepAlive"
-                :key="$route.fullPath"
+                v-if="Component && !route.meta.keepAlive"
+                :key="route.fullPath"
               />
-            </keep-alive>
-            <!-- 不使用缓存的组件 -->
-            <component 
-              :is="Component" 
-              v-if="Component && !$route.meta.keepAlive"
-              :key="$route.fullPath"
-            />
+            </transition>
             <!-- 加载状态 -->
-            <div v-if="!Component" class="loading">
-              <p>页面加载中...</p>
-            </div>
+            <transition name="page-fade">
+              <div v-if="!Component" class="loading">
+                <div class="loading-spinner-small">
+                  <div class="spinner-ring-small"></div>
+                </div>
+                <p>页面加载中...</p>
+              </div>
+            </transition>
           </router-view>
         </main>
         
@@ -73,6 +94,7 @@
   const showParticles = ref(false)
   const showLoginModal = ref(false)
   const authStore = useAuthStore()
+  const isInitialLoading = ref(true)
   
   // 导入背景图片 - 使用Vite的URL导入
   import backgroundImageUrl from '../assets/image/background-bottom.jpg?url'
@@ -97,6 +119,11 @@
     
     // 监听全局登录事件
     window.addEventListener('show-login', handleGlobalLogin)
+    
+    // 模拟初始加载，确保基础内容已准备好
+    setTimeout(() => {
+      isInitialLoading.value = false
+    }, 800) // 800ms 后隐藏加载动画
     
     // 功能特效不是关键路径上的东西，正常情况下可以在1-2一后加载
     const loadParticles = () => {
@@ -167,11 +194,52 @@
   /* 加载状态样式 */
   .loading {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 200px;
     color: #666;
     font-style: italic;
+    gap: 15px;
+  }
+  
+  /* 页面切换动画 */
+  .page-fade-enter-active,
+  .page-fade-leave-active {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .page-fade-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .page-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .page-fade-enter-to,
+  .page-fade-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* 小型加载动画 */
+  .loading-spinner-small {
+    position: relative;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .spinner-ring-small {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid transparent;
+    border-top-color: #4a90e2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
   }
   
   /* 响应式布局 */
@@ -264,5 +332,118 @@
     
   a:hover {
     color: powderblue;
+  }
+  
+  /* 首次加载遮罩层 */
+  .initial-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(125, 185, 232, 0.95) 0%,
+      rgba(166, 219, 246, 0.95) 50%,
+      rgba(30, 87, 153, 0.95) 100%
+    );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* 加载动画容器 */
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  /* 旋转环动画 */
+  .spinner-ring {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border: 4px solid transparent;
+    border-radius: 50%;
+    animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  }
+  
+  .spinner-ring:nth-child(1) {
+    border-top-color: #ffffff;
+    animation-delay: 0s;
+  }
+  
+  .spinner-ring:nth-child(2) {
+    border-right-color: #ffffff;
+    animation-delay: 0.3s;
+    width: 60px;
+    height: 60px;
+    top: 10px;
+    left: 10px;
+  }
+  
+  .spinner-ring:nth-child(3) {
+    border-bottom-color: #ffffff;
+    animation-delay: 0.6s;
+    width: 40px;
+    height: 40px;
+    top: 20px;
+    left: 20px;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* 加载文字 */
+  .loading-text {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    margin-top: 100px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+  
+  /* 初始加载淡出动画 */
+  .initial-load-enter-active {
+    transition: opacity 0.3s ease;
+  }
+  
+  .initial-load-leave-active {
+    transition: opacity 0.5s ease;
+  }
+  
+  .initial-load-enter-from,
+  .initial-load-leave-to {
+    opacity: 0;
+  }
+  
+  /* 应用加载完成后的淡入效果 */
+  .app {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  
+  .app-loaded {
+    opacity: 1;
   }
   </style>
