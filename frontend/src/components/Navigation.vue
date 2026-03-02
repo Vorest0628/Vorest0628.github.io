@@ -1,617 +1,521 @@
-<!-- 
-  Navigation组件
-  功能：
-  1. 提供主导航菜单
-  2. 实现搜索功能
-  3. 下拉菜单功能
-  4. 响应式设计
-  5. 使用Teleport实现全局宽度
--->
 <template>
-  <!-- 使用 Teleport 将导航栏传送到 body，超越 container 限制 -->
   <Teleport to="body">
-    <nav class="main-nav" ref="navElement">
-      <!-- 网站标识 -->
-      <div class="site-brand">
-        <router-link to="/">Vorest's Website</router-link>
+    <nav ref="navElement" class="main-nav">
+      <div class="nav-top">
+        <router-link to="/" class="site-brand" @click="handleRouteClick">
+          <span class="brand-orb"></span>
+          <span class="brand-text">Main Website</span>
+        </router-link>
+
+        <button
+          class="mobile-toggle"
+          type="button"
+          :aria-label="mobileMenuOpen ? '收起菜单' : '展开菜单'"
+          @click="toggleMobileMenu"
+        >
+          <i :class="mobileMenuOpen ? 'fas fa-xmark' : 'fas fa-bars'"></i>
+        </button>
       </div>
 
-      <!-- 导航菜单 -->
-      <ul class="nav-menu">
-        <li><router-link to="/" @click="debugRoute('/')">主页</router-link></li>
-        <li><router-link to="/blog" @click="debugRoute('/blog')">博客</router-link></li>
-        
-        <!-- 工具箱 - 暂时是假按钮 -->
-        <li>
-          <a href="#" @click.prevent="handleToolbox" class="toolbox-btn">工具箱</a>
-        </li>
-        
-        <!-- 资源库下拉菜单 -->
-        <li class="dropdown" 
-            @mouseenter="showResourcesDropdown = true" 
-            @mouseleave="showResourcesDropdown = false">
-          <a href="#" @click.prevent class="dropdown-toggle">资源库 ▾</a>
-          <transition name="dropdown">
-            <ul class="dropdown-menu" v-show="showResourcesDropdown">
-              <li><router-link to="/gallery" @click="debugRoute('/gallery')">图库</router-link></li>
-              <li><router-link to="/documents" @click="debugRoute('/documents')">文档库</router-link></li>
-            </ul>
-          </transition>
-        </li>
-        
-        <!-- 其他下拉菜单 -->
-        <li class="dropdown" 
-            @mouseenter="showOthersDropdown = true" 
-            @mouseleave="showOthersDropdown = false">
-          <a href="#" @click.prevent class="dropdown-toggle">其他 ▾</a>
-          <transition name="dropdown">
-            <ul class="dropdown-menu" v-show="showOthersDropdown">
-              <li><router-link to="/comments" @click="debugRoute('/comments')">评论</router-link></li>
-              <li><router-link to="/friends" @click="debugRoute('/friends')">友情链接</router-link></li>
-              <li><router-link to="/about" @click="debugRoute('/about')">关于我</router-link></li>
-            </ul>
-          </transition>
-        </li>
-      </ul>
+      <div class="nav-content" :class="{ open: mobileMenuOpen }">
+        <ul class="nav-menu">
+          <li><router-link to="/" @click="handleRouteClick">主页</router-link></li>
+          <li><router-link to="/blog" @click="handleRouteClick">博客</router-link></li>
 
-      <!-- 用户操作区域 -->
-      <div class="user-actions">
-        <!-- 管理功能按钮 -->
-        <template v-if="authStore.isAuthenticated">
-          <button 
-            @click="goToUserPanel" 
-            class="user-panel-btn" 
-            :title="authStore.isAdmin ? '管理员控制台' : '用户面板'"
-          >
-            <i class="fas fa-cog"></i>
-            {{ authStore.isAdmin ? '管理控制台' : '用户面板' }}
-          </button>
-          <button @click="handleLogout" class="logout-btn" title="退出登录">
-            <i class="fas fa-sign-out-alt"></i>
-            退出
-          </button>
-        </template>
-        <template v-else>
-          <button @click="handleShowLogin" class="login-btn" title="用户登录">
-            <i class="fas fa-user"></i>
-            登录
-          </button>
-        </template>
+          <li>
+            <button class="nav-link-btn toolbox-btn" type="button" @click="handleToolbox">工具箱</button>
+          </li>
 
-        <!-- 搜索框 -->
-        <form class="search-form" @submit.prevent="handleSearch">
-          <input 
-            type="search" 
-            v-model="searchQuery" 
-            placeholder="搜索博客或文档..."
+          <li
+            class="dropdown"
+            @mouseenter="setDesktopDropdown('resources', true)"
+            @mouseleave="setDesktopDropdown('resources', false)"
           >
-          <button type="submit">
-            <i class="fas fa-search"></i>
-          </button>
-        </form>
+            <button class="dropdown-toggle" type="button" @click="toggleDropdown('resources')">
+              资源库
+              <i class="fas fa-angle-down"></i>
+            </button>
+            <transition name="dropdown">
+              <ul v-show="showResourcesDropdown" class="dropdown-menu">
+                <li><router-link to="/gallery" @click="handleRouteClick">图库</router-link></li>
+                <li><router-link to="/documents" @click="handleRouteClick">文档库</router-link></li>
+              </ul>
+            </transition>
+          </li>
+
+          <li
+            class="dropdown"
+            @mouseenter="setDesktopDropdown('others', true)"
+            @mouseleave="setDesktopDropdown('others', false)"
+          >
+            <button class="dropdown-toggle" type="button" @click="toggleDropdown('others')">
+              其他
+              <i class="fas fa-angle-down"></i>
+            </button>
+            <transition name="dropdown">
+              <ul v-show="showOthersDropdown" class="dropdown-menu">
+                <li><router-link to="/comments" @click="handleRouteClick">评论</router-link></li>
+                <li><router-link to="/friends" @click="handleRouteClick">友情链接</router-link></li>
+                <li><router-link to="/about" @click="handleRouteClick">关于我</router-link></li>
+              </ul>
+            </transition>
+          </li>
+        </ul>
+
+        <div class="user-actions">
+          <template v-if="authStore.isAuthenticated">
+            <button
+              type="button"
+              class="user-panel-btn"
+              :title="authStore.isAdmin ? '管理员控制台' : '用户面板'"
+              @click="goToUserPanel"
+            >
+              <i class="fas fa-sliders"></i>
+              {{ authStore.isAdmin ? '控制台' : '用户面板' }}
+            </button>
+            <button type="button" class="logout-btn" title="退出登录" @click="handleLogout">
+              <i class="fas fa-right-from-bracket"></i>
+            </button>
+          </template>
+          <template v-else>
+            <button type="button" class="login-btn" title="用户登录" @click="handleShowLogin">
+              <i class="fas fa-user"></i>
+              登录
+            </button>
+          </template>
+
+          <form class="search-form" @submit.prevent="handleSearch">
+            <input v-model="searchQuery" type="search" placeholder="搜索博客或文档..." />
+            <button type="submit"><i class="fas fa-magnifying-glass"></i></button>
+          </form>
+        </div>
       </div>
     </nav>
   </Teleport>
-  
-  <!-- 占位元素，维持 Grid 布局，动态调整高度 -->
-  <div class="nav-placeholder" :style="{ height: navHeight + 'px' }"></div>
+
+  <div class="nav-placeholder" :style="{ height: `${navHeight}px` }"></div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
 const searchQuery = ref('')
 const showResourcesDropdown = ref(false)
 const showOthersDropdown = ref(false)
+const mobileMenuOpen = ref(false)
 const navElement = ref(null)
-const navHeight = ref(100) // 导航栏高度，默认100px
+const navHeight = ref(88)
 
-// 调试函数
-const debugRoute = (path) => {
-  console.log(`点击导航链接: ${path}`)
-  console.log('当前路由:', router.currentRoute.value.path)
-}
+const isMobileViewport = () => window.innerWidth <= 980
 
-// 工具箱按钮处理
 const handleToolbox = () => {
-  alert('工具箱功能开发中，敬请期待！')
+  alert('工具箱功能开发中，敬请期待。')
 }
 
-// 搜索处理
 const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    router.push({
-      name: 'search',
-      query: { q: searchQuery.value.trim() }
-    }).catch(err => {
-      console.error('路由跳转失败:', err)
-    })
-    searchQuery.value = ''
-  }
+  const query = searchQuery.value.trim()
+  if (!query) return
+
+  router.push({
+    name: 'search',
+    query: { q: query }
+  }).catch((err) => {
+    console.error('Route navigation failed:', err)
+  })
+  searchQuery.value = ''
+  handleRouteClick()
 }
 
-// 跳转到用户面板
 const goToUserPanel = () => {
   if (authStore.isAdmin) {
     router.push('/admin/dashboard')
-  } else {
-    router.push('/user/panel')
+    return
   }
+  router.push('/user/panel')
 }
 
-// 处理登出
 const handleLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
-    authStore.logout()
-    console.log('已退出登录')
-    if (router.currentRoute.value.path.startsWith('/admin') || 
-        router.currentRoute.value.path.startsWith('/user')) {
-      router.push('/')
-    }
+  if (!confirm('确定要退出登录吗？')) return
+  authStore.logout()
+  if (router.currentRoute.value.path.startsWith('/admin') || router.currentRoute.value.path.startsWith('/user')) {
+    router.push('/')
   }
 }
 
-// 显示登录模态框（触发全局事件）
 const handleShowLogin = () => {
   window.dispatchEvent(new Event('show-login'))
 }
 
-// 组件挂载时初始化认证状态
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+  if (!mobileMenuOpen.value) {
+    showResourcesDropdown.value = false
+    showOthersDropdown.value = false
+  }
+  nextTick(updateNavHeight)
+}
+
+const handleRouteClick = () => {
+  mobileMenuOpen.value = false
+  showResourcesDropdown.value = false
+  showOthersDropdown.value = false
+  nextTick(updateNavHeight)
+}
+
+const setDesktopDropdown = (type, visible) => {
+  if (isMobileViewport()) return
+  if (type === 'resources') {
+    showResourcesDropdown.value = visible
+    return
+  }
+  showOthersDropdown.value = visible
+}
+
+const toggleDropdown = (type) => {
+  if (!isMobileViewport()) return
+
+  if (type === 'resources') {
+    showResourcesDropdown.value = !showResourcesDropdown.value
+    if (showResourcesDropdown.value) showOthersDropdown.value = false
+  } else {
+    showOthersDropdown.value = !showOthersDropdown.value
+    if (showOthersDropdown.value) showResourcesDropdown.value = false
+  }
+
+  nextTick(updateNavHeight)
+}
+
+const updateNavHeight = () => {
+  window.requestAnimationFrame(() => {
+    if (!navElement.value) return
+    navHeight.value = Math.ceil(navElement.value.getBoundingClientRect().height + 8)
+  })
+}
+
+const handleResize = () => {
+  if (!isMobileViewport()) {
+    mobileMenuOpen.value = false
+  }
+  showResourcesDropdown.value = false
+  showOthersDropdown.value = false
+  updateNavHeight()
+}
+
+watch(
+  () => router.currentRoute.value.fullPath,
+  () => {
+    handleRouteClick()
+  }
+)
+
 onMounted(async () => {
   await authStore.initAuth()
-  
-  // 初始化导航栏高度
   updateNavHeight()
-  
-  // 监听窗口大小变化
-  window.addEventListener('resize', updateNavHeight)
+  window.addEventListener('resize', handleResize)
 })
 
-// 组件卸载时清理事件监听器
 onUnmounted(() => {
-  window.removeEventListener('resize', updateNavHeight)
+  window.removeEventListener('resize', handleResize)
 })
-
-// 更新导航栏高度
-const updateNavHeight = () => {
-  // 使用 nextTick 确保 DOM 已经渲染
-  setTimeout(() => {
-    if (navElement.value) {
-      // 获取导航栏的实际高度
-      const rect = navElement.value.getBoundingClientRect()
-      // 设置占位元素的高度 = 导航栏高度 + top边距 + 一些额外间距
-      navHeight.value = rect.height + 5 // 25px top + 5px 额外间距
-    }
-  }, 100) // 稍微延迟以确俛teleport完成
-}
 </script>
 
 <style scoped>
-/* 占位元素，维持 Grid 布局，高度动态调整 */
 .nav-placeholder {
   grid-area: nav;
-  margin: 0;
-  padding: 0;
-  transition: height 0.3s ease; /* 添加平滑过渡 */
+  transition: height 0.3s ease;
 }
 
-/* 导航栏样式 */
 .main-nav {
-  background-color: rgba(245, 245, 245, 0.95);
-  border-radius: 5px;
-  padding: 15px 30px;
-  margin: 0 auto;
-  border: 3px solid skyblue;
-  position: fixed; /* 使用 fixed 定位 */
-  top: 0px; /* 距离顶部的距离 */
+  position: fixed;
+  top: 10px;
   left: 50%;
-  transform: translateX(-50%); /* 水平居中 */
-  z-index: 100;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  box-sizing: border-box;
+  transform: translateX(-50%);
+  z-index: 120;
+  width: min(1480px, calc(100% - 20px));
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.84), rgba(223, 247, 255, 0.76)),
+    radial-gradient(circle at right top, rgba(126, 210, 255, 0.25), transparent 60%);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 38px rgba(32, 94, 137, 0.18);
+  padding: 0.78rem 1rem;
+  display: grid;
+  gap: 0.78rem;
+}
+
+.nav-top {
   display: flex;
   align-items: center;
-  gap: 20px;
   justify-content: space-between;
-  width: calc(100% - 20px); /* 两边各留20px边距 */
 }
 
-/* 网站标识 */
 .site-brand {
-  flex-shrink: 0;
-}
-
-.site-brand a {
-  color: rgb(45, 167, 224);
-  text-decoration: none;
-  font-size: 1.2rem;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.site-brand a:hover {
-  color: rgb(35, 147, 204);
-}
-
-/* 导航菜单 */
-.nav-menu {
-  list-style: none;
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
+  display: inline-flex;
   align-items: center;
+  gap: 0.6rem;
+  color: #2d85da;
+  text-decoration: none;
+}
+
+.brand-orb {
+  width: 0.92rem;
+  height: 0.92rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #80d7ff, #3196ed);
+  box-shadow: 0 0 0 4px rgba(115, 201, 255, 0.26);
+}
+
+.brand-text {
+  font-family: var(--summer-font-display);
+  font-size: 1.38rem;
+  letter-spacing: 0.02em;
+}
+
+.mobile-toggle {
+  display: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1px solid rgba(94, 180, 241, 0.45);
+  background: rgba(255, 255, 255, 0.84);
+  color: #2f84d7;
+  cursor: pointer;
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.46rem;
+  list-style: none;
   margin: 0;
   padding: 0;
-  flex: 1;
+  flex-wrap: wrap;
 }
 
-/* 导航链接 */
-.nav-menu > li > a,
-.nav-menu > li > .dropdown-toggle,
-.toolbox-btn {
-  color: rgb(45, 167, 224);
+.nav-menu a,
+.dropdown-toggle,
+.nav-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.16rem;
+  padding: 0 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: #2f7ec9;
+  font-size: 0.92rem;
+  font-weight: 600;
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-  display: inline-block;
-  font-weight: 500;
-  border: 2px solid transparent;
-  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.24s ease;
 }
 
-.nav-menu > li > a:hover,
-.nav-menu > li > .dropdown-toggle:hover,
-.toolbox-btn:hover {
-  background-color: rgb(45, 167, 224);
-  color: white;
-  border-color: rgb(45, 167, 224);
+.nav-menu a:hover,
+.dropdown-toggle:hover,
+.nav-link-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(45, 167, 224, 0.3);
+  border-color: rgba(82, 177, 241, 0.45);
+  background: rgba(234, 249, 255, 0.9);
+  color: #1f6fb8;
 }
 
-/* 下拉菜单容器 */
+.nav-menu a.router-link-active {
+  background: linear-gradient(135deg, #2f8ce2, #58beff);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(47, 140, 226, 0.24);
+}
+
 .dropdown {
   position: relative;
 }
 
-.dropdown-toggle {
-  cursor: pointer;
-}
-
-/* 下拉菜单 */
 .dropdown-menu {
   position: absolute;
-  top: 100%; /* 紧贴按钮下边 */
+  top: calc(100% + 0.35rem);
   left: 0;
-  background-color: white;
-  border: 2px solid skyblue;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 150px;
+  padding: 0.35rem;
   list-style: none;
-  padding: 8px 0;
-  min-width: 140px;
-  z-index: 200;
-  transform-origin: top center;
-  margin-top: 2px; /* 轻微间距避免重叠 */
-}
-
-/* 下拉菜单动画 */
-.dropdown-enter-active {
-  animation: dropdown-in 0.2s ease-out;
-}
-
-.dropdown-leave-active {
-  animation: dropdown-out 0.15s ease-in;
-}
-
-@keyframes dropdown-in {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px) scaleY(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scaleY(1);
-  }
-}
-
-@keyframes dropdown-out {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-10px) scaleY(0.8);
-  }
-}
-
-.dropdown-menu li {
   margin: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(126, 197, 240, 0.5);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(48, 104, 144, 0.2);
 }
 
 .dropdown-menu a {
-  display: block;
-  padding: 8px 16px;
-  color: rgb(45, 167, 224);
-  text-decoration: none;
-  transition: all 0.2s ease;
-  border: none;
-  border-radius: 0;
-  white-space: nowrap;
+  width: 100%;
+  justify-content: flex-start;
 }
 
-.dropdown-menu a:hover {
-  background-color: rgba(45, 167, 224, 0.1);
-  color: rgb(35, 147, 204);
-  transform: none;
-  box-shadow: none;
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
-/* 用户操作区域 */
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 .user-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  gap: 0.42rem;
 }
 
-/* 用户按钮样式 */
-.login-btn, .logout-btn, .user-panel-btn {
-  background-color: white;
-  color: rgb(45, 167, 224);
-  border: 2px solid rgb(45, 167, 224);
-  padding: 8px 14px;
-  border-radius: 6px;
+.login-btn,
+.logout-btn,
+.user-panel-btn {
+  border: 1px solid rgba(86, 174, 239, 0.55);
+  border-radius: 999px;
+  height: 2.16rem;
+  padding: 0 0.84rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: #2f7ec9;
+  font-size: 0.84rem;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  display: flex;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, background-color 0.24s ease;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.85rem;
-  white-space: nowrap;
+  gap: 0.35rem;
 }
 
 .user-panel-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #ff96ae, #ffa3ba 40%, #7eceff);
   border-color: transparent;
+  color: #fff;
 }
 
+.login-btn:hover,
+.logout-btn:hover,
 .user-panel-btn:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 20px rgba(48, 121, 174, 0.2);
 }
 
-.login-btn:hover, .logout-btn:hover {
-  background-color: rgb(45, 167, 224);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(45, 167, 224, 0.3);
-}
-
-/* 搜索表单 */
 .search-form {
   display: flex;
-  gap: 5px;
   align-items: center;
+  gap: 0.3rem;
 }
 
-.search-form input[type="search"] {
-  padding: 8px 12px;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  transition: border-color 0.3s;
-  min-width: 140px;
+.search-form input {
+  width: 200px;
+  height: 2.16rem;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 190, 246, 0.5);
+  background: rgba(255, 255, 255, 0.92);
+  color: #275d8d;
+  padding: 0 0.86rem;
 }
 
-.search-form input[type="search"]:focus {
+.search-form input:focus {
   outline: none;
-  border-color: skyblue;
+  border-color: #3a9ef2;
+  box-shadow: 0 0 0 3px rgba(110, 195, 250, 0.28);
 }
 
-.search-form button[type="submit"] {
-  background-color: skyblue;
-  color: white;
+.search-form button {
+  width: 2.16rem;
+  height: 2.16rem;
   border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #41a4f5, #5cc2ff);
+  color: #fff;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: transform 0.24s ease, box-shadow 0.24s ease;
 }
 
-.search-form button[type="submit"]:hover {
-  background-color: rgb(45, 167, 224);
+.search-form button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(45, 167, 224, 0.3);
+  box-shadow: 0 8px 18px rgba(62, 157, 232, 0.3);
 }
 
-/* 响应式设计 - 根据内容宽度智能适配 */
-
-/* 中等宽度屏幕 (900px - 1200px) - 缩小间距但保持横向 */
-@media (max-width: 1200px) and (min-width: 901px) {
+@media (max-width: 1220px) {
   .main-nav {
-    gap: 12px;
-    padding: 12px 20px;
+    border-radius: 18px;
   }
 
-  .site-brand a {
-    font-size: 1.1rem;
-  }
-
-  .nav-menu {
-    gap: 8px;
-  }
-
-  .nav-menu > li > a,
-  .nav-menu > li > .dropdown-toggle,
-  .toolbox-btn {
-    padding: 7px 14px;
-    font-size: 0.9rem;
-  }
-
-  .user-actions {
-    gap: 8px;
-  }
-
-  .login-btn, .logout-btn, .user-panel-btn {
-    padding: 7px 12px;
-    font-size: 0.85rem;
-  }
-
-  .search-form input[type="search"] {
-    min-width: 120px;
+  .search-form input {
+    width: 160px;
   }
 }
 
-/* 小屏幕 (700px - 900px) - 开始折叠，搜索框和按钮换行 */
-@media (max-width: 900px) and (min-width: 701px) {
+@media (max-width: 980px) {
   .main-nav {
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px 15px;
-    justify-content: center;
+    width: calc(100% - 14px);
+    top: 6px;
+    padding: 0.68rem 0.72rem;
+    border-radius: 16px;
   }
 
-  .site-brand {
-    order: 1;
-    flex: 0 0 auto;
+  .mobile-toggle {
+    display: inline-grid;
+    place-items: center;
   }
 
-  .site-brand a {
-    font-size: 1rem;
-  }
-
-  .nav-menu {
-    order: 2;
-    flex: 1 1 auto;
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .nav-menu > li > a,
-  .nav-menu > li > .dropdown-toggle,
-  .toolbox-btn {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-  }
-
-  .user-actions {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .login-btn, .logout-btn, .user-panel-btn {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-  }
-
-  .search-form {
-    max-width: 300px;
-  }
-}
-
-/* 移动端 (<=700px) - 完全纵向布局 */
-@media (max-width: 700px) {
-  .main-nav {
+  .nav-content {
+    display: none;
     flex-direction: column;
-    padding: 8px 10px;
-    gap: 6px;
-    left: 0;
-    right: 0;
-    top: 5px;
-    width: 100%;
-    max-width: 100%;
-    transform: none;
-    border-radius: 0;
-    overflow-x: auto;
-    overflow-y: visible;
+    align-items: stretch;
+    gap: 0.8rem;
   }
 
-  .nav-placeholder {
-    height: auto;
-    min-height: 30px;
-  }
-
-  .site-brand {
-    width: 100%;
-    text-align: center;
-  }
-
-  .site-brand a {
-    font-size: 1rem;
+  .nav-content.open {
+    display: flex;
   }
 
   .nav-menu {
-    flex-direction: row;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nav-menu a,
+  .dropdown-toggle,
+  .nav-link-btn {
     width: 100%;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .nav-menu > li {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
-  .nav-menu > li > a,
-  .nav-menu > li > .dropdown-toggle,
-  .toolbox-btn {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    min-width: auto;
+    justify-content: space-between;
+    border-radius: 12px;
+    height: 2.4rem;
   }
 
   .dropdown-menu {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    top: auto;
-    width: 200px;
+    position: static;
+    margin-top: 0.35rem;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 12px;
   }
 
   .user-actions {
-    flex-direction: row;
-    width: 100%;
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .login-btn, .logout-btn, .user-panel-btn {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    min-width: auto;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
 
   .search-form {
     width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
   }
 
-  .search-form input[type="search"] {
+  .search-form input {
+    width: 100%;
     flex: 1;
-    font-size: 0.85rem;
-    padding: 6px 10px;
-  }
-
-  .search-form button[type="submit"] {
-    padding: 6px 10px;
   }
 }
 </style>

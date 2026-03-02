@@ -1,449 +1,320 @@
-<!-- 
-  MainLayout组件
-  功能：
-  1. 组合所有布局组件
-  2. 实现响应式布局
-  3. 管理页面缓存
-  4. 提供统一的页面结构
--->
 <template>
-    <!-- 首次加载动画 -->
-    <transition name="initial-load">
-      <div v-if="isInitialLoading" class="initial-loading-overlay">
-        <div class="loading-spinner">
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring"></div>
-          <p class="loading-text">加载中...</p>
-        </div>
+  <transition name="initial-load">
+    <div v-if="isInitialLoading" class="initial-loading-overlay">
+      <div class="loading-core">
+        <div class="sun-ring"></div>
+        <div class="sun-inner"></div>
       </div>
-    </transition>
+      <p class="loading-text">加载中...</p>
+    </div>
+  </transition>
 
-    <div class="app" :class="{ 'app-loaded': !isInitialLoading }">
-      <!-- 粒子背景 - 文此加载，提高首屏性能 -->
-      <ParticlesBackground v-if="showParticles" />
-      
-      <!-- 主要内容区域 -->
-      <div class="container">
-        <!-- 导航组件 -->
-        <Navigation />
+  <div class="app" :class="{ 'app-loaded': !isInitialLoading }">
+    <ParticlesBackground v-if="showParticles" />
 
-        <!-- 主内容区 -->
-        <main class="main-content">
-          <router-view v-slot="{ Component, route }">
-            <transition name="page-fade" mode="out-in">
-              <!-- 根据keepAlive配置决定是否使用缓存 -->
-              <keep-alive>
-                <component 
-                  :is="Component" 
-                  v-if="Component && route.meta.keepAlive"
-                  :key="route.fullPath"
-                />
-              </keep-alive>
-            </transition>
-            <transition name="page-fade" mode="out-in">
-              <!-- 不使用缓存的组件 -->
-              <component 
-                :is="Component" 
-                v-if="Component && !route.meta.keepAlive"
+    <div class="container">
+      <Navigation />
+
+      <main class="main-content">
+        <router-view v-slot="{ Component, route }">
+          <transition name="page-fade" mode="out-in">
+            <keep-alive>
+              <component
+                :is="Component"
+                v-if="Component && route.meta.keepAlive"
                 :key="route.fullPath"
               />
-            </transition>
-            <!-- 加载状态 -->
-            <transition name="page-fade">
-              <div v-if="!Component" class="loading">
-                <div class="loading-spinner-small">
-                  <div class="spinner-ring-small"></div>
-                </div>
-                <p>页面加载中...</p>
+            </keep-alive>
+          </transition>
+
+          <transition name="page-fade" mode="out-in">
+            <component
+              :is="Component"
+              v-if="Component && !route.meta.keepAlive"
+              :key="route.fullPath"
+            />
+          </transition>
+
+          <transition name="page-fade">
+            <div v-if="!Component" class="loading">
+              <div class="loading-spinner-small">
+                <div class="spinner-ring-small"></div>
               </div>
-            </transition>
-          </router-view>
-        </main>
-        
-        <!-- 侧边栏组件 -->
-        <Sidebar />
-
-        <!-- 页脚组件 -->
-        <Footer />
-      </div>
-
-      <!-- 全局登录模态框 -->
-      <LoginModal 
-        :visible="showLoginModal" 
-        @close="showLoginModal = false"
-        @success="handleLoginSuccess"
-      />
+              <p>页面加载中...</p>
+            </div>
+          </transition>
+        </router-view>
+      </main>
+      <Footer />
     </div>
-  </template>
-  
-  <script setup>
-  import { onMounted, ref, defineAsyncComponent } from 'vue'
-  import { useAuthStore } from '@/store/modules/auth'
-  // 导入布局组件
-  import Sidebar from './Sidebar.vue'
-  import Footer from './Footer.vue'
-  import Navigation from './Navigation.vue'
-  import LoginModal from './LoginModal.vue'
-  
-  // 文此加载 ParticlesBackground 组件，降低首屏扶嫞CSS
-  const ParticlesBackground = defineAsyncComponent(() =>
-    import('./ParticlesBackground.vue')
-  )
-  
-  const showParticles = ref(false)
-  const showLoginModal = ref(false)
-  const authStore = useAuthStore()
-  const isInitialLoading = ref(true)
-  
-  // 导入背景图片 - 使用Vite的URL导入
-  import backgroundImageUrl from '../assets/image/background-bottom.jpg?url'
 
-  // 处理登录成功
-  const handleLoginSuccess = () => {
-    console.log('登录成功！欢迎,', authStore.user.username)
-    if (authStore.isAdmin) {
-      console.log('管理员权限已激活，您可以访问管理面板')
-    }
+    <LoginModal
+      :visible="showLoginModal"
+      @close="showLoginModal = false"
+      @success="handleLoginSuccess"
+    />
+  </div>
+</template>
+
+<script setup>
+import { onMounted, onUnmounted, ref, defineAsyncComponent } from 'vue'
+import { useAuthStore } from '@/store/modules/auth'
+import Footer from './Footer.vue'
+import Navigation from './Navigation.vue'
+import LoginModal from './LoginModal.vue'
+import backgroundImageUrl from '../assets/image/background-bottom.jpg?url'
+
+const ParticlesBackground = defineAsyncComponent(() => import('./ParticlesBackground.vue'))
+
+const showParticles = ref(false)
+const showLoginModal = ref(false)
+const authStore = useAuthStore()
+const isInitialLoading = ref(true)
+
+const handleLoginSuccess = () => {
+  if (authStore.user?.username) {
+    console.log('Login success:', authStore.user.username)
+  }
+}
+
+const handleGlobalLogin = () => {
+  showLoginModal.value = true
+}
+
+onMounted(() => {
+  authStore.initAuth()
+  window.addEventListener('show-login', handleGlobalLogin)
+
+  setTimeout(() => {
+    isInitialLoading.value = false
+  }, 760)
+
+  const enableDecorations = () => {
+    showParticles.value = true
+    document.documentElement.classList.add('with-background-image')
+    document.documentElement.style.setProperty('--summer-bg-image', `url(${backgroundImageUrl})`)
   }
 
-  // 处理全局登录事件
-  const handleGlobalLogin = () => {
-    showLoginModal.value = true
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(enableDecorations, { timeout: 1800 })
+  } else {
+    setTimeout(enableDecorations, 1200)
   }
+})
 
-  // 空闲时慣批加载粒子特效，不阻塞首屏
-  onMounted(() => {
-    // 初始化认证状态
-    authStore.initAuth()
-    
-    // 监听全局登录事件
-    window.addEventListener('show-login', handleGlobalLogin)
-    
-    // 模拟初始加载，确保基础内容已准备好
-    setTimeout(() => {
-      isInitialLoading.value = false
-    }, 800) // 800ms 后隐藏加载动画
-    
-    // 功能特效不是关键路径上的东西，正常情况下可以在1-2一后加载
-    const loadParticles = () => {
-      if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(() => {
-          showParticles.value = true
-          // 启用背景图片
-          document.documentElement.classList.add('with-background-image')
-          document.documentElement.style.setProperty('--background-image', `url(${backgroundImageUrl})`)
-        }, { timeout: 2000 })  // 2秒后强制加载
-      } else {
-        // 不支持requestIdleCallback的浏览器，使用setTimeout
-        setTimeout(() => {
-          showParticles.value = true
-          document.documentElement.classList.add('with-background-image')
-          document.documentElement.style.setProperty('--background-image', `url(${backgroundImageUrl})`)
-        }, 1500)
-      }
-    }
-    
-    loadParticles()
-  })
-  </script>
-  
-  <style scoped>
-  /* 应用容器样式 */
-  .app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background-color: transparent;
-    margin: 0;
-    padding: 0;
-    position: relative; /* 为粒子背景提供定位参考 */
+onUnmounted(() => {
+  window.removeEventListener('show-login', handleGlobalLogin)
+})
+</script>
+
+<style scoped>
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.app-loaded {
+  opacity: 1;
+}
+
+.container {
+  max-width: 1460px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  display: grid;
+  grid-template-areas:
+    'nav'
+    'main'
+    'footer';
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding: 10px 12px 24px;
+}
+
+.main-content {
+  grid-area: main;
+  min-height: 420px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(247, 252, 255, 0.74);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 42px rgba(35, 103, 150, 0.16);
+  overflow: hidden;
+}
+
+.loading {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: #3d6e92;
+}
+
+.loading-spinner-small {
+  width: 48px;
+  height: 48px;
+}
+
+.spinner-ring-small {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid rgba(121, 204, 255, 0.4);
+  border-top-color: #2e8ee5;
+  animation: spin 0.95s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  
-  /* 主容器样式 */
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.initial-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(180deg, rgba(51, 169, 247, 0.95), rgba(141, 230, 255, 0.93)),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.18), transparent 45%);
+}
+
+.loading-core {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.sun-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.7);
+  animation: spin 2.1s linear infinite;
+}
+
+.sun-inner {
+  position: absolute;
+  inset: 17px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fffbd3, #ffd17a 72%, #ffb561 100%);
+  box-shadow: 0 0 26px rgba(255, 224, 154, 0.8);
+}
+
+.loading-text {
+  margin: 1rem 0 0;
+  color: #fff;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+}
+
+.initial-load-enter-active {
+  transition: opacity 0.25s ease;
+}
+
+.initial-load-leave-active {
+  transition: opacity 0.45s ease;
+}
+
+.initial-load-enter-from,
+.initial-load-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 1080px) {
   .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-areas: 
-      "nav nav"
-      "main sidebar"
-      "footer footer";
-    grid-template-columns: 3fr 1fr; /* 调整为83.3% vs 16.7%，让主内容区更宽 */
-    gap: 20px;
-    padding: 20px;
-    width: 100%;
-    box-sizing: border-box;
-    flex: 1; /* 让容器占据剩余空间 */
+    grid-template-areas:
+      'nav'
+      'main'
+      'footer';
+    grid-template-columns: 1fr;
+    padding: 8px 8px 18px;
+    gap: 14px;
   }
-  
-  /* 主内容区样式 */
+
   .main-content {
-    grid-area: main;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 0; /* 移除内层padding，让页面组件自行控制 */
-    border-radius: 5px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(135, 206, 235, 0.3);
-    min-height: 400px; /* 确保有最小高度 */
-    width: 100%;
-    overflow: hidden; /* 确保内容不溢出圆角边界 */
+    border-radius: 20px;
   }
-  
-  /* 加载状态样式 */
-  .loading {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 200px;
-    color: #666;
-    font-style: italic;
-    gap: 15px;
-  }
-  
-  /* 页面切换动画 */
-  .page-fade-enter-active,
-  .page-fade-leave-active {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-  .page-fade-enter-from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  
-  .page-fade-leave-to {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  
-  .page-fade-enter-to,
-  .page-fade-leave-from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  
-  /* 小型加载动画 */
-  .loading-spinner-small {
-    position: relative;
-    width: 50px;
-    height: 50px;
-  }
-  
-  .spinner-ring-small {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 3px solid transparent;
-    border-top-color: #4a90e2;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  
-  /* 响应式布局 */
-  @media (max-width: 768px) {
-    .container {
-      grid-template-areas:
-        "nav"
-        "main"
-        "sidebar"
-        "footer";
-      grid-template-columns: 1fr;
-      padding: 15px;
-      gap: 15px;
-    }
-    
-    .main-content {
-      padding: 15px;
-    }
-  }
-  </style>
-  
-  <style>
-  /* 全局样式：基础样式重置，清除浏览器默认样式，确保跨浏览器一致性 */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  /* 根元素样式: 设置全局字体和背景 */
-  html {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 16px;
-    min-height: 100vh;
-    /* 默认渐变背景 */
-    background: 
-      linear-gradient(
-        180deg, 
-        rgba(125, 185, 232, 0.85) 0%,
-        rgba(166, 219, 246, 0.9) 30%,
-        rgba(30, 87, 153, 0.85) 100%
-      );
-    
-    background-attachment: fixed;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
-  }
+}
+</style>
 
-  /* 当启用背景图片时的样式 */
-  html.with-background-image {
-    background: 
-      /* 渐变遮罩层 */
-      linear-gradient(
-        180deg, 
-        rgba(125, 185, 232, 0.7) 0%,
-        rgba(166, 219, 246, 0.8) 30%,
-        rgba(30, 87, 153, 0.75) 100%
-      ),
-      /* 背景图片使用CSS变量 */
-      var(--background-image, none) center bottom / cover no-repeat,
-      /* 备用渐变 */
-      linear-gradient(
-        180deg,
-        rgb(125, 185, 232) 0%,
-        rgb(166, 219, 246) 50%,
-        rgb(30, 87, 153) 100%
-      );
-    
-    background-attachment: fixed, fixed, fixed;
-  }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=ZCOOL+KuaiLe&display=swap');
 
-  body {
-    background-color: transparent;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-  }
-  
-  /* 全局链接样式 */
-  a:link {
-    color: skyblue;
-    font-weight: bold;
-  }
-  
-  a:visited {
-    color: rebeccapurple;
-    font-weight: bold;
-  }
-    
-  a:hover {
-    color: powderblue;
-  }
-  
-  /* 首次加载遮罩层 */
-  .initial-loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(125, 185, 232, 0.95) 0%,
-      rgba(166, 219, 246, 0.95) 50%,
-      rgba(30, 87, 153, 0.95) 100%
+:root {
+  --summer-font-main: 'M PLUS Rounded 1c', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --summer-font-display: 'ZCOOL KuaiLe', 'M PLUS Rounded 1c', 'Noto Sans SC', cursive;
+  --summer-text-main: #245d88;
+  --summer-text-subtle: #4e7d9f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100vh;
+  font-family: var(--summer-font-main);
+  font-size: 16px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(60, 173, 250, 0.98) 0%,
+      rgba(138, 229, 255, 0.92) 34%,
+      rgba(212, 247, 255, 0.8) 52%,
+      rgba(122, 233, 216, 0.84) 66%,
+      rgba(152, 239, 224, 0.9) 100%
     );
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(10px);
-  }
-  
-  /* 加载动画容器 */
-  .loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-  }
-  
-  /* 旋转环动画 */
-  .spinner-ring {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    border: 4px solid transparent;
-    border-radius: 50%;
-    animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-  }
-  
-  .spinner-ring:nth-child(1) {
-    border-top-color: #ffffff;
-    animation-delay: 0s;
-  }
-  
-  .spinner-ring:nth-child(2) {
-    border-right-color: #ffffff;
-    animation-delay: 0.3s;
-    width: 60px;
-    height: 60px;
-    top: 10px;
-    left: 10px;
-  }
-  
-  .spinner-ring:nth-child(3) {
-    border-bottom-color: #ffffff;
-    animation-delay: 0.6s;
-    width: 40px;
-    height: 40px;
-    top: 20px;
-    left: 20px;
-  }
-  
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-  
-  /* 加载文字 */
-  .loading-text {
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    margin-top: 100px;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.6;
-    }
-  }
-  
-  /* 初始加载淡出动画 */
-  .initial-load-enter-active {
-    transition: opacity 0.3s ease;
-  }
-  
-  .initial-load-leave-active {
-    transition: opacity 0.5s ease;
-  }
-  
-  .initial-load-enter-from,
-  .initial-load-leave-to {
-    opacity: 0;
-  }
-  
-  /* 应用加载完成后的淡入效果 */
-  .app {
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
-  
-  .app-loaded {
-    opacity: 1;
-  }
-  </style>
+  background-attachment: fixed;
+}
+
+html.with-background-image {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(64, 176, 251, 0.92) 0%,
+      rgba(142, 232, 255, 0.9) 34%,
+      rgba(209, 248, 255, 0.72) 54%,
+      rgba(127, 233, 216, 0.82) 72%,
+      rgba(157, 240, 225, 0.86) 100%
+    ),
+    var(--summer-bg-image, none) center bottom / cover no-repeat;
+  background-attachment: fixed;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--summer-text-main);
+  line-height: 1.6;
+}
+</style>

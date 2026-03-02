@@ -1,57 +1,45 @@
-'''<!-- 
-  DocumentLibrary页面组件
-  功能：
-  1. 展示文档列表
-  2. 文档分类过滤
-  3. 二级标签过滤
-  4. 文档搜索
-  5. 文档下载
-  6. 支持DOCX、PPTX等多种格式的在线预览
--->
 <template>
   <div class="document-library">
-    <h1>文档库</h1>
-    
-    <!-- 搜索和筛选 -->
+    <h1>Document Library</h1>
+
     <div class="library-filters">
       <div class="search-box">
-        <input 
-          type="text" 
-          v-model="searchQuery" 
+        <input
+          v-model="searchQuery"
+          type="text"
           placeholder="搜索文档..."
           @input="filterDocuments"
         />
       </div>
-      
+
       <div class="category-filter">
-        <button 
-          v-for="category in categories" 
+        <button
+          v-for="category in categories"
           :key="category"
-          @click="filterByCategory(category)"
-          :class="{ active: selectedCategory === category }"
           class="category-btn"
+          :class="{ active: selectedCategory === category }"
+          @click="filterByCategory(category)"
         >
           {{ category }}
         </button>
       </div>
-      
-      <!-- 二级标签过滤 -->
+
       <div v-if="secondaryTags.length > 0" class="secondary-tags">
-        <div class="tag-label">二级标签:</div>
+        <div class="tag-label">二级标签</div>
         <div class="tag-buttons">
-          <button 
-            @click="filterBySecondaryTag('全部')"
-            :class="{ active: selectedSecondaryTag === '全部' }"
+          <button
             class="tag-btn"
+            :class="{ active: selectedSecondaryTag === '全部' }"
+            @click="filterBySecondaryTag('全部')"
           >
             全部
           </button>
-          <button 
-            v-for="tag in secondaryTags" 
+          <button
+            v-for="tag in secondaryTags"
             :key="tag"
-            @click="filterBySecondaryTag(tag)"
-            :class="{ active: selectedSecondaryTag === tag }"
             class="tag-btn"
+            :class="{ active: selectedSecondaryTag === tag }"
+            @click="filterBySecondaryTag(tag)"
           >
             {{ tag }}
           </button>
@@ -59,27 +47,26 @@
       </div>
     </div>
 
-    <!-- 文档列表 -->
     <div v-if="loading" class="loading-state">
       <p>正在加载文档...</p>
     </div>
-    
+
     <div v-else-if="error" class="error-state">
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getDocuments" class="retry-btn">重试</button>
+      <button class="retry-btn" @click="getDocuments">重试</button>
     </div>
-    
+
     <div v-else class="document-list">
-      <div 
-        v-for="doc in filteredDocuments" 
+      <div
+        v-for="doc in filteredDocuments"
         :key="doc.id || doc._id"
         class="document-item"
       >
         <div class="doc-icon">
           <i :class="getDocIcon(doc.type)"></i>
         </div>
-        
+
         <div class="doc-info">
           <h3>{{ doc.title }}</h3>
           <p>{{ doc.description }}</p>
@@ -90,8 +77,8 @@
           </div>
           <div class="doc-tags">
             <span class="primary-tag">{{ doc.category }}</span>
-            <span 
-              v-for="tag in doc.secondaryTags" 
+            <span
+              v-for="tag in doc.secondaryTags || []"
               :key="tag"
               class="secondary-tag"
             >
@@ -99,44 +86,41 @@
             </span>
           </div>
         </div>
-        
+
         <div class="doc-actions">
-          <button @click="previewDocument(doc)" class="action-btn preview-btn">
-            👁️ 预览
-          </button>
-          <button 
-            @click="downloadDocument(doc)"
-            class="action-btn download-btn"
-          >
-            📥 下载
-          </button>
+          <button class="action-btn preview-btn" @click="previewDocument(doc)">预览</button>
+          <button class="action-btn download-btn" @click="downloadDocument(doc)">下载</button>
         </div>
       </div>
     </div>
 
-    <!-- 空状态 -->
     <div v-if="!loading && !error && filteredDocuments.length === 0" class="empty-state">
       <h3>暂无文档</h3>
-      <p>{{ searchQuery || selectedCategory !== '全部' || selectedSecondaryTag !== '全部' ? '没有找到匹配的文档' : '还没有上传任何文档' }}</p>
+      <p>
+        {{
+          searchQuery || selectedCategory !== '全部' || selectedSecondaryTag !== '全部'
+            ? '没有找到匹配的文档。'
+            : '还没有上传任何文档。'
+        }}
+      </p>
     </div>
 
-    <!-- 文档预览模态框 - 使用 Teleport 渲染到 body -->
     <Teleport to="body">
       <div v-if="showPreview" class="document-modal-overlay" @click="closePreview">
         <div class="document-modal-content" @click.stop>
           <div class="document-modal-header">
             <div class="modal-title-section">
-              <h3>{{ previewDoc.title }}</h3>
+              <h3>{{ previewDoc?.title }}</h3>
               <div class="document-info">
-                <span class="doc-type-badge">{{ previewDoc.type }}</span>
-                <span class="doc-size">{{ previewDoc.size || previewDoc.formattedSize }}</span>
+                <span class="doc-type-badge">{{ previewDoc?.type }}</span>
+                <span class="doc-size">{{ previewDoc?.size || previewDoc?.formattedSize }}</span>
               </div>
             </div>
-            <button @click="closePreview" class="modal-close-btn">&times;</button>
+            <button class="modal-close-btn" @click="closePreview">&times;</button>
           </div>
+
           <div class="document-modal-body">
             <div class="document-preview-container">
-              <!-- Vue-Office预览（Word、Excel、PowerPoint） -->
               <VueOfficeViewer
                 v-if="documentPreview.previewType.value === 'vue-office'"
                 :document="previewDoc"
@@ -145,31 +129,27 @@
                 @error="onDocumentError"
                 @close="closePreview"
               />
-              
-              <!-- 加载状态 -->
+
               <div v-else-if="documentPreview.loading.value" class="preview-loading">
                 <div class="loading-spinner"></div>
                 <p>正在加载文档预览...</p>
               </div>
-              
-              <!-- 错误状态 -->
+
               <div v-else-if="documentPreview.hasError.value" class="preview-error">
                 <div class="error-icon">⚠️</div>
                 <h4>预览失败</h4>
                 <p>{{ documentPreview.error.value }}</p>
-                <button @click="downloadDocument(previewDoc)" class="download-action-btn">
-                  📥 下载文档
+                <button class="download-action-btn" @click="downloadDocument(previewDoc)">
+                  下载文档
                 </button>
               </div>
-              
-              <!-- HTML内容预览（Markdown、Text等） -->
-              <div 
-                v-else-if="documentPreview.previewType.value === 'html'" 
+
+              <div
+                v-else-if="documentPreview.previewType.value === 'html'"
                 class="html-preview"
                 v-html="documentPreview.previewContent.value"
               ></div>
-              
-              <!-- Iframe预览（PDF等） -->
+
               <iframe
                 v-else-if="documentPreview.previewType.value === 'iframe'"
                 :src="documentPreview.previewUrl.value"
@@ -177,37 +157,35 @@
                 class="document-preview-frame"
                 title="文档预览"
               ></iframe>
-              
-              <!-- 不支持预览的文档 -->
-              <div v-else-if="documentPreview.previewType.value === 'unsupported'" class="no-preview-content">
+
+              <div
+                v-else-if="documentPreview.previewType.value === 'unsupported'"
+                class="no-preview-content"
+              >
                 <div class="no-preview-icon">
-                  <i :class="getDocIcon(previewDoc.type)"></i>
+                  <i :class="getDocIcon(previewDoc?.type)"></i>
                 </div>
                 <h4>无法预览此文档</h4>
-                <p>{{ previewDoc.type }} 格式的文档暂不支持在线预览</p>
-                <p class="preview-hint">请下载文档到本地查看完整内容</p>
-                <button @click="downloadDocument(previewDoc)" class="download-action-btn">
-                  <i class="fas fa-download"></i>
+                <p>{{ previewDoc?.type }} 格式暂不支持在线预览。</p>
+                <p class="preview-hint">建议下载后本地打开。</p>
+                <button class="download-action-btn" @click="downloadDocument(previewDoc)">
                   立即下载
                 </button>
               </div>
-              
-              <!-- 默认状态 -->
+
               <div v-else class="preview-placeholder">
                 <div class="placeholder-icon">📄</div>
                 <p>准备预览中...</p>
               </div>
             </div>
           </div>
+
           <div class="document-modal-footer">
             <div class="document-actions">
-              <button @click="downloadDocument(previewDoc)" class="modal-download-btn">
-                <i class="fas fa-download"></i>
+              <button class="modal-download-btn" @click="downloadDocument(previewDoc)">
                 下载文档
               </button>
-              <button @click="closePreview" class="modal-cancel-btn">
-                关闭预览
-              </button>
+              <button class="modal-cancel-btn" @click="closePreview">关闭预览</button>
             </div>
           </div>
         </div>
@@ -223,130 +201,111 @@ import { documentApi } from '@/api/document'
 import { useDocumentPreview } from '@/composables/useDocumentPreview'
 import VueOfficeViewer from '@/components/document-preview/VueOfficeViewer.vue'
 
-// 获取路由信息
 const route = useRoute()
 const router = useRouter()
-
-// 文档预览组合式函数
 const documentPreview = useDocumentPreview()
 
-// 响应式数据
 const searchQuery = ref('')
 const selectedCategory = ref('全部')
 const selectedSecondaryTag = ref('全部')
-const showSearchTip = ref(true)
 const showPreview = ref(false)
 const previewDoc = ref(null)
 const documentBlob = ref(null)
 const loading = ref(false)
 const error = ref('')
 
-// 真实数据
 const allDocuments = ref([])
 const allCategories = ref(['全部'])
 const allTagsByCategory = ref({})
 
-// 获取文档数据
 const getDocuments = async () => {
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await documentApi.getDocuments({
       page: 1,
       pageSize: 100,
-      category: selectedCategory.value === '全部' ? undefined : selectedCategory.value,
+      category: selectedCategory.value === '全部' ? undefined : selectedCategory.value
     })
-    
-    if (response.success) {
-      allDocuments.value = response.data || []
-      // 在获取文档后更新分类列表
-      await getCategories()
-    } else {
-      throw new Error(response.message || '获取文档失败')
+
+    if (!response?.success) {
+      throw new Error(response?.message || '获取文档失败')
     }
+
+    const payload = response.data
+    allDocuments.value = Array.isArray(payload) ? payload : (payload?.documents || [])
+    await getCategories()
   } catch (err) {
-    console.error('获取文档失败:', err)
-    error.value = err.message || '获取文档失败，请稍后重试'
+    console.error('Failed to fetch documents:', err)
+    error.value = err?.message || '获取文档失败，请稍后重试'
     allDocuments.value = []
   } finally {
     loading.value = false
   }
 }
 
-// 获取分类数据
 const getCategories = async () => {
   try {
     const response = await documentApi.getCategories()
-    
-    if (response.success) {
-      allCategories.value = response.data.categories || ['全部']
-      allTagsByCategory.value = response.data.tagsByCategory || {}
+
+    if (response?.success) {
+      allCategories.value = response.data?.categories || ['全部']
+      allTagsByCategory.value = response.data?.tagsByCategory || {}
+      return
     }
   } catch (err) {
-    console.error('获取分类失败:', err)
-    // 从现有文档中提取分类
-    const categories = new Set(['全部', '前端开发', '游戏攻略', 'AI技术', '音乐制作', '模板资源'])
-    allDocuments.value.forEach(doc => {
-      if (doc.category) {
-        categories.add(doc.category)
-      }
-    })
-    allCategories.value = Array.from(categories).sort()
+    console.warn('Failed to fetch categories:', err)
   }
+
+  const fallback = new Set(['全部', 'Frontend', 'Game', 'AI', 'Music', 'Templates'])
+  allDocuments.value.forEach((doc) => {
+    if (doc?.category) fallback.add(doc.category)
+  })
+  allCategories.value = Array.from(fallback)
 }
 
 const categories = computed(() => allCategories.value)
 
 const secondaryTags = computed(() => {
   if (selectedCategory.value === '全部') {
-    const allTags = new Set()
-    allDocuments.value.forEach(doc => {
-      if (doc.secondaryTags) {
-        doc.secondaryTags.forEach(tag => allTags.add(tag))
-      }
-    })
-    return Array.from(allTags).sort()
-  } else {
-    const categoryTags = allTagsByCategory.value[selectedCategory.value]
-    if (categoryTags) return categoryTags
-    
     const tags = new Set()
-    allDocuments.value
-      .filter(doc => doc.category === selectedCategory.value)
-      .forEach(doc => {
-        if (doc.secondaryTags) {
-          doc.secondaryTags.forEach(tag => tags.add(tag))
-        }
-      })
+    allDocuments.value.forEach((doc) => {
+      ;(doc.secondaryTags || []).forEach((tag) => tags.add(tag))
+    })
     return Array.from(tags).sort()
   }
+
+  const directTags = allTagsByCategory.value[selectedCategory.value]
+  if (Array.isArray(directTags)) return directTags
+
+  const tags = new Set()
+  allDocuments.value
+    .filter((doc) => doc.category === selectedCategory.value)
+    .forEach((doc) => {
+      ;(doc.secondaryTags || []).forEach((tag) => tags.add(tag))
+    })
+  return Array.from(tags).sort()
 })
 
 const filteredDocuments = computed(() => {
-  let docs = allDocuments.value
+  const query = searchQuery.value.trim().toLowerCase()
 
-  if (selectedCategory.value !== '全部') {
-    docs = docs.filter(doc => doc.category === selectedCategory.value)
-  }
+  return allDocuments.value.filter((doc) => {
+    const matchCategory = selectedCategory.value === '全部' || doc.category === selectedCategory.value
+    const matchSecondary =
+      selectedSecondaryTag.value === '全部'
+      || ((doc.secondaryTags || []).includes(selectedSecondaryTag.value))
 
-  if (selectedSecondaryTag.value !== '全部') {
-    docs = docs.filter(doc => doc.secondaryTags && doc.secondaryTags.includes(selectedSecondaryTag.value))
-  }
+    if (!query) return matchCategory && matchSecondary
 
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    docs = docs.filter(doc => 
-      doc.title.toLowerCase().includes(query) ||
-      doc.description.toLowerCase().includes(query) ||
-      (doc.secondaryTags && doc.secondaryTags.some(tag => tag.toLowerCase().includes(query)))
-    )
-  }
-
-  return docs
+    const inTitle = doc.title?.toLowerCase().includes(query)
+    const inDesc = doc.description?.toLowerCase().includes(query)
+    const inTags = (doc.secondaryTags || []).some((tag) => String(tag).toLowerCase().includes(query))
+    return matchCategory && matchSecondary && (inTitle || inDesc || inTags)
+  })
 })
 
-// 方法
 const filterByCategory = async (category) => {
   selectedCategory.value = category
   selectedSecondaryTag.value = '全部'
@@ -358,98 +317,66 @@ const filterBySecondaryTag = (tag) => {
 }
 
 const filterDocuments = () => {
-  // 搜索逻辑由 computed 属性处理
-  // 如果用户开始新的搜索，隐藏搜索来源提示
-  if (searchQuery.value && showSearchTip.value) {
-    // 检查当前搜索词是否与URL参数不同
-    if (searchQuery.value !== route.query.search) {
-      showSearchTip.value = false
-      // 更新URL以反映新的搜索
-      router.replace({ 
-        path: '/documents', 
-        query: searchQuery.value ? { search: searchQuery.value } : {} 
-      })
-    }
-  }
-}
-
-// 清除搜索来源提示
-const clearSearchSource = () => {
-  // 立即隐藏提示和清除搜索框
-  showSearchTip.value = false
-  searchQuery.value = ''
-  // 使用Vue Router来清除URL参数
-  router.replace({ path: '/documents' })
+  router.replace({
+    path: '/documents',
+    query: searchQuery.value ? { search: searchQuery.value } : {}
+  })
 }
 
 const getDocIcon = (type) => {
   const iconMap = {
-    'PDF': 'fas fa-file-pdf',
-    'DOCX': 'fas fa-file-word',
-    'PPT': 'fas fa-file-powerpoint',
-    'XLSX': 'fas fa-file-excel',
-    'TXT': 'fas fa-file-alt',
-    'MD': 'fab fa-markdown'
+    PDF: 'fas fa-file-pdf',
+    DOCX: 'fas fa-file-word',
+    DOC: 'fas fa-file-word',
+    PPTX: 'fas fa-file-powerpoint',
+    PPT: 'fas fa-file-powerpoint',
+    XLSX: 'fas fa-file-excel',
+    XLS: 'fas fa-file-excel',
+    TXT: 'fas fa-file-lines',
+    MD: 'fab fa-markdown'
   }
   return iconMap[type] || 'fas fa-file'
 }
 
 const previewDocument = async (doc) => {
-  console.log('📖 打开文档预览:', doc.title);
-  previewDoc.value = doc;
-  
-  // 显示预览模态框
-  showPreview.value = true;
-  document.body.style.overflow = 'hidden';
-  document.addEventListener('keydown', handleEscKey);
+  if (!doc) return
+
+  previewDoc.value = doc
+  showPreview.value = true
+  document.body.style.overflow = 'hidden'
+  document.addEventListener('keydown', handleEscKey)
 
   try {
-    console.log('🔍 开始获取文档内容:', doc.type, doc.id || doc._id);
-    const blob = await documentApi.getDocumentContent(doc.id || doc._id);
-    console.log('📦 Blob信息:', {
-      size: blob.size,
-      type: blob.type
-    });
-
-    // 保存blob用于Vue-Office预览
-    documentBlob.value = blob;
-
-    // 使用 useDocumentPreview 组合式函数处理预览
-    await documentPreview.previewDocument(blob, doc.type, doc.title);
-  } catch (e) {
-    console.error('获取预览内容失败:', e);
-    // 根据文档类型显示不同的错误信息
-    let errorMessage = '加载预览失败';
+    const blob = await documentApi.getDocumentContent(doc.id || doc._id)
+    documentBlob.value = blob
+    await documentPreview.previewDocument(blob, doc.type, doc.title)
+  } catch (err) {
+    console.error('Failed to open preview:', err)
+    let message = '加载预览失败。'
     if (doc.type === 'PPTX' || doc.type === 'PPT') {
-      errorMessage = 'PowerPoint文档预览需要在线服务支持，请尝试下载文档查看';
-    } else if (doc.type === 'DOCX') {
-      errorMessage = 'Word文档预览失败，可能是文档格式问题，请尝试下载文档查看';
+      message = 'PowerPoint 暂不支持在线预览，请下载查看。'
+    } else if (doc.type === 'DOCX' || doc.type === 'DOC') {
+      message = 'Word 预览失败，请尝试下载后查看。'
     } else if (doc.type === 'XLSX' || doc.type === 'XLS') {
-      errorMessage = 'Excel文档预览需要LibreOffice支持，请尝试下载文档查看';
+      message = 'Excel 预览失败，请尝试下载后查看。'
     }
-    
-    documentPreview.error.value = errorMessage;
+    documentPreview.error.value = message
   }
-};
+}
 
 const closePreview = () => {
-  console.log('❌ 关闭文档预览');
-  showPreview.value = false;
-  previewDoc.value = null;
-  documentBlob.value = null;
-  documentPreview.cleanup(); // 清理预览资源
-  document.body.style.overflow = '';
-  document.removeEventListener('keydown', handleEscKey);
-};
+  showPreview.value = false
+  previewDoc.value = null
+  documentBlob.value = null
+  documentPreview.cleanup()
+  document.body.style.overflow = ''
+  document.removeEventListener('keydown', handleEscKey)
+}
 
-// Vue-Office 事件处理
-const onDocumentRendered = (doc) => {
-  console.log('✅ 文档渲染完成:', doc.title);
-};
-
-const onDocumentError = (error) => {
-  console.error('❌ 文档渲染失败:', error);
-};
+const onDocumentRendered = () => {}
+const onDocumentError = (err) => {
+  console.error('Render error:', err)
+}
 
 const handleEscKey = (event) => {
   if (event.key === 'Escape' && showPreview.value) {
@@ -458,57 +385,32 @@ const handleEscKey = (event) => {
 }
 
 const downloadDocument = async (doc) => {
-  try {
-    // Record the view/download action first
-    await documentApi.recordView(doc.id || doc._id)
-    console.log(`下载文档: ${doc.title}`)
+  if (!doc) return
 
-    // Use the authenticated API service to get the file as a Blob
-    const blob = await documentApi.downloadDocument(doc.id || doc._id)
-    
-    // Create a local URL for the blob
+  try {
+    const docId = doc.id || doc._id
+    if (!docId) return
+
+    await documentApi.recordView(docId)
+    const blob = await documentApi.downloadDocument(docId)
     const downloadUrl = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = `${doc.title}.${doc.type?.toLowerCase() || 'file'}`
     link.style.display = 'none'
-    
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
-    // Clean up the local URL
     window.URL.revokeObjectURL(downloadUrl)
-    
-    console.log(`✅ 开始下载: ${doc.title}`)
   } catch (err) {
-    console.error('下载失败:', err)
-    alert('下载失败，请稍后重试。权限不足或文件可能不存在。')
+    console.error('Download failed:', err)
+    alert('Download failed. Please try again later.')
   }
 }
 
-const getDownloadUrl = (doc) => {
-  const docId = doc.id || doc._id
-  const baseUrl = import.meta.env.VITE_APP_API_URL
-    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
-      ? 'https://api.shirakawananase.top/api'
-      : 'http://localhost:3000/api')
-  return docId ? `${baseUrl}/documents/${docId}/download` : '#'
-}
-
-const getPreviewUrl = (doc) => {
-  const docId = doc.id || doc._id
-  const baseUrl = import.meta.env.VITE_APP_API_URL
-    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
-      ? 'https://api.shirakawananase.top/api'
-      : 'http://localhost:3000/api')
-  return docId ? `${baseUrl}/documents/${docId}/preview` : '#'
-}
-
-
-
 const formatDate = (dateString) => {
   const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return '未知时间'
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'long',
@@ -516,7 +418,6 @@ const formatDate = (dateString) => {
   })
 }
 
-// 处理来自iframe的消息
 const handleMessage = (event) => {
   if (event.data === 'download' && previewDoc.value) {
     downloadDocument(previewDoc.value)
@@ -524,1116 +425,539 @@ const handleMessage = (event) => {
 }
 
 onMounted(async () => {
-  // 检查URL搜索参数
-  if (route.query.search) {
+  if (typeof route.query.search === 'string') {
     searchQuery.value = route.query.search
-    showSearchTip.value = true
-  } else {
-    showSearchTip.value = false
   }
-  
+
   await getCategories()
   await getDocuments()
   window.addEventListener('message', handleMessage)
 })
 
-// 添加路由监听，在路由变化时清除搜索状态
-watch(() => route.path, (newPath, oldPath) => {
-  // 如果路由路径发生变化（不是查询参数变化），清除搜索状态
-  if (newPath !== oldPath && newPath === '/documents') {
-    // 只有当路径改变且没有搜索参数时才清除
-    if (!route.query.search) {
-      searchQuery.value = ''
-      showSearchTip.value = false
+watch(
+  () => route.query.search,
+  (search) => {
+    const next = typeof search === 'string' ? search : ''
+    if (next !== searchQuery.value) {
+      searchQuery.value = next
     }
   }
-})
-
-// 监听路由查询参数变化
-watch(() => route.query, (newQuery) => {
-  if (newQuery.search && newQuery.search !== searchQuery.value) {
-    searchQuery.value = newQuery.search
-    showSearchTip.value = true
-  } else if (!newQuery.search && searchQuery.value) {
-    // 如果URL中没有搜索参数但本地还有搜索值，清除它
-    searchQuery.value = ''
-    showSearchTip.value = false
-  }
-}, { immediate: false })
+)
 
 onUnmounted(() => {
-  if (showPreview.value) {
-    closePreview()
-  }
+  if (showPreview.value) closePreview()
   documentPreview.cleanup()
   window.removeEventListener('message', handleMessage)
+  document.body.style.overflow = ''
 })
 </script>
 
 <style scoped>
 .document-library {
-  padding: 20px;
-  min-height: 600px;
-  width: 100%;
+  min-height: 100%;
+  padding: 1.35rem;
+  background: transparent;
 }
 
 h1 {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 2.5rem;
-}
-
-.search-source-tip {
-  margin: 0 auto 20px auto;
-  max-width: 600px;
-}
-
-.tip-content {
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  border: 1px solid #2196f3;
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #1565c0;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
-}
-
-.tip-icon {
-  font-size: 16px;
-}
-
-.clear-tip-btn {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0;
-  margin-left: auto;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.clear-tip-btn:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #333;
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  line-height: 1;
+  color: #2f85d4;
+  font-family: var(--summer-font-display);
 }
 
 .library-filters {
-  margin-bottom: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  background: rgba(247, 252, 255, 0.75);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+  display: grid;
+  gap: 0.75rem;
 }
 
 .search-box input {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  border: 1px solid rgba(117, 194, 242, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  height: 2.55rem;
+  padding: 0 0.95rem;
+  color: #336a94;
 }
 
 .search-box input:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: #42a4f2;
+  box-shadow: 0 0 0 3px rgba(115, 200, 251, 0.24);
 }
 
 .category-filter {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
-  justify-content: center;
+  gap: 0.45rem;
 }
 
-.category-btn {
-  padding: 8px 16px;
-  border: 2px solid #e67e22;
-  background-color: white;
-  color: #e67e22;
-  border-radius: 20px;
+.category-btn,
+.tag-btn {
+  border: 1px solid rgba(104, 182, 237, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #2d79bc;
+  padding: 0.36rem 0.82rem;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.9rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
 }
 
 .category-btn:hover,
-.category-btn.active {
-  background-color: #e67e22;
-  color: white;
+.tag-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(66, 148, 206, 0.2);
+}
+
+.category-btn.active,
+.tag-btn.active {
+  background: linear-gradient(135deg, #2f8ce2, #61c6ff);
+  color: #fff;
+  border-color: transparent;
 }
 
 .secondary-tags {
-  background-color: #f8f8f8;
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #eee;
+  border-radius: 14px;
+  border: 1px solid rgba(157, 214, 246, 0.45);
+  background: rgba(237, 248, 255, 0.9);
+  padding: 0.75rem;
 }
 
 .tag-label {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-  font-weight: bold;
+  font-size: 0.78rem;
+  color: #5e84a1;
+  margin-bottom: 0.45rem;
+  font-weight: 700;
 }
 
 .tag-buttons {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
-}
-
-.tag-btn {
-  padding: 4px 12px;
-  border: 1px solid #ddd;
-  background-color: white;
-  color: #666;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.8rem;
-}
-
-.tag-btn:hover,
-.tag-btn.active {
-  background-color: #f39c12;
-  color: white;
-  border-color: #f39c12;
+  gap: 0.38rem;
 }
 
 .document-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  gap: 0.75rem;
 }
 
 .document-item {
   display: flex;
   align-items: center;
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-  transition: all 0.3s;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 22px rgba(45, 103, 145, 0.11);
+  padding: 0.95rem;
+  gap: 0.8rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
 .document-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border-color: rgba(95, 182, 241, 0.82);
+  box-shadow: 0 14px 28px rgba(45, 108, 156, 0.17);
 }
 
 .doc-icon {
-  margin-right: 20px;
-  font-size: 2.5rem;
-  color: #e67e22;
-  min-width: 60px;
-  text-align: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(140deg, #79c7ff, #4caeea);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
 }
 
 .doc-info {
   flex: 1;
+  min-width: 0;
 }
 
 .doc-info h3 {
-  color: #2c3e50;
-  margin-bottom: 8px;
-  font-size: 1.3rem;
+  margin: 0;
+  color: #2c72ad;
+  font-size: 1.08rem;
+  line-height: 1.3;
 }
 
 .doc-info p {
-  color: #666;
-  margin-bottom: 10px;
-  line-height: 1.5;
+  margin: 0.44rem 0 0;
+  color: #5a7b93;
+  line-height: 1.55;
 }
 
 .doc-meta {
   display: flex;
-  gap: 15px;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-  color: #888;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
 }
 
-.doc-type {
-  background-color: #e67e22;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
+.doc-type,
+.doc-size,
+.doc-date,
+.primary-tag,
+.secondary-tag {
+  border-radius: 999px;
+  border: 1px solid rgba(121, 194, 239, 0.45);
+  background: #edf8ff;
+  color: #4377a4;
+  font-size: 0.74rem;
+  padding: 0.2rem 0.56rem;
+}
+
+.doc-type,
+.primary-tag {
+  background: linear-gradient(135deg, #7ecfff, #9ad5ff);
+  border-color: transparent;
+  color: #195c93;
+  font-weight: 700;
 }
 
 .doc-tags {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
-}
-
-.primary-tag {
-  background-color: #e67e22;
-  color: white;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: bold;
-}
-
-.secondary-tag {
-  background-color: #f1f2f6;
-  color: #2f3542;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.75rem;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
 }
 
 .doc-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-left: 20px;
+  gap: 0.42rem;
+  flex-shrink: 0;
 }
 
 .action-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  text-align: center;
-  font-size: 0.9rem;
-  transition: all 0.3s;
-  min-width: 80px;
+  border: none;
+  border-radius: 999px;
+  height: 2rem;
+  padding: 0 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .preview-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.preview-btn:hover {
-  background-color: #2980b9;
+  background: linear-gradient(135deg, #2f8de2, #5fc2ff);
+  color: #fff;
 }
 
 .download-btn {
-  background-color: #27ae60;
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, #37be98, #59d6b2);
+  color: #fff;
 }
 
-.download-btn:hover {
-  background-color: #229954;
-}
-
-.empty-state, .loading-state, .error-state {
+.empty-state,
+.loading-state,
+.error-state {
+  border-radius: 16px;
+  border: 1px solid rgba(118, 196, 241, 0.4);
+  background: rgba(255, 255, 255, 0.72);
   text-align: center;
-  padding: 60px 20px;
-  color: #666;
+  color: #4e7898;
+  padding: 2rem 1rem;
 }
 
+.error-state h3,
+.empty-state h3 {
+  margin: 0 0 0.4rem;
+}
+
+.error-state p,
+.empty-state p,
 .loading-state p {
-  font-size: 1.1rem;
-  color: #e67e22;
-}
-
-.error-state h3 {
-  color: #e74c3c;
-  margin-bottom: 10px;
-}
-
-.error-state p {
-  margin-bottom: 20px;
+  margin: 0;
 }
 
 .retry-btn {
-  padding: 10px 20px;
-  background-color: #e67e22;
-  color: white;
+  margin-top: 0.8rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 999px;
+  padding: 0.48rem 0.92rem;
+  background: linear-gradient(135deg, #ff90ac, #ffb4c5);
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
 }
 
-.retry-btn:hover {
-  background-color: #d35400;
-}
-
-/* 文档预览模态框样式 */
 .document-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(6px);
+  inset: 0;
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  overflow-y: auto;
-  animation: modalFadeIn 0.3s ease-out;
+  background: rgba(8, 26, 41, 0.82);
+  backdrop-filter: blur(7px);
+  padding: 0.8rem;
 }
 
 .document-modal-content {
-  background: white;
-  border-radius: 16px;
-  width: 95vw;
-  height: 95vh;
-  max-width: 1200px;
-  max-height: 900px;
+  width: min(1280px, 98vw);
+  height: min(92vh, 980px);
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(248, 253, 255, 0.95);
+  box-shadow: 0 30px 60px rgba(9, 30, 49, 0.35);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s ease-out;
-  overflow: hidden;
+  animation: popup 0.26s ease;
 }
 
 .document-modal-header {
+  padding: 0.95rem 1.15rem;
+  border-bottom: 1px solid rgba(167, 221, 249, 0.45);
+  background: linear-gradient(130deg, #2f8de2, #63c9ff 72%, #84e4f2);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  flex-shrink: 0;
+  gap: 0.8rem;
 }
 
 .modal-title-section h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: white;
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .document-info {
+  margin-top: 0.3rem;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .doc-type-badge {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.doc-size {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
 }
 
 .modal-close-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: white;
-  width: 44px;
-  height: 44px;
+  width: 2.2rem;
+  height: 2.2rem;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: rgba(18, 78, 123, 0.42);
+  color: #fff;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+  font-size: 1.3rem;
 }
 
 .document-modal-body {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  min-height: 0;
+  background: #eaf6ff;
   overflow: hidden;
-  background: #f8f9fa;
-  min-height: 0; /* 确保flex子元素可以正确收缩 */
 }
 
 .document-preview-container {
-  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   display: flex;
   overflow: hidden;
-  min-height: 0; /* 确保flex子元素可以正确收缩 */
 }
 
 .document-preview-frame {
   width: 100%;
   height: 100%;
   border: none;
-  background: white;
-}
-
-.markdown-preview {
-  padding: 20px 40px;
-  overflow-y: auto;
-  height: 100%;
-  line-height: 1.7;
   background: #fff;
-  color: #2c3e50;
 }
 
-.markdown-preview h1,
-.markdown-preview h2,
-.markdown-preview h3 {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  margin-top: 24px;
-  margin-bottom: 16px;
-}
-
-.markdown-preview code {
-  background-color: #f6f8fa;
-  padding: 0.2em 0.4em;
-  margin: 0;
-  font-size: 85%;
-  border-radius: 3px;
-}
-
-.markdown-preview pre {
-  background-color: #f6f8fa;
-  padding: 16px;
-  border-radius: 6px;
-  overflow: auto;
-}
-
-.markdown-preview pre code {
-  padding: 0;
-  margin: 0;
-  font-size: 100%;
-  background: transparent;
-}
-
-.markdown-preview blockquote {
-  border-left: 0.25em solid #dfe2e5;
-  padding: 0 1em;
-  color: #6a737d;
-}
-
-/* HTML预览样式 */
 .html-preview {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   overflow: auto;
-  padding: 30px;
-  background: white;
+  background: #fff;
+  padding: 1rem;
 }
 
-/* 自定义滚动条样式 */
-.docx-preview-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.docx-preview-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.docx-preview-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.docx-preview-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* Firefox滚动条样式 */
-.docx-preview-container {
-  scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f1f1f1;
-}
-
-.html-preview iframe {
+.preview-loading,
+.preview-error,
+.preview-placeholder,
+.no-preview-content {
   width: 100%;
   height: 100%;
-  border: none;
-}
-
-/* 当HTML内容直接嵌入时 */
-.html-preview > div {
-  height: 100%;
-  overflow-y: auto;
-}
-
-/* DOCX预览样式 */
-.docx-preview-container {
-  height: 100%;
-  padding: 30px 50px;
-  background: white;
-  box-sizing: border-box;
-}
-
-.docx-content {
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.8;
-  color: #2c3e50;
-  font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-  box-sizing: border-box;
-}
-
-.docx-inner-content {
-  min-height: 100%;
-  padding-bottom: 40px;
-}
-
-.docx-content h1, .docx-content h2, .docx-content h3,
-.docx-content h4, .docx-content h5, .docx-content h6 {
-  color: #2c3e50;
-  margin-top: 32px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eaecef;
-  padding-bottom: 0.5em;
-  font-weight: 600;
-}
-
-.docx-content h1 {
-  font-size: 2rem;
-  margin-top: 0;
-}
-
-.docx-content h2 {
-  font-size: 1.6rem;
-}
-
-.docx-content h3 {
-  font-size: 1.3rem;
-}
-
-.docx-content p {
-  margin-bottom: 20px;
-  text-align: justify;
-  word-wrap: break-word;
-}
-
-.docx-content img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin: 20px 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  display: block;
-}
-
-.docx-content ul, .docx-content ol {
-  margin: 20px 0;
-  padding-left: 30px;
-}
-
-.docx-content li {
-  margin-bottom: 8px;
-  line-height: 1.6;
-}
-
-.docx-content blockquote {
-  border-left: 4px solid #667eea;
-  padding-left: 20px;
-  margin: 20px 0;
-  font-style: italic;
-  color: #666;
-  background: #f8f9fa;
-  padding: 15px 20px;
-  border-radius: 0 8px 8px 0;
-}
-
-.docx-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 16px 0;
-  border: 1px solid #dfe2e5;
-}
-
-.docx-content th, .docx-content td {
-  border: 1px solid #dfe2e5;
-  padding: 6px 13px;
-}
-
-.docx-content th {
-  background-color: #f6f8fa;
-  font-weight: 600;
-}
-
-/* PPTX预览样式 */
-.pptx-preview-container {
-  height: 100%;
-  overflow-y: auto;
-  padding: 20px;
-  background: #f8f9fa;
-}
-
-.preview-notice {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.notice-icon {
-  font-size: 2rem;
-}
-
-.notice-content h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.3rem;
-}
-
-.notice-content p {
-  margin: 0;
-  opacity: 0.9;
-}
-
-.preview-options {
-  display: grid;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.option-card {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.option-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
-  transform: translateY(-2px);
-}
-
-.option-card.download-option {
-  border-color: #28a745;
-}
-
-.option-card.download-option:hover {
-  border-color: #20c997;
-  box-shadow: 0 4px 20px rgba(40, 167, 69, 0.15);
-}
-
-.option-icon {
-  font-size: 2rem;
-  min-width: 60px;
-  text-align: center;
-}
-
-.option-content {
-  flex: 1;
-}
-
-.option-content h4 {
-  margin: 0 0 8px 0;
-  color: #2c3e50;
-  font-size: 1.1rem;
-}
-
-.option-content p {
-  margin: 0;
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.option-badge {
-  background: #28a745;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-left: auto;
-}
-
-.preview-frame-container {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.frame-header {
-  background: #f8f9fa;
-  padding: 12px 20px;
-  border-bottom: 1px solid #dee2e6;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.frame-title {
-  font-weight: 600;
-  color: #495057;
-}
-
-.close-frame-btn {
-  background: #dc3545;
-  color: white;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.close-frame-btn:hover {
-  background: #c82333;
-  transform: scale(1.1);
-}
-
-#pptxIframe {
-  width: 100%;
-  height: 600px;
-  border: none;
-}
-
-/* Markdown预览样式 - 使用:deep()穿透scoped样式 */
-:deep(.markdown-preview-container) {
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: auto; /* 添加水平滚动 */
-  padding: 20px 40px;
-}
-
-:deep(.markdown-content) {
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.7;
-  color: #2c3e50;
-}
-
-:deep(.markdown-content h1), :deep(.markdown-content h2), :deep(.markdown-content h3),
-:deep(.markdown-content h4), :deep(.markdown-content h5), :deep(.markdown-content h6) {
-  border-bottom: 1px solid #eaecef;
-  padding-bottom: 0.3em;
-  margin-top: 24px;
-  margin-bottom: 16px;
-}
-
-:deep(.markdown-content code) {
-  background-color: #f6f8fa;
-  padding: 0.2em 0.4em;
-  margin: 0;
-  font-size: 85%;
-  border-radius: 3px;
-}
-
-:deep(.markdown-content pre) {
-  background-color: #f6f8fa;
-  padding: 16px;
-  border-radius: 6px;
-  overflow: auto;
-}
-
-:deep(.markdown-content pre code) {
-  padding: 0;
-  margin: 0;
-  font-size: 100%;
-  background: transparent;
-}
-
-:deep(.markdown-content blockquote) {
-  border-left: 0.25em solid #dfe2e5;
-  padding: 0 1em;
-  color: #6a737d;
-}
-
-/* 添加图片样式 */
-:deep(.markdown-content img) {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 10px 0;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-:deep(.markdown-content ul) {
-  margin-left:10px;
-}
-
-:deep(.markdown-content li) {
-  margin-left:5px;
-}
-
-
-/* 文本预览样式 */
-.text-preview-container {
-  height: 100%;
-  overflow-y: auto;
-  padding: 20px;
-  background: white;
-}
-
-.text-content {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #2c3e50;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-/* 加载和错误状态样式 */
-.preview-loading {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 40px;
-  color: #6c757d;
+  text-align: center;
+  gap: 0.5rem;
+  color: #4e7898;
+  padding: 1rem;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  border: 3px solid rgba(154, 214, 250, 0.5);
+  border-top-color: #3a9ff0;
+  animation: spin 0.95s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.preview-error {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 60px 40px;
-  color: #555;
-}
-
-.error-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  color: #dc3545;
-}
-
-.preview-error h4 {
-  margin: 0 0 12px 0;
-  font-size: 1.5rem;
-  color: #2d3748;
-}
-
-.preview-error p {
-  margin: 0 0 24px 0;
-  color: #718096;
-  line-height: 1.6;
-}
-
-.preview-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
-  color: #6c757d;
-}
-
+.error-icon,
 .placeholder-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  color: #cbd5e0;
-}
-
-/* 不支持预览的文档样式 */
-.unsupported-preview {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 60px 40px;
-  color: #555;
-}
-
-.unsupported-icon {
-  font-size: 4rem;
-  margin-bottom: 24px;
-  color: #cbd5e0;
-}
-
-.unsupported-preview h3 {
-  margin: 0 0 12px 0;
-  font-size: 1.5rem;
-  color: #2d3748;
-}
-
-.unsupported-preview p {
-  margin: 0 0 8px 0;
-  color: #718096;
-  line-height: 1.6;
-}
-
-.suggestion {
-  font-size: 0.9rem !important;
-  color: #a0aec0 !important;
-}
-
-.no-preview-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 60px 40px;
-  color: #555;
-}
-
-.no-preview-icon {
-  margin-bottom: 24px;
+  font-size: 2rem;
 }
 
 .no-preview-icon i {
-  font-size: 4rem;
-  color: #cbd5e0;
-}
-
-.no-preview-content h4 {
-  margin: 0 0 12px 0;
-  font-size: 1.5rem;
-  color: #2d3748;
-}
-
-.no-preview-content p {
-  margin: 0 0 8px 0;
-  color: #718096;
-  line-height: 1.6;
+  font-size: 2.2rem;
+  color: #7ca9c8;
 }
 
 .preview-hint {
-  font-size: 0.9rem !important;
-  color: #a0aec0 !important;
+  font-size: 0.82rem;
+  color: #6c8aa2;
 }
 
 .download-action-btn {
-  margin-top: 32px;
-  padding: 14px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  margin-top: 0.4rem;
   border: none;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  background: linear-gradient(135deg, #2f8de2, #5fc2ff);
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-}
-
-.download-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
 }
 
 .document-modal-footer {
-  padding: 20px 28px;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
-  flex-shrink: 0;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid rgba(167, 221, 249, 0.45);
+  background: rgba(244, 251, 255, 0.95);
 }
 
 .document-actions {
   display: flex;
-  gap: 12px;
+  align-items: center;
   justify-content: flex-end;
+  gap: 0.45rem;
 }
 
 .modal-download-btn,
 .modal-cancel-btn {
-  padding: 12px 24px;
   border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  border-radius: 999px;
+  height: 2rem;
+  padding: 0 0.88rem;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .modal-download-btn {
-  background: #48bb78;
-  color: white;
-}
-
-.modal-download-btn:hover {
-  background: #38a169;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #37be98, #59d6b2);
+  color: #fff;
 }
 
 .modal-cancel-btn {
-  background: #e2e8f0;
-  color: #4a5568;
+  background: #e6f4ff;
+  color: #38729c;
 }
 
-.modal-cancel-btn:hover {
-  background: #cbd5e0;
+:deep(.markdown-preview-container) {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 1rem;
+  background: #fff;
 }
 
-/* 动画效果 */
-@keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+:deep(.markdown-content) {
+  max-width: 920px;
+  margin: 0 auto;
+  color: #264a66;
+  line-height: 1.7;
 }
 
-@keyframes modalSlideIn {
-  from { opacity: 0; transform: scale(0.9) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+:deep(.markdown-content h1),
+:deep(.markdown-content h2),
+:deep(.markdown-content h3),
+:deep(.markdown-content h4),
+:deep(.markdown-content h5),
+:deep(.markdown-content h6) {
+  margin-top: 1.2rem;
+  margin-bottom: 0.6rem;
+  color: #2b6da2;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .document-library { padding: 15px; }
-  h1 { font-size: 2rem; }
-  .document-item { flex-direction: column; text-align: center; gap: 15px; }
-  .doc-icon { margin-right: 0; margin-bottom: 10px; }
-  .doc-actions { flex-direction: row; justify-content: center; margin-left: 0; }
-  .doc-meta { justify-content: center; flex-wrap: wrap; }
-  .document-modal-content { width: 95vw; height: 90vh; }
-  .document-modal-body { padding: 15px; }
+:deep(.markdown-content img) {
+  max-width: 100%;
+  border-radius: 10px;
+  display: block;
+  margin: 0.65rem 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .document-library {
+    padding: 1rem 0.85rem;
+  }
+
+  .document-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .doc-actions {
+    width: 100%;
+    flex-direction: row;
+  }
+
+  .action-btn {
+    flex: 1;
+  }
+
+  .document-modal-content {
+    width: 100%;
+    height: 95vh;
+    border-radius: 16px;
+  }
+
+  .document-modal-header,
+  .document-modal-footer {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
 }
 </style>

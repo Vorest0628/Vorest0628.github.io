@@ -1,181 +1,131 @@
-<!-- 
-  Gallery页面组件 - 现代化风格图库
-  功能：
-  1. 现代化响应式网格布局
-  2. 图片分类和标签过滤
-  3. 优雅的hover效果
-  4. 图片预览功能
-  5. 瀑布流/Masonry布局
--->
 <template>
-  <div class="modern-gallery">
-    <!-- 页面标题 -->
-    <div class="gallery-header">
+  <div class="gallery-page">
+    <header class="page-head">
+      <p class="head-kicker">Visual Board</p>
       <h1>图库展示</h1>
-      <p class="subtitle">精选作品集合</p>
-    </div>
-    
-    <!-- 分类和标签过滤器 -->
-    <div class="gallery-filters">
-      <!-- 分类过滤 -->
-      <div class="filter-section">
+      <p class="head-desc">精选图像集合，支持分类与标签筛选。</p>
+    </header>
+
+    <section class="filter-card">
+      <div class="filter-group">
         <h3>分类</h3>
         <div class="filter-pills">
-          <button 
-            v-for="category in categories" 
+          <button
+            v-for="category in categories"
             :key="category"
-            @click="filterByCategory(category)"
-            :class="{ active: selectedCategory === category }"
             class="filter-pill"
+            :class="{ active: selectedCategory === category }"
+            @click="filterByCategory(category)"
           >
             {{ category }}
           </button>
         </div>
       </div>
-      
-      <!-- 标签过滤 -->
-      <div v-if="availableTags.length > 0" class="filter-section">
+
+      <div v-if="availableTags.length > 0" class="filter-group">
         <h3>标签</h3>
         <div class="filter-pills">
-          <button 
-            @click="filterByTag('全部')"
-            :class="{ active: selectedTag === '全部' }"
+          <button
             class="filter-pill"
+            :class="{ active: selectedTag === '全部' }"
+            @click="filterByTag('全部')"
           >
             全部
           </button>
-          <button 
-            v-for="tag in availableTags" 
+          <button
+            v-for="tag in availableTags"
             :key="tag"
-            @click="filterByTag(tag)"
-            :class="{ active: selectedTag === tag }"
             class="filter-pill"
+            :class="{ active: selectedTag === tag }"
+            @click="filterByTag(tag)"
           >
             {{ tag }}
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 加载状态 -->
-    <div v-if="loading" class="loading-state">
-      <div class="loading-spinner"></div>
+    <div v-if="loading" class="state-box">
+      <div class="state-spinner"></div>
       <p>正在加载图片...</p>
     </div>
-    
-    <!-- 错误状态 -->
-    <div v-else-if="error" class="error-state">
-      <div class="error-icon">😞</div>
+
+    <div v-else-if="error" class="state-box error">
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="loadImages" class="retry-btn">重试</button>
+      <button class="retry-btn" @click="loadImages">重试</button>
     </div>
-    
-    <!-- 图片网格 - Apple风格 -->
-    <div v-else class="masonry-grid">
-      <div 
-        v-for="(image, index) in filteredImages" 
+
+    <section v-else class="masonry-grid">
+      <article
+        v-for="(image, index) in filteredImages"
         :key="image._id || image.id"
         class="masonry-item"
-        :style="{ animationDelay: index * 50 + 'ms' }"
+        :style="{ animationDelay: `${index * 45}ms` }"
         @click="openLightbox(image, index)"
       >
-        <div class="image-container">
-          <img 
-            :src="getImageUrl(image.thumbnail)" 
+        <div class="image-shell">
+          <img
+            :src="getImageUrl(image.thumbnail)"
             :alt="image.title"
             loading="lazy"
             @error="handleImageError"
           />
           <div class="image-overlay">
-            <div class="overlay-content">
-              <h4>{{ image.title }}</h4>
-              <p v-if="image.description">{{ image.description }}</p>
-              <div class="image-meta">
-                <span class="category-badge">{{ image.category }}</span>
-                <div class="tags" v-if="image.secondaryTags && image.secondaryTags.length">
-                  <span 
-                    v-for="tag in image.secondaryTags.slice(0, 3)" 
-                    :key="tag"
-                    class="tag-badge"
-                  >
-                    {{ tag }}
-                  </span>
-                  <span v-if="image.secondaryTags.length > 3" class="tag-more">
-                    +{{ image.secondaryTags.length - 3 }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="overlay-actions">
-              <button class="action-btn view-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                </svg>
-              </button>
+            <h4>{{ image.title }}</h4>
+            <p v-if="image.description">{{ image.description }}</p>
+            <div class="meta-line">
+              <span class="pill category">{{ image.category || '未分类' }}</span>
+              <span v-if="image.secondaryTags && image.secondaryTags.length" class="pill">
+                {{ image.secondaryTags.slice(0, 2).join(' · ') }}
+              </span>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </article>
+    </section>
 
-    <!-- 空状态 -->
-    <div v-if="!loading && !error && filteredImages.length === 0" class="empty-state">
-      <div class="empty-icon">🖼️</div>
+    <div v-if="!loading && !error && filteredImages.length === 0" class="state-box empty">
       <h3>暂无图片</h3>
       <p>{{ getEmptyStateMessage() }}</p>
     </div>
 
-    <!-- 图片灯箱预览 -->
     <Teleport to="body">
       <div v-if="showLightbox" class="lightbox-overlay" @click="closeLightbox">
         <div class="lightbox-container" @click.stop>
           <button class="lightbox-close" @click="closeLightbox">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
+            <i class="fas fa-xmark"></i>
           </button>
-          
+
           <div class="lightbox-image">
-            <img :src="getImageUrl(currentImage.fullSize || currentImage.thumbnail)" :alt="currentImage.title" />
+            <img :src="getImageUrl(currentImage?.fullSize || currentImage?.thumbnail)" :alt="currentImage?.title" />
           </div>
-          
+
           <div class="lightbox-info">
-            <h3>{{ currentImage.title }}</h3>
-            <p v-if="currentImage.description">{{ currentImage.description }}</p>
-            <div class="lightbox-meta">
-              <span class="meta-item">分类：{{ currentImage.category }}</span>
-              <span class="meta-item" v-if="currentImage.date">{{ formatDate(currentImage.date) }}</span>
+            <h3>{{ currentImage?.title }}</h3>
+            <p v-if="currentImage?.description">{{ currentImage.description }}</p>
+            <div class="meta-line">
+              <span class="pill category">{{ currentImage?.category || '未分类' }}</span>
+              <span v-if="currentImage?.date" class="pill">{{ formatDate(currentImage.date) }}</span>
             </div>
-            <div class="lightbox-tags" v-if="currentImage.secondaryTags && currentImage.secondaryTags.length">
-              <span 
-                v-for="tag in currentImage.secondaryTags" 
-                :key="tag"
-                class="lightbox-tag"
-              >
-                {{ tag }}
-              </span>
+            <div class="tag-line" v-if="currentImage?.secondaryTags && currentImage.secondaryTags.length">
+              <span v-for="tag in currentImage.secondaryTags" :key="tag" class="tag-item">{{ tag }}</span>
             </div>
           </div>
-          
-          <!-- 导航按钮 -->
-          <button 
+
+          <button
             v-if="currentImageIndex > 0"
-            @click="previousImage"
             class="lightbox-nav prev"
+            @click="previousImage"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-            </svg>
+            <i class="fas fa-chevron-left"></i>
           </button>
-          <button 
+          <button
             v-if="currentImageIndex < filteredImages.length - 1"
-            @click="nextImage"
             class="lightbox-nav next"
+            @click="nextImage"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-            </svg>
+            <i class="fas fa-chevron-right"></i>
           </button>
         </div>
       </div>
@@ -187,7 +137,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { galleryApi } from '@/api/gallery'
 
-// 响应式数据
 const selectedCategory = ref('全部')
 const selectedTag = ref('全部')
 const showLightbox = ref(false)
@@ -196,65 +145,53 @@ const currentImageIndex = ref(0)
 const loading = ref(false)
 const error = ref('')
 
-// 数据
 const allImages = ref([])
-const allCategories = ref([])
-const allTags = ref([])
 
-// 计算属性
 const categories = computed(() => {
-  const cats = ['全部', ...new Set(allImages.value.map(img => img.category).filter(Boolean))]
-  return cats
+  return ['全部', ...new Set(allImages.value.map((img) => img.category).filter(Boolean))]
 })
 
 const availableTags = computed(() => {
-  if (selectedCategory.value === '全部') {
-    return [...new Set(allImages.value.flatMap(img => img.secondaryTags || []))]
-  }
-  return [...new Set(
-    allImages.value
-      .filter(img => img.category === selectedCategory.value)
-      .flatMap(img => img.secondaryTags || [])
-  )]
+  const imagePool =
+    selectedCategory.value === '全部'
+      ? allImages.value
+      : allImages.value.filter((img) => img.category === selectedCategory.value)
+
+  return [...new Set(imagePool.flatMap((img) => img.secondaryTags || []))]
 })
 
 const filteredImages = computed(() => {
   let images = allImages.value
 
-  // 按分类过滤
   if (selectedCategory.value !== '全部') {
-    images = images.filter(img => img.category === selectedCategory.value)
+    images = images.filter((img) => img.category === selectedCategory.value)
   }
 
-  // 按标签过滤
   if (selectedTag.value !== '全部') {
-    images = images.filter(img => 
-      img.secondaryTags && img.secondaryTags.includes(selectedTag.value)
-    )
+    images = images.filter((img) => img.secondaryTags && img.secondaryTags.includes(selectedTag.value))
   }
 
   return images
 })
 
-// 方法
 const loadImages = async () => {
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await galleryApi.getImages({
       page: 1,
       limit: 100
     })
-    
-    if (response.success) {
-      allImages.value = response.data.images || []
-    } else {
-      throw new Error(response.message || '获取图片失败')
+
+    if (!response?.success) {
+      throw new Error(response?.message || '获取图片失败')
     }
+
+    allImages.value = response?.data?.images || []
   } catch (err) {
-    console.error('获取图片失败:', err)
-    error.value = err.message || '获取图片失败，请稍后重试'
+    console.error('Failed to fetch images:', err)
+    error.value = err?.message || '获取图片失败，请稍后重试。'
     allImages.value = []
   } finally {
     loading.value = false
@@ -284,26 +221,26 @@ const closeLightbox = () => {
 }
 
 const previousImage = () => {
-  if (currentImageIndex.value > 0) {
-    currentImageIndex.value--
-    currentImage.value = filteredImages.value[currentImageIndex.value]
-  }
+  if (currentImageIndex.value <= 0) return
+  currentImageIndex.value -= 1
+  currentImage.value = filteredImages.value[currentImageIndex.value]
 }
 
 const nextImage = () => {
-  if (currentImageIndex.value < filteredImages.value.length - 1) {
-    currentImageIndex.value++
-    currentImage.value = filteredImages.value[currentImageIndex.value]
-  }
+  if (currentImageIndex.value >= filteredImages.value.length - 1) return
+  currentImageIndex.value += 1
+  currentImage.value = filteredImages.value[currentImageIndex.value]
 }
 
 const getImageUrl = (url) => {
   if (!url) return '/placeholder.jpg'
   if (url.startsWith('http')) return url
-  const baseUrl = (import.meta.env.VITE_APP_API_URL?.replace('/api', ''))
+
+  const baseUrl = import.meta.env.VITE_APP_API_URL?.replace('/api', '')
     || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
       ? 'https://api.shirakawananase.top'
       : 'http://localhost:3000')
+
   if (url.startsWith('/')) return `${baseUrl}${url}`
   return `${baseUrl}/${url}`
 }
@@ -313,6 +250,7 @@ const handleImageError = (event) => {
 }
 
 const formatDate = (dateString) => {
+  if (!dateString) return ''
   return new Date(dateString).toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'long',
@@ -322,26 +260,17 @@ const formatDate = (dateString) => {
 
 const getEmptyStateMessage = () => {
   if (selectedCategory.value !== '全部' || selectedTag.value !== '全部') {
-    return '没有找到匹配的图片，请尝试其他筛选条件'
+    return '没有找到匹配的图片，请尝试其他筛选条件。'
   }
-  return '还没有上传任何图片'
+  return '还没有上传任何图片。'
 }
 
-// 键盘事件
 const handleKeydown = (event) => {
   if (!showLightbox.value) return
-  
-  switch (event.key) {
-    case 'Escape':
-      closeLightbox()
-      break
-    case 'ArrowLeft':
-      previousImage()
-      break
-    case 'ArrowRight':
-      nextImage()
-      break
-  }
+
+  if (event.key === 'Escape') closeLightbox()
+  if (event.key === 'ArrowLeft') previousImage()
+  if (event.key === 'ArrowRight') nextImage()
 }
 
 onMounted(() => {
@@ -356,169 +285,348 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.modern-gallery {
+.gallery-page {
   min-height: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 2rem;
+  padding: 1.35rem;
+  background: transparent;
 }
 
-/* 页面标题 */
-.gallery-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.gallery-header h1 {
-  font-size: 3rem;
-  font-weight: 700;
-  background: linear-gradient(105deg,rgb(45, 167, 224),powderblue);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  font-size: 1.2rem;
-  color: #64748b;
-  font-weight: 300;
-}
-
-/* 过滤器 */
-.gallery-filters {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 2rem;
-  margin-bottom: 3rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.filter-section {
-  margin-bottom: 1.5rem;
-}
-
-.filter-section:last-child {
-  margin-bottom: 0;
-}
-
-.filter-section h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #374151;
+.page-head {
+  border-radius: 24px;
+  padding: 1.3rem 1.2rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(240, 251, 255, 0.78);
+  box-shadow: 0 14px 28px rgba(44, 110, 153, 0.14);
   margin-bottom: 1rem;
+}
+
+.head-kicker {
+  margin: 0;
+  color: #428ecf;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.page-head h1 {
+  margin: 0.35rem 0;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  line-height: 1;
+  color: #2f85d4;
+  font-family: var(--summer-font-display);
+}
+
+.head-desc {
+  margin: 0;
+  color: #64839a;
+}
+
+.filter-card {
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  background: rgba(247, 252, 255, 0.75);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.filter-group h3 {
+  margin: 0;
+  color: #4e7898;
+  font-size: 0.88rem;
 }
 
 .filter-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
 }
 
 .filter-pill {
-  padding: 0.5rem 1.25rem;
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid transparent;
-  border-radius: 50px;
-  color: #64748b;
-  font-weight: 500;
+  border: 1px solid rgba(104, 182, 237, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #2d79bc;
+  padding: 0.36rem 0.82rem;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
 }
 
 .filter-pill:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: rgb(45, 167, 224);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(66, 148, 206, 0.2);
 }
 
 .filter-pill.active {
-  background: linear-gradient(105deg,rgb(45, 167, 224),powderblue);
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #2f8ce2, #61c6ff);
+  color: #fff;
+  border-color: transparent;
 }
 
-/* 状态组件 */
-.loading-state, .error-state, .empty-state {
+.state-box {
+  border-radius: 16px;
+  border: 1px solid rgba(118, 196, 241, 0.4);
+  background: rgba(255, 255, 255, 0.72);
   text-align: center;
-  padding: 4rem 2rem;
+  color: #4e7898;
+  padding: 2rem 1rem;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #667eea;
+.state-box.error h3,
+.state-box.empty h3 {
+  margin: 0 0 0.4rem;
+}
+
+.state-box p {
+  margin: 0;
+}
+
+.state-spinner {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-icon, .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+  border: 3px solid rgba(154, 214, 250, 0.5);
+  border-top-color: #3a9ff0;
+  animation: spin 0.95s linear infinite;
+  margin: 0 auto 0.8rem;
 }
 
 .retry-btn {
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  margin-top: 0.8rem;
   border: none;
-  border-radius: 50px;
-  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.48rem 0.92rem;
+  background: linear-gradient(135deg, #ff90ac, #ffb4c5);
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 1rem;
 }
 
-.retry-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-/* Masonry 网格布局 */
 .masonry-grid {
   column-count: 1;
-  column-gap: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  column-gap: 0.9rem;
 }
 
-@media (min-width: 640px) {
-  .masonry-grid { column-count: 2; }
+@media (min-width: 650px) {
+  .masonry-grid {
+    column-count: 2;
+  }
 }
 
-@media (min-width: 768px) {
-  .masonry-grid { column-count: 3; }
-}
-
-@media (min-width: 1024px) {
-  .masonry-grid { column-count: 4; }
-}
-
-@media (min-width: 1280px) {
-  .masonry-grid { column-count: 5; }
+@media (min-width: 980px) {
+  .masonry-grid {
+    column-count: 3;
+  }
 }
 
 .masonry-item {
   break-inside: avoid;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9rem;
   opacity: 0;
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fade-in-up 0.48s ease forwards;
 }
 
-@keyframes fadeInUp {
+.image-shell {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 24px rgba(45, 103, 145, 0.11);
+  cursor: pointer;
+}
+
+.image-shell img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.4s ease;
+}
+
+.image-shell:hover img {
+  transform: scale(1.05);
+}
+
+.image-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding: 0.9rem;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 52, 84, 0.04) 0%,
+    rgba(18, 68, 109, 0.18) 45%,
+    rgba(15, 61, 96, 0.82) 100%
+  );
+  color: #f4fcff;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.image-shell:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-overlay h4 {
+  margin: 0;
+  font-size: 1.03rem;
+}
+
+.image-overlay p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+.meta-line {
+  margin-top: 0.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(188, 229, 255, 0.38);
+  background: rgba(225, 245, 255, 0.2);
+  color: #f6fdff;
+  font-size: 0.72rem;
+  padding: 0.24rem 0.62rem;
+}
+
+.pill.category {
+  background: rgba(129, 211, 255, 0.26);
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 26, 41, 0.82);
+  backdrop-filter: blur(7px);
+}
+
+.lightbox-container {
+  position: relative;
+  width: min(960px, 94vw);
+  max-height: 92vh;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(248, 253, 255, 0.95);
+  box-shadow: 0 30px 60px rgba(9, 30, 49, 0.35);
+  display: flex;
+  flex-direction: column;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  z-index: 4;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  background: rgba(18, 78, 123, 0.42);
+  color: #fff;
+  cursor: pointer;
+}
+
+.lightbox-image {
+  background: #eaf6ff;
+  display: grid;
+  place-items: center;
+  min-height: 45vh;
+}
+
+.lightbox-image img {
+  width: 100%;
+  max-height: 68vh;
+  object-fit: contain;
+}
+
+.lightbox-info {
+  padding: 1rem 1rem 1.1rem;
+}
+
+.lightbox-info h3 {
+  margin: 0;
+  color: #2b6ea6;
+}
+
+.lightbox-info p {
+  margin: 0.5rem 0 0;
+  color: #5f7f95;
+  line-height: 1.55;
+}
+
+.tag-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.34rem;
+  margin-top: 0.6rem;
+}
+
+.tag-item {
+  border-radius: 999px;
+  border: 1px solid rgba(117, 194, 238, 0.5);
+  background: #edf8ff;
+  color: #4b7ea7;
+  font-size: 0.74rem;
+  padding: 0.2rem 0.56rem;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(14, 65, 103, 0.56);
+  color: #fff;
+  cursor: pointer;
+}
+
+.lightbox-nav.prev {
+  left: 0.6rem;
+}
+
+.lightbox-nav.next {
+  right: 0.6rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -526,295 +634,13 @@ onUnmounted(() => {
   }
 }
 
-.image-container {
-  position: relative;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.image-container:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-.image-container img {
-  width: 100%;
-  height: auto;
-  display: block;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.image-container:hover img {
-  transform: scale(1.05);
-}
-
-.image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0) 0%, 
-    rgba(0, 0, 0, 0.1) 50%, 
-    rgba(0, 0, 0, 0.8) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 1.5rem;
-}
-
-.image-container:hover .image-overlay {
-  opacity: 1;
-}
-
-.overlay-content h4 {
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.overlay-content p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9rem;
-  line-height: 1.4;
-  margin-bottom: 1rem;
-}
-
-.image-meta {
-  margin-top: auto;
-}
-
-.category-badge {
-  background: rgba(102, 126, 234, 0.9);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  display: inline-block;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.tag-badge {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 15px;
-  font-size: 0.75rem;
-  backdrop-filter: blur(10px);
-}
-
-.tag-more {
-  background: rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 15px;
-  font-size: 0.75rem;
-  backdrop-filter: blur(10px);
-}
-
-.overlay-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 1rem;
-}
-
-.action-btn {
-  background: rgba(255, 255, 255, 0.9);
-  color: #667eea;
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-}
-
-.action-btn:hover {
-  background: white;
-  transform: scale(1.1);
-}
-
-/* 灯箱样式 */
-.lightbox-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.3s ease;
-}
-
-.lightbox-container {
-  position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.lightbox-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s;
-}
-
-.lightbox-close:hover {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-.lightbox-image {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f8fafc;
-}
-
-.lightbox-image img {
-  max-width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
-}
-
-.lightbox-info {
-  padding: 2rem;
-  background: white;
-}
-
-.lightbox-info h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.lightbox-info p {
-  color: #6b7280;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.lightbox-meta {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  color: #9ca3af;
-}
-
-.lightbox-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.lightbox-tag {
-  background: #f3f4f6;
-  color: #374151;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-}
-
-.lightbox-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s;
-}
-
-.lightbox-nav:hover {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-.lightbox-nav.prev {
-  left: 1rem;
-}
-
-.lightbox-nav.next {
-  right: 1rem;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .modern-gallery {
-    padding: 1rem;
+@media (max-width: 640px) {
+  .gallery-page {
+    padding: 1rem 0.85rem;
   }
-  
-  .gallery-header h1 {
-    font-size: 2rem;
-  }
-  
-  .gallery-filters {
-    padding: 1.5rem;
-  }
-  
-  .filter-pills {
-    justify-content: center;
-  }
-  
-  .lightbox-info {
-    padding: 1.5rem;
-  }
-  
-  .lightbox-meta {
-    flex-direction: column;
-    gap: 0.5rem;
+
+  .lightbox-nav {
+    display: none;
   }
 }
 </style>
-
