@@ -140,3 +140,4 @@ secrets/
 backend/uploads/documents/converted/*.pdf
 backend/uploads/documents/converted/*.jpg
 backend/uploads/documents/converted/*.png
+

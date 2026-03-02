@@ -143,6 +143,8 @@ import { blogApi } from '@/api/blog'
 import { commentApi } from '@/api/comment'
 import { format } from 'date-fns'
 import { marked } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark.css'
 import DOMPurify from 'dompurify'
 import { useAuthStore } from '@/store/modules/auth'
 import CommentNode from '@/components/CommentNode.vue'
@@ -200,6 +202,63 @@ renderer.image = (href = '', title, text) => {
   
   const t = title ? ` title="${title}"` : ''
   return `<img src="${src}" alt="${text || ''}"${t} loading="lazy" decoding="async">`
+}
+const resolveCodeBlockToken = (codeToken, infostring = '') => {
+  if (typeof codeToken === 'object' && codeToken !== null) {
+    return {
+      rawCode: codeToken.text || '',
+      rawLang: codeToken.lang || codeToken.language || ''
+    }
+  }
+  return {
+    rawCode: String(codeToken || ''),
+    rawLang: String(infostring || '')
+  }
+}
+const normalizeLanguage = (rawLang = '') => {
+  return String(rawLang).trim().split(/\s+/)[0].toLowerCase()
+}
+const escapeHtml = (rawCode = '') => {
+  return String(rawCode)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+renderer.code = (codeToken, infostring = '') => {
+  const { rawCode, rawLang } = resolveCodeBlockToken(codeToken, infostring)
+  const normalizedLang = normalizeLanguage(rawLang)
+  const hasLanguage = normalizedLang && hljs.getLanguage(normalizedLang)
+
+  let highlightedCode = escapeHtml(rawCode)
+  let displayLanguage = 'plaintext'
+
+  try {
+    if (hasLanguage) {
+      const highlighted = hljs.highlight(rawCode, {
+        language: normalizedLang,
+        ignoreIllegals: true
+      })
+      highlightedCode = highlighted.value
+      displayLanguage = normalizedLang
+    } else {
+      const highlighted = hljs.highlightAuto(rawCode)
+      highlightedCode = highlighted.value
+      displayLanguage = highlighted.language || 'plaintext'
+    }
+  } catch (err) {
+    console.warn('Code highlight failed, fallback to plaintext.', err)
+  }
+
+  return `
+    <div class="article-code-block">
+      <div class="article-code-toolbar">
+        <span class="article-code-language">${displayLanguage.toUpperCase()}</span>
+      </div>
+      <pre class="hljs"><code class="hljs language-${displayLanguage}">${highlightedCode}</code></pre>
+    </div>
+  `
 }
 marked.setOptions({ renderer })
 
@@ -573,18 +632,71 @@ watch(() => route.params.id, (newId) => {
   color: #555;
 }
 
-.article-content :deep(pre) {
-  background-color: #2d2d2d;
-  color: #f8f8f2;
-  padding: 1.5rem;
-  border-radius: 8px;
-  overflow-x: auto;
+.article-content :deep(.article-code-block) {
   margin: 2rem 0;
-  font-family: 'Courier New', Courier, monospace;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  overflow: hidden;
+  background: #111827;
 }
 
-.article-content :deep(code) {
-  font-family: 'Courier New', Courier, monospace;
+.article-content :deep(.article-code-toolbar) {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  background: linear-gradient(90deg, #111827, #1f2937);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.article-content :deep(.article-code-language) {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #93c5fd;
+  text-transform: uppercase;
+}
+
+.article-content :deep(.article-code-block pre) {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: #0b1220;
+}
+
+.article-content :deep(.article-code-block pre code) {
+  display: block;
+  min-width: 100%;
+  width: max-content;
+  white-space: pre;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.article-content :deep(.article-code-block pre::-webkit-scrollbar) {
+  height: 10px;
+}
+
+.article-content :deep(.article-code-block pre::-webkit-scrollbar-track) {
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 999px;
+}
+
+.article-content :deep(.article-code-block pre::-webkit-scrollbar-thumb) {
+  background: rgba(147, 197, 253, 0.6);
+  border-radius: 999px;
+}
+
+.article-content :deep(:not(pre) > code) {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 0.12rem 0.38rem;
+  border-radius: 4px;
+  font-size: 0.9em;
 }
 
 .article-content :deep(img) {
