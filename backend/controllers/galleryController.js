@@ -1,22 +1,3 @@
-// 条件导入 Vercel Blob，如果没有配置则使用空函数
-let put, del;
-try {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blobModule = require('@vercel/blob');
-    put = blobModule.put;
-    del = blobModule.del;
-  } else {
-    console.warn('⚠️ BLOB_READ_WRITE_TOKEN 未配置，Vercel Blob 功能将被禁用');
-    put = async () => { throw new Error('Vercel Blob 未配置'); };
-    del = async () => { console.log('Vercel Blob 未配置，跳过删除'); };
-  }
-} catch (error) {
-  console.warn('⚠️ 无法加载 @vercel/blob:', error.message);
-  put = async () => { throw new Error('Vercel Blob 不可用'); };
-  del = async () => { console.log('Vercel Blob 不可用，跳过删除'); };
-}
-
-
 /*
 galleryController.js函数一览：
 getImages 获取图片列表
@@ -32,6 +13,7 @@ const sharp = require('sharp');
 const Gallery = require('../models/Gallery');
 const { ApiError, catchAsync } = require('../utils/error');
 const { imageUpload } = require('../utils/fileUpload');
+const { uploadBuffer, deleteStoredFile } = require('../utils/storage');
 
 // PUBLIC: Get image list with filters
 exports.getImages = catchAsync(async (req, res) => {
@@ -116,16 +98,14 @@ exports.uploadImage = catchAsync(async (req, res) => {
 
       // 1. Process and upload the full-size image
       const imageInfo = await sharp(fileBuffer).metadata();
-      const fullSizeBlob = await put(`gallery/full/${Date.now()}-${originalName}`, fileBuffer, {
-        access: 'public',
-        contentType: req.file.mimetype,
+      const fullSizeBlob = await uploadBuffer(`gallery/full/${Date.now()}-${originalName}`, fileBuffer, {
+        contentType: req.file.mimetype
       });
 
       // 2. Create, process, and upload the thumbnail
       const thumbnailBuffer = await sharp(fileBuffer).resize(400).toBuffer();
-      const thumbnailBlob = await put(`gallery/thumbnails/${Date.now()}-${originalName}`, thumbnailBuffer, {
-        access: 'public',
-        contentType: req.file.mimetype,
+      const thumbnailBlob = await uploadBuffer(`gallery/thumbnails/${Date.now()}-${originalName}`, thumbnailBuffer, {
+        contentType: req.file.mimetype
       });
 
       // 3. Create a new document in the database with Blob URLs
@@ -179,10 +159,10 @@ exports.deleteImage = catchAsync(async (req, res) => {
   try {
     // Delete images from Vercel Blob storage
     if (image.fullSize) {
-      await del(image.fullSize);
+      await deleteStoredFile(image.fullSize);
     }
     if (image.thumbnail) {
-      await del(image.thumbnail);
+      await deleteStoredFile(image.thumbnail);
     }
   } catch (err) {
     // Log the error but don't block the database deletion
@@ -214,4 +194,3 @@ exports.getAllImages = catchAsync(async (req, res) => {
     const images = await Gallery.find().sort({ date: -1 });
     res.status(200).json({ success: true, data: images });
 });
-

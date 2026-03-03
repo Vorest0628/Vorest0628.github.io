@@ -5,12 +5,10 @@ const path = require('path')
 const { errorHandler } = require('./utils/error')
 
 // 检查是否在Vercel环境中
-const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+const isVercel = process.env.VERCEL === '1'
 
 // 配置dotenv读取setting.env文件
-if (!isVercel) {
 require('dotenv').config({ path: path.join(__dirname, 'setting.env') })
-}
 
 // 创建Express应用实例
 const app = express()

@@ -1,21 +1,3 @@
-// 条件导入 Vercel Blob，如果没有配置则使用空函数
-let put, del;
-try {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blobModule = require('@vercel/blob');
-    put = blobModule.put;
-    del = blobModule.del;
-  } else {
-    console.warn('⚠️ BLOB_READ_WRITE_TOKEN 未配置，Vercel Blob 功能将被禁用');
-    put = async () => { throw new Error('Vercel Blob 未配置'); };
-    del = async () => { console.log('Vercel Blob 未配置，跳过删除'); };
-  }
-} catch (error) {
-  console.warn('⚠️ 无法加载 @vercel/blob:', error.message);
-  put = async () => { throw new Error('Vercel Blob 不可用'); };
-  del = async () => { console.log('Vercel Blob 不可用，跳过删除'); };
-}
-
 /*
 documentController.js函数一览：
 getDocuments 获取文档列表
@@ -38,6 +20,7 @@ uploadDocument 上传文档
 const Document = require('../models/Document')
 const { ApiError, catchAsync } = require('../utils/error')
 const { documentUpload } = require('../utils/fileUpload')
+const { uploadBuffer, deleteStoredFile } = require('../utils/storage')
 
 // 获取文档列表
 exports.getDocuments = async (req, res, next) => {
@@ -241,9 +224,9 @@ exports.deleteDocument = catchAsync(async (req, res) => {
 
   try {
     // 如果文档存储在Vercel Blob中，删除Blob文件
-    if (document.filePath && document.filePath.startsWith('https://')) {
-      await del(document.filePath);
-      console.log('✅ 已删除Vercel Blob文件:', document.filePath);
+    if (document.filePath) {
+      await deleteStoredFile(document.filePath);
+      console.log('✅ 已删除文档存储文件:', document.filePath);
     }
   } catch (err) {
     // 记录错误但不阻止数据库删除
@@ -815,9 +798,9 @@ exports.downloadDocument = catchAsync(async (req, res) => {
   document.downloadCount += 1;
   await document.save();
 
-  // 如果文档存储在Vercel Blob中，直接重定向到Blob URL
-  if (document.filePath && document.filePath.startsWith('https://')) {
-    console.log('📁 重定向到Vercel Blob:', document.filePath);
+  // 如果文档存储在远程URL中，直接重定向到该URL
+  if (document.filePath && document.filePath.startsWith('http')) {
+    console.log('📦 重定向到远程存储:', document.filePath);
     return res.redirect(document.filePath);
   }
 
@@ -943,18 +926,17 @@ exports.uploadDocument = catchAsync(async (req, res) => {
       const originalName = req.file.originalname;
       const fileType = type || originalName.split('.').pop().toUpperCase();
 
-      // 上传文件到 Vercel Blob
-      const blob = await put(`documents/${Date.now()}-${originalName}`, fileBuffer, {
-        access: 'public',
-        contentType: req.file.mimetype,
+      // 上传文件到统一存储（本地/Blob）
+      const storedFile = await uploadBuffer(`documents/${Date.now()}-${originalName}`, fileBuffer, {
+        contentType: req.file.mimetype
       });
 
       // 创建文档记录
       const document = await Document.create({
         title: title.trim(),
         description: description?.trim() || '',
-        filePath: blob.url, // 使用 Vercel Blob URL
-        downloadUrl: blob.url, // 添加下载URL
+        filePath: storedFile.url, // 使用统一存储URL
+        downloadUrl: storedFile.url, // 添加下载URL
         fileSize: req.file.size,
         type: fileType,
         category: category,

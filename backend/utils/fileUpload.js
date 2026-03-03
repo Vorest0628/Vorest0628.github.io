@@ -16,7 +16,7 @@ formatFileSize 格式化文件大小
 */
 
 // 检查是否在Vercel环境中
-const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+const isVercel = process.env.VERCEL === '1'
 
 // 确保上传目录存在
 const ensureDirectory = (dir) => {

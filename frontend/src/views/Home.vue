@@ -5,7 +5,7 @@
         <p class="hero-kicker">Summer ACG Vibe</p>
         <h1 class="hero-title">Blog</h1>
         <p class="hero-desc">
-          用清爽的天空色记录开发、灵感与日常。首页已切到夏日二次元基调，并预留动态云层衔接区做氛围过渡。
+          用清爽的天空色记录开发、灵感与日常。
         </p>
         <div class="hero-actions">
           <button class="hero-btn primary" @click="router.push('/blog')">进入博客</button>
