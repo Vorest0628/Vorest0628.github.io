@@ -16,9 +16,10 @@
       <div class="hero-panel hero-info">
         <p class="info-date">{{ currentDate }}</p>
         <p class="info-time">{{ currentTime }}</p>
-        <p class="info-location">Shanghai · {{ currentWeekday }}</p>
-        <p class="info-weather">15~20°C</p>
-        <p class="info-tip">海风晴朗，适合写点新内容。</p>
+        <p class="info-location">{{ weatherCard.location }} · {{ currentWeekday }}</p>
+        <p class="info-weather">{{ weatherHeadline }}</p>
+        <p class="info-tip">{{ weatherSummary }}</p>
+        <p class="info-meta">{{ weatherMeta }}</p>
       </div>
     </section>
 
@@ -136,10 +137,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { blogApi } from '@/api/blog'
 import { documentApi } from '@/api/document'
+import { weatherApi } from '@/api/weather'
 
 const router = useRouter()
 
@@ -151,8 +153,74 @@ const pinnedBlogs = ref([])
 const recentBlogs = ref([])
 const loading = ref(false)
 const error = ref('')
+const weatherLoading = ref(true)
+const weatherError = ref(false)
+const weatherCard = ref({
+  location: 'Shanghai',
+  temperature: null,
+  low: null,
+  high: null,
+  humidity: null,
+  description: '',
+  icon: '',
+  windSpeed: null,
+  pressure: null,
+  updatedAt: '',
+  tip: ''
+})
 
 let timeInterval = null
+let weatherInterval = null
+
+const weatherHeadline = computed(() => {
+  if (weatherLoading.value && weatherCard.value.temperature === null) {
+    return '天气获取中...'
+  }
+
+  if (weatherError.value && weatherCard.value.temperature === null) {
+    return '实时天气暂不可用'
+  }
+
+  return `${weatherCard.value.icon} ${weatherCard.value.temperature}°C · ${weatherCard.value.low}~${weatherCard.value.high}°C`
+})
+
+const weatherSummary = computed(() => {
+  if (weatherLoading.value && weatherCard.value.temperature === null) {
+    return '正在同步上海最新天气。'
+  }
+
+  if (weatherError.value && weatherCard.value.temperature === null) {
+    return '天气接口暂时不可用，稍后会自动重试。'
+  }
+
+  if (weatherError.value) {
+    return `${weatherCard.value.description} · 天气更新稍有延迟`
+  }
+
+  return `${weatherCard.value.description} · 湿度 ${weatherCard.value.humidity}%`
+})
+
+const weatherMeta = computed(() => {
+  if (weatherLoading.value && weatherCard.value.temperature === null) {
+    return '将展示上海的实时温度、风速和气压。'
+  }
+
+  if (weatherError.value && weatherCard.value.temperature === null) {
+    return '日期时间与首页内容仍可正常浏览。'
+  }
+
+  const meta = [
+    `风速 ${weatherCard.value.windSpeed} km/h`,
+    `气压 ${weatherCard.value.pressure} hPa`
+  ]
+
+  const updatedLabel = formatWeatherUpdateTime(weatherCard.value.updatedAt)
+  if (updatedLabel) {
+    meta.push(`更新 ${updatedLabel}`)
+  }
+
+  return meta.join(' · ')
+})
 
 const updateDateTime = () => {
   const now = new Date()
@@ -167,6 +235,44 @@ const updateDateTime = () => {
     second: '2-digit'
   })
   currentWeekday.value = now.toLocaleDateString('zh-CN', { weekday: 'long' })
+}
+
+const formatWeatherUpdateTime = (dateString) => {
+  if (!dateString) return ''
+  const [datePart, timePart = ''] = String(dateString).split('T')
+
+  if (timePart) {
+    return timePart.slice(0, 5)
+  }
+
+  const date = new Date(datePart)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const loadWeather = async () => {
+  const isInitialLoad = weatherCard.value.temperature === null
+
+  if (isInitialLoad) {
+    weatherLoading.value = true
+  }
+
+  weatherError.value = false
+
+  try {
+    weatherCard.value = await weatherApi.getShanghaiWeather()
+  } catch (err) {
+    weatherError.value = true
+    console.warn('Failed to load Shanghai weather:', err)
+  } finally {
+    if (isInitialLoad) {
+      weatherLoading.value = false
+    }
+  }
 }
 
 const loadPinnedDocuments = async () => {
@@ -290,12 +396,15 @@ const prefetchCommonRoutes = () => {
 onMounted(() => {
   updateDateTime()
   timeInterval = setInterval(updateDateTime, 1000)
+  loadWeather()
+  weatherInterval = setInterval(loadWeather, 30 * 60 * 1000)
   loadContent()
   prefetchCommonRoutes()
 })
 
 onUnmounted(() => {
   if (timeInterval) clearInterval(timeInterval)
+  if (weatherInterval) clearInterval(weatherInterval)
 })
 </script>
 
@@ -449,6 +558,13 @@ onUnmounted(() => {
   margin: 0.4rem 0 0;
   color: #4e7d97;
   font-size: 0.95rem;
+}
+
+.info-meta {
+  margin: 0;
+  color: #6188a3;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .cloud-bridge {
