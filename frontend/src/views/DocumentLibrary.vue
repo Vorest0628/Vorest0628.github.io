@@ -9,7 +9,7 @@
           type="text"
           placeholder="搜索文档..."
           @input="filterDocuments"
-        />
+        >
       </div>
 
       <div class="category-filter">
@@ -24,8 +24,13 @@
         </button>
       </div>
 
-      <div v-if="secondaryTags.length > 0" class="secondary-tags">
-        <div class="tag-label">二级标签</div>
+      <div
+        v-if="secondaryTags.length > 0"
+        class="secondary-tags"
+      >
+        <div class="tag-label">
+          二级标签
+        </div>
         <div class="tag-buttons">
           <button
             class="tag-btn"
@@ -47,24 +52,38 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载文档...</p>
     </div>
 
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="getDocuments">重试</button>
+      <button
+        class="retry-btn"
+        @click="getDocuments"
+      >
+        重试
+      </button>
     </div>
 
-    <div v-else class="document-list">
+    <div
+      v-else
+      class="document-list"
+    >
       <div
         v-for="doc in filteredDocuments"
         :key="doc.id || doc._id"
         class="document-item"
       >
         <div class="doc-icon">
-          <i :class="getDocIcon(doc.type)"></i>
+          <i :class="getDocIcon(doc.type)" />
         </div>
 
         <div class="doc-info">
@@ -88,13 +107,26 @@
         </div>
 
         <div class="doc-actions">
-          <button class="action-btn preview-btn" @click="previewDocument(doc)">预览</button>
-          <button class="action-btn download-btn" @click="downloadDocument(doc)">下载</button>
+          <button
+            class="action-btn preview-btn"
+            @click="previewDocument(doc)"
+          >
+            预览
+          </button>
+          <button
+            class="action-btn download-btn"
+            @click="downloadDocument(doc)"
+          >
+            下载
+          </button>
         </div>
       </div>
     </div>
 
-    <div v-if="!loading && !error && filteredDocuments.length === 0" class="empty-state">
+    <div
+      v-if="!loading && !error && filteredDocuments.length === 0"
+      class="empty-state"
+    >
       <h3>暂无文档</h3>
       <p>
         {{
@@ -106,8 +138,15 @@
     </div>
 
     <Teleport to="body">
-      <div v-if="showPreview" class="document-modal-overlay" @click="closePreview">
-        <div class="document-modal-content" @click.stop>
+      <div
+        v-if="showPreview"
+        class="document-modal-overlay"
+        @click="closePreview"
+      >
+        <div
+          class="document-modal-content"
+          @click.stop
+        >
           <div class="document-modal-header">
             <div class="modal-title-section">
               <h3>{{ previewDoc?.title }}</h3>
@@ -116,7 +155,12 @@
                 <span class="doc-size">{{ previewDoc?.size || previewDoc?.formattedSize }}</span>
               </div>
             </div>
-            <button class="modal-close-btn" @click="closePreview">&times;</button>
+            <button
+              class="modal-close-btn"
+              @click="closePreview"
+            >
+              &times;
+            </button>
           </div>
 
           <div class="document-modal-body">
@@ -130,16 +174,27 @@
                 @close="closePreview"
               />
 
-              <div v-else-if="documentPreview.loading.value" class="preview-loading">
-                <div class="loading-spinner"></div>
+              <div
+                v-else-if="documentPreview.loading.value"
+                class="preview-loading"
+              >
+                <div class="loading-spinner" />
                 <p>正在加载文档预览...</p>
               </div>
 
-              <div v-else-if="documentPreview.hasError.value" class="preview-error">
-                <div class="error-icon">⚠️</div>
+              <div
+                v-else-if="documentPreview.hasError.value"
+                class="preview-error"
+              >
+                <div class="error-icon">
+                  ⚠️
+                </div>
                 <h4>预览失败</h4>
                 <p>{{ documentPreview.error.value }}</p>
-                <button class="download-action-btn" @click="downloadDocument(previewDoc)">
+                <button
+                  class="download-action-btn"
+                  @click="downloadDocument(previewDoc)"
+                >
                   下载文档
                 </button>
               </div>
@@ -148,7 +203,7 @@
                 v-else-if="documentPreview.previewType.value === 'html'"
                 class="html-preview"
                 v-html="documentPreview.previewContent.value"
-              ></div>
+              />
 
               <iframe
                 v-else-if="documentPreview.previewType.value === 'iframe'"
@@ -156,25 +211,35 @@
                 frameborder="0"
                 class="document-preview-frame"
                 title="文档预览"
-              ></iframe>
+              />
 
               <div
                 v-else-if="documentPreview.previewType.value === 'unsupported'"
                 class="no-preview-content"
               >
                 <div class="no-preview-icon">
-                  <i :class="getDocIcon(previewDoc?.type)"></i>
+                  <i :class="getDocIcon(previewDoc?.type)" />
                 </div>
                 <h4>无法预览此文档</h4>
                 <p>{{ previewDoc?.type }} 格式暂不支持在线预览。</p>
-                <p class="preview-hint">建议下载后本地打开。</p>
-                <button class="download-action-btn" @click="downloadDocument(previewDoc)">
+                <p class="preview-hint">
+                  建议下载后本地打开。
+                </p>
+                <button
+                  class="download-action-btn"
+                  @click="downloadDocument(previewDoc)"
+                >
                   立即下载
                 </button>
               </div>
 
-              <div v-else class="preview-placeholder">
-                <div class="placeholder-icon">📄</div>
+              <div
+                v-else
+                class="preview-placeholder"
+              >
+                <div class="placeholder-icon">
+                  📄
+                </div>
                 <p>准备预览中...</p>
               </div>
             </div>
@@ -182,10 +247,18 @@
 
           <div class="document-modal-footer">
             <div class="document-actions">
-              <button class="modal-download-btn" @click="downloadDocument(previewDoc)">
+              <button
+                class="modal-download-btn"
+                @click="downloadDocument(previewDoc)"
+              >
                 下载文档
               </button>
-              <button class="modal-cancel-btn" @click="closePreview">关闭预览</button>
+              <button
+                class="modal-cancel-btn"
+                @click="closePreview"
+              >
+                关闭预览
+              </button>
             </div>
           </div>
         </div>

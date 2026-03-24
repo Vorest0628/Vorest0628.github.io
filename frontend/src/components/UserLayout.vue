@@ -8,8 +8,15 @@
 
       <main class="user-main-content">
         <router-view v-slot="{ Component }">
-          <component :is="Component" v-if="Component" :key="$route.fullPath" />
-          <div v-if="!Component" class="loading">
+          <component
+            :is="Component"
+            v-if="Component"
+            :key="$route.fullPath"
+          />
+          <div
+            v-if="!Component"
+            class="loading"
+          >
             <el-loading-spinner style="margin-right: 10px" />
             <span>用户面板加载中...</span>
           </div>

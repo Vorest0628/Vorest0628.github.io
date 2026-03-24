@@ -4,17 +4,29 @@
       <h2>图库管理</h2>
       <div class="header-actions">
         <!-- 批量操作按钮 -->
-        <div v-if="selectedImages.length > 0" class="batch-actions">
+        <div
+          v-if="selectedImages.length > 0"
+          class="batch-actions"
+        >
           <span class="selection-count">已选择 {{ selectedImages.length }} 张图片</span>
-          <button @click="batchDelete" class="batch-delete-btn">
+          <button
+            class="batch-delete-btn"
+            @click="batchDelete"
+          >
             🗑️ 批量删除 ({{ selectedImages.length }})
           </button>
-          <button @click="clearSelection" class="clear-selection-btn">
+          <button
+            class="clear-selection-btn"
+            @click="clearSelection"
+          >
             ✕ 取消选择
           </button>
         </div>
         
-        <button @click="showUploadModal = true" class="upload-btn">
+        <button
+          class="upload-btn"
+          @click="showUploadModal = true"
+        >
           📷 上传图片
         </button>
       </div>
@@ -23,18 +35,31 @@
     <!-- 筛选和搜索栏 -->
     <div class="filter-bar">
       <div class="filter-controls">
-        <select v-model="categoryFilter" @change="filterImages">
-          <option value="">全部分类</option>
-          <option value="摄影">摄影</option>
-          <option value="游戏">游戏</option>
-          <option value="编程">编程</option>
-          <option value="设计">设计</option>
+        <select
+          v-model="categoryFilter"
+          @change="filterImages"
+        >
+          <option value="">
+            全部分类
+          </option>
+          <option value="摄影">
+            摄影
+          </option>
+          <option value="游戏">
+            游戏
+          </option>
+          <option value="编程">
+            编程
+          </option>
+          <option value="设计">
+            设计
+          </option>
         </select>
         <input
           v-model="searchQuery"
           placeholder="搜索图片标题..."
           @input="filterImages"
-        />
+        >
       </div>
       
       <!-- 全选控制 -->
@@ -45,26 +70,42 @@
             :checked="isAllSelected"
             :indeterminate="isPartialSelected"
             @change="toggleSelectAll"
-          />
+          >
           <span>全选 ({{ filteredImages.length }})</span>
         </label>
       </div>
     </div>
 
     <!-- 图片网格 -->
-    <div v-if="loading" class="loading-state">
-      <div class="loading-spinner"></div>
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
+      <div class="loading-spinner" />
       <p>正在加载图片...</p>
     </div>
     
-    <div v-else-if="error" class="error-state">
-      <div class="error-icon">😞</div>
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
+      <div class="error-icon">
+        😞
+      </div>
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getImages" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getImages"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="gallery-grid">
+    <div
+      v-else
+      class="gallery-grid"
+    >
       <div 
         v-for="image in filteredImages" 
         :key="image._id || image.id" 
@@ -77,19 +118,34 @@
             type="checkbox" 
             :checked="isImageSelected(image)"
             @change="toggleImageSelection(image)"
-          />
+          >
         </div>
         
         <div class="image-preview">
-          <img :src="getImageUrl(image.thumbnail || image.url)" :alt="image.title" />
+          <img
+            :src="getImageUrl(image.thumbnail || image.url)"
+            :alt="image.title"
+          >
           <div class="image-overlay">
-            <button @click="editImage(image)" class="edit-btn">编辑</button>
-            <button @click="deleteImage(image._id || image.id)" class="delete-btn">删除</button>
+            <button
+              class="edit-btn"
+              @click="editImage(image)"
+            >
+              编辑
+            </button>
+            <button
+              class="delete-btn"
+              @click="deleteImage(image._id || image.id)"
+            >
+              删除
+            </button>
           </div>
         </div>
         
         <div class="image-info">
-          <div class="image-title">{{ image.title }}</div>
+          <div class="image-title">
+            {{ image.title }}
+          </div>
           <div class="image-meta">
             <span class="category">{{ image.category }}</span>
             <span class="upload-date">{{ formatDate(image.date || image.createdAt) }}</span>
@@ -100,76 +156,147 @@
               {{ image.status === 'published' ? '已发布' : '未发布' }}
             </span>
           </div>
-          <div v-if="image.secondaryTags && image.secondaryTags.length" class="image-tags">
-            <span v-for="tag in image.secondaryTags" :key="tag" class="tag">{{ tag }}</span>
+          <div
+            v-if="image.secondaryTags && image.secondaryTags.length"
+            class="image-tags"
+          >
+            <span
+              v-for="tag in image.secondaryTags"
+              :key="tag"
+              class="tag"
+            >{{ tag }}</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && !error && filteredImages.length === 0" class="empty-state">
-      <div class="empty-icon">🖼️</div>
+    <div
+      v-if="!loading && !error && filteredImages.length === 0"
+      class="empty-state"
+    >
+      <div class="empty-icon">
+        🖼️
+      </div>
       <h3>暂无图片</h3>
       <p>还没有上传任何图片，点击上传按钮开始添加图片</p>
     </div>
 
     <!-- 上传模态框 -->
     <Teleport to="body">
-      <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
-        <div class="modal-content" @click.stop>
+      <div
+        v-if="showUploadModal"
+        class="modal-overlay"
+        @click="closeUploadModal"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
           <div class="modal-header">
             <h3>上传图片</h3>
-            <button @click="closeUploadModal" class="close-btn">✕</button>
+            <button
+              class="close-btn"
+              @click="closeUploadModal"
+            >
+              ✕
+            </button>
           </div>
           <div class="modal-body">
             <!-- 分类选择 -->
             <div class="form-group">
               <label>分类 (一级标签)</label>
-              <select v-model="uploadForm.category" @change="onCategoryChange" required>
-                <option value="">选择分类</option>
-                <option v-for="category in availableCategories" :key="category" :value="category">
+              <select
+                v-model="uploadForm.category"
+                required
+                @change="onCategoryChange"
+              >
+                <option value="">
+                  选择分类
+                </option>
+                <option
+                  v-for="category in availableCategories"
+                  :key="category"
+                  :value="category"
+                >
                   {{ category }}
                 </option>
-                <option value="__other__">其他</option>
+                <option value="__other__">
+                  其他
+                </option>
               </select>
               
               <!-- 自定义分类输入 -->
-              <div v-if="uploadForm.category === '__other__'" class="mt-2">
+              <div
+                v-if="uploadForm.category === '__other__'"
+                class="mt-2"
+              >
                 <input 
                   v-model="uploadForm.newCategoryText" 
                   type="text" 
                   placeholder="输入新分类名称" 
                   required
                   class="form-control"
-                />
+                >
               </div>
             </div>
             
             <!-- 二级标签选择 -->
-            <div class="form-group" v-if="uploadForm.category">
+            <div
+              v-if="uploadForm.category"
+              class="form-group"
+            >
               <label>二级标签 (可多选)</label>
               <div class="tags-selection">
-                <div v-for="tag in availableTagsForUpload" :key="tag" class="tag-item">
-                  <input type="checkbox" :id="`upload-tag-${tag}`" :value="tag" v-model="uploadForm.tags">
+                <div
+                  v-for="tag in availableTagsForUpload"
+                  :key="tag"
+                  class="tag-item"
+                >
+                  <input
+                    :id="`upload-tag-${tag}`"
+                    v-model="uploadForm.tags"
+                    type="checkbox"
+                    :value="tag"
+                  >
                   <label :for="`upload-tag-${tag}`">{{ tag }}</label>
                 </div>
                 <div class="tag-item">
-                  <input type="checkbox" id="upload-other-tag" v-model="uploadForm.otherTagEnabled">
+                  <input
+                    id="upload-other-tag"
+                    v-model="uploadForm.otherTagEnabled"
+                    type="checkbox"
+                  >
                   <label for="upload-other-tag">其他</label>
-                  <input v-if="uploadForm.otherTagEnabled" v-model="uploadForm.newTagText" placeholder="新标签,逗号分隔">
+                  <input
+                    v-if="uploadForm.otherTagEnabled"
+                    v-model="uploadForm.newTagText"
+                    placeholder="新标签,逗号分隔"
+                  >
                 </div>
               </div>
-              <p class="helper-text">请先选择分类，然后选择相应的二级标签</p>
+              <p class="helper-text">
+                请先选择分类，然后选择相应的二级标签
+              </p>
             </div>
             
             <!-- 状态选择 -->
             <div class="form-group">
               <label>状态</label>
               <div class="status-selection">
-                <input type="radio" id="upload-public" value="true" v-model="uploadForm.isPublic">
+                <input
+                  id="upload-public"
+                  v-model="uploadForm.isPublic"
+                  type="radio"
+                  value="true"
+                >
                 <label for="upload-public">公开</label>
-                <input type="radio" id="upload-private" value="false" v-model="uploadForm.isPublic">
+                <input
+                  id="upload-private"
+                  v-model="uploadForm.isPublic"
+                  type="radio"
+                  value="false"
+                >
                 <label for="upload-private">私有</label>
               </div>
             </div>
@@ -183,34 +310,68 @@
               @dragenter="handleDragEnter"
               @dragleave="handleDragLeave"
             >
-              <input ref="fileInput" type="file" multiple accept="image/*" @change="handleFileSelect" class="file-input" />
+              <input
+                ref="fileInput"
+                type="file"
+                multiple
+                accept="image/*"
+                class="file-input"
+                @change="handleFileSelect"
+              >
               <div class="upload-text">
                 <p>拖拽图片到此处或点击选择文件</p>
-                <p class="upload-hint">支持多文件选择，格式：JPG、PNG、GIF等</p>
+                <p class="upload-hint">
+                  支持多文件选择，格式：JPG、PNG、GIF等
+                </p>
               </div>
             </div>
 
             <!-- 已选文件列表 -->
-            <div v-if="selectedFiles.length > 0" class="selected-files">
+            <div
+              v-if="selectedFiles.length > 0"
+              class="selected-files"
+            >
               <h4>待上传文件 ({{ selectedFiles.length }})</h4>
               <div class="file-list">
-                <div v-for="(file, index) in selectedFiles" :key="index" class="file-item">
-                  <img :src="file.preview" :alt="file.name" class="file-preview" />
+                <div
+                  v-for="(file, index) in selectedFiles"
+                  :key="index"
+                  class="file-item"
+                >
+                  <img
+                    :src="file.preview"
+                    :alt="file.name"
+                    class="file-preview"
+                  >
                   <div class="file-info">
-                    <div class="file-name">{{ file.name }}</div>
-                    <div class="file-size">{{ formatFileSize(file.size) }}</div>
+                    <div class="file-name">
+                      {{ file.name }}
+                    </div>
+                    <div class="file-size">
+                      {{ formatFileSize(file.size) }}
+                    </div>
                   </div>
-                  <button @click="removeFile(index)" class="remove-file">✕</button>
+                  <button
+                    class="remove-file"
+                    @click="removeFile(index)"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button @click="closeUploadModal" class="cancel-btn">取消</button>
+            <button
+              class="cancel-btn"
+              @click="closeUploadModal"
+            >
+              取消
+            </button>
             <button 
-              @click="uploadImages" 
-              :disabled="selectedFiles.length === 0 || uploading"
+              :disabled="selectedFiles.length === 0 || uploading" 
               class="upload-confirm-btn"
+              @click="uploadImages"
             >
               {{ uploading ? '上传中...' : `上传 ${selectedFiles.length} 张图片` }}
             </button>
@@ -221,40 +382,77 @@
 
     <!-- 编辑模态框 -->
     <Teleport to="body">
-      <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
-        <div class="modal-content" @click.stop>
+      <div
+        v-if="showEditModal"
+        class="modal-overlay"
+        @click="closeEditModal"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
           <div class="modal-header">
             <h3>编辑图片</h3>
-            <button @click="closeEditModal" class="close-btn">✕</button>
+            <button
+              class="close-btn"
+              @click="closeEditModal"
+            >
+              ✕
+            </button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="saveImage">
               <div class="form-group">
                 <label>标题</label>
-                <input v-model="currentImage.title" type="text" required />
+                <input
+                  v-model="currentImage.title"
+                  type="text"
+                  required
+                >
               </div>
               <div class="form-group">
                 <label>分类</label>
-                <select v-model="currentImage.category" required>
-                  <option value="">选择分类</option>
-                  <option v-for="category in availableCategories" :key="category" :value="category">
+                <select
+                  v-model="currentImage.category"
+                  required
+                >
+                  <option value="">
+                    选择分类
+                  </option>
+                  <option
+                    v-for="category in availableCategories"
+                    :key="category"
+                    :value="category"
+                  >
                     {{ category }}
                   </option>
                 </select>
               </div>
               <div class="form-group">
                 <label>二级标签</label>
-                <input v-model="currentImage.secondaryTagsInput" type="text" placeholder="用逗号分隔多个标签，如：夜景,城市,建筑" />
+                <input
+                  v-model="currentImage.secondaryTagsInput"
+                  type="text"
+                  placeholder="用逗号分隔多个标签，如：夜景,城市,建筑"
+                >
               </div>
               <div class="form-group">
                 <label>可见性</label>
                 <div class="visibility-options">
                   <label>
-                    <input type="radio" :value="true" v-model="currentImage.isPublic">
+                    <input
+                      v-model="currentImage.isPublic"
+                      type="radio"
+                      :value="true"
+                    >
                     公开
                   </label>
                   <label>
-                    <input type="radio" :value="false" v-model="currentImage.isPublic">
+                    <input
+                      v-model="currentImage.isPublic"
+                      type="radio"
+                      :value="false"
+                    >
                     私有
                   </label>
                 </div>
@@ -262,13 +460,28 @@
               <div class="form-group">
                 <label>发布状态</label>
                 <select v-model="currentImage.status">
-                  <option value="draft">未发布</option>
-                  <option value="published">已发布</option>
+                  <option value="draft">
+                    未发布
+                  </option>
+                  <option value="published">
+                    已发布
+                  </option>
                 </select>
               </div>
               <div class="form-actions">
-                <button type="button" @click="closeEditModal" class="cancel-btn">取消</button>
-                <button type="submit" class="save-btn">保存</button>
+                <button
+                  type="button"
+                  class="cancel-btn"
+                  @click="closeEditModal"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  class="save-btn"
+                >
+                  保存
+                </button>
               </div>
             </form>
           </div>
@@ -278,14 +491,19 @@
 
     <!-- 批量删除确认对话框 -->
     <Teleport to="body">
-      <div v-if="showBatchDeleteModal" class="modal-overlay">
+      <div
+        v-if="showBatchDeleteModal"
+        class="modal-overlay"
+      >
         <div class="modal-content batch-delete-modal">
           <div class="modal-header">
             <h3>⚠️ 确认批量删除</h3>
           </div>
           <div class="modal-body">
             <p>您即将删除 <strong>{{ selectedImages.length }}</strong> 张图片</p>
-            <p class="warning-text">此操作不可撤销，确定要继续吗？</p>
+            <p class="warning-text">
+              此操作不可撤销，确定要继续吗？
+            </p>
             <div class="preview-images">
               <img 
                 v-for="image in selectedImages.slice(0, 6)" 
@@ -293,15 +511,27 @@
                 :src="getImageUrl(image.thumbnail)"
                 :alt="image.title"
                 class="preview-thumb"
-              />
-              <div v-if="selectedImages.length > 6" class="more-count">
+              >
+              <div
+                v-if="selectedImages.length > 6"
+                class="more-count"
+              >
                 +{{ selectedImages.length - 6 }}
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button @click="cancelBatchDelete" class="cancel-btn">取消</button>
-            <button @click="confirmBatchDelete" :disabled="batchDeleting" class="danger-btn">
+            <button
+              class="cancel-btn"
+              @click="cancelBatchDelete"
+            >
+              取消
+            </button>
+            <button
+              :disabled="batchDeleting"
+              class="danger-btn"
+              @click="confirmBatchDelete"
+            >
               {{ batchDeleting ? '删除中...' : '确认删除' }}
             </button>
           </div>

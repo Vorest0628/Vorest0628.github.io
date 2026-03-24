@@ -9,39 +9,54 @@
   6. 响应式设计
 -->
 <template>
-  <div v-if="visible" class="modal-overlay" @click="handleOverlayClick">
-    <div class="modal-content" @click.stop>
+  <div
+    v-if="visible"
+    class="modal-overlay"
+    @click="handleOverlayClick"
+  >
+    <div
+      class="modal-content"
+      @click.stop
+    >
       <div class="modal-header">
         <h3>{{ isLoginMode ? '用户登录' : '用户注册' }}</h3>
-        <button class="close-btn" @click="$emit('close')" title="关闭">
-          <i class="fas fa-times"></i>
+        <button
+          class="close-btn"
+          title="关闭"
+          @click="$emit('close')"
+        >
+          <i class="fas fa-times" />
         </button>
       </div>
 
       <!-- 登录/注册切换标签 -->
       <div class="mode-tabs">
         <button 
-          @click="isLoginMode = true" 
-          :class="{ active: isLoginMode }"
+          :class="{ active: isLoginMode }" 
           class="mode-tab"
           :disabled="loading"
+          @click="isLoginMode = true"
         >
-          <i class="fas fa-sign-in-alt"></i>
+          <i class="fas fa-sign-in-alt" />
           登录
         </button>
         <button 
-          @click="isLoginMode = false" 
-          :class="{ active: !isLoginMode }"
+          :class="{ active: !isLoginMode }" 
           class="mode-tab"
           :disabled="loading"
+          @click="isLoginMode = false"
         >
-          <i class="fas fa-user-plus"></i>
+          <i class="fas fa-user-plus" />
           注册
         </button>
       </div>
 
       <!-- 登录表单 -->
-      <form v-if="isLoginMode" @submit.prevent="handleLogin" class="auth-form">
+      <form
+        v-if="isLoginMode"
+        class="auth-form"
+        @submit.prevent="handleLogin"
+      >
         <div class="form-group">
           <label for="username">用户名</label>
           <input
@@ -52,8 +67,11 @@
             required
             :disabled="loading"
             @blur="validateLoginUsername"
-          />
-          <span v-if="loginErrors.username" class="error-message">{{ loginErrors.username }}</span>
+          >
+          <span
+            v-if="loginErrors.username"
+            class="error-message"
+          >{{ loginErrors.username }}</span>
         </div>
 
         <div class="form-group">
@@ -67,38 +85,60 @@
               required
               :disabled="loading"
               @blur="validateLoginPassword"
-            />
+            >
             <button 
               type="button" 
               class="password-toggle"
-              @click="showPassword = !showPassword"
               :disabled="loading"
               title="显示/隐藏密码"
+              @click="showPassword = !showPassword"
             >
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" />
             </button>
           </div>
-          <span v-if="loginErrors.password" class="error-message">{{ loginErrors.password }}</span>
+          <span
+            v-if="loginErrors.password"
+            class="error-message"
+          >{{ loginErrors.password }}</span>
         </div>
 
-        <div v-if="errorMessage" class="error-banner">
-          <i class="fas fa-exclamation-triangle"></i>
+        <div
+          v-if="errorMessage"
+          class="error-banner"
+        >
+          <i class="fas fa-exclamation-triangle" />
           {{ errorMessage }}
         </div>
 
         <div class="form-actions">
-          <button type="button" @click="$emit('close')" :disabled="loading" class="cancel-btn">
+          <button
+            type="button"
+            :disabled="loading"
+            class="cancel-btn"
+            @click="$emit('close')"
+          >
             取消
           </button>
-          <button type="submit" :disabled="loading || !isLoginFormValid" class="submit-btn">
-            <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+          <button
+            type="submit"
+            :disabled="loading || !isLoginFormValid"
+            class="submit-btn"
+          >
+            <i
+              v-if="loading"
+              class="fas fa-spinner fa-spin"
+            />
             {{ loading ? '登录中...' : '登录' }}
           </button>
         </div>
       </form>
 
       <!-- 注册表单 -->
-      <form v-else @submit.prevent="handleRegister" class="auth-form">
+      <form
+        v-else
+        class="auth-form"
+        @submit.prevent="handleRegister"
+      >
         <div class="form-group">
           <label for="reg-username">用户名</label>
           <input
@@ -109,8 +149,11 @@
             required
             :disabled="loading"
             @blur="validateRegisterUsername"
-          />
-          <span v-if="registerErrors.username" class="error-message">{{ registerErrors.username }}</span>
+          >
+          <span
+            v-if="registerErrors.username"
+            class="error-message"
+          >{{ registerErrors.username }}</span>
         </div>
 
         <div class="form-group">
@@ -123,8 +166,11 @@
             required
             :disabled="loading"
             @blur="validateEmail"
-          />
-          <span v-if="registerErrors.email" class="error-message">{{ registerErrors.email }}</span>
+          >
+          <span
+            v-if="registerErrors.email"
+            class="error-message"
+          >{{ registerErrors.email }}</span>
         </div>
 
         <div class="form-group">
@@ -138,18 +184,21 @@
               required
               :disabled="loading"
               @blur="validateRegisterPassword"
-            />
+            >
             <button 
               type="button" 
               class="password-toggle"
-              @click="showPassword = !showPassword"
               :disabled="loading"
               title="显示/隐藏密码"
+              @click="showPassword = !showPassword"
             >
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" />
             </button>
           </div>
-          <span v-if="registerErrors.password" class="error-message">{{ registerErrors.password }}</span>
+          <span
+            v-if="registerErrors.password"
+            class="error-message"
+          >{{ registerErrors.password }}</span>
         </div>
 
         <div class="form-group">
@@ -163,31 +212,49 @@
               required
               :disabled="loading"
               @blur="validateConfirmPassword"
-            />
+            >
             <button 
               type="button" 
               class="password-toggle"
-              @click="showConfirmPassword = !showConfirmPassword"
               :disabled="loading"
               title="显示/隐藏密码"
+              @click="showConfirmPassword = !showConfirmPassword"
             >
-              <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" />
             </button>
           </div>
-          <span v-if="registerErrors.confirmPassword" class="error-message">{{ registerErrors.confirmPassword }}</span>
+          <span
+            v-if="registerErrors.confirmPassword"
+            class="error-message"
+          >{{ registerErrors.confirmPassword }}</span>
         </div>
 
-        <div v-if="errorMessage" class="error-banner">
-          <i class="fas fa-exclamation-triangle"></i>
+        <div
+          v-if="errorMessage"
+          class="error-banner"
+        >
+          <i class="fas fa-exclamation-triangle" />
           {{ errorMessage }}
         </div>
 
         <div class="form-actions">
-          <button type="button" @click="$emit('close')" :disabled="loading" class="cancel-btn">
+          <button
+            type="button"
+            :disabled="loading"
+            class="cancel-btn"
+            @click="$emit('close')"
+          >
             取消
           </button>
-          <button type="submit" :disabled="loading || !isRegisterFormValid" class="submit-btn">
-            <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+          <button
+            type="submit"
+            :disabled="loading || !isRegisterFormValid"
+            class="submit-btn"
+          >
+            <i
+              v-if="loading"
+              class="fas fa-spinner fa-spin"
+            />
             {{ loading ? '注册中...' : '注册' }}
           </button>
         </div>
@@ -195,10 +262,9 @@
 
       <!-- 提示信息 -->
       <div class="auth-tips">
-        <div v-if="isLoginMode">
-        </div>
+        <div v-if="isLoginMode" />
         <div v-else>
-          <p><i class="fas fa-info-circle"></i> 注册后自动登录</p>
+          <p><i class="fas fa-info-circle" /> 注册后自动登录</p>
           <p>请使用真实邮箱地址，方便找回密码</p>
         </div>
       </div>

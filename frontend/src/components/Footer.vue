@@ -2,7 +2,11 @@
   <footer class="main-footer">
     <div class="footer-content">
       <p class="icp-line">
-        <a href="https://icp.gov.moe/?keyword=20257889" target="_blank" rel="noopener">萌 ICP 备 20257889 号</a>
+        <a
+          href="https://icp.gov.moe/?keyword=20257889"
+          target="_blank"
+          rel="noopener"
+        >萌 ICP 备 20257889 号</a>
       </p>
 
       <p class="copyright">
@@ -10,8 +14,13 @@
       </p>
 
       <div class="social-links">
-        <a href="https://github.com/Vorest0628" target="_blank" rel="noopener" aria-label="Github">
-          <i class="fab fa-github"></i>
+        <a
+          href="https://github.com/Vorest0628"
+          target="_blank"
+          rel="noopener"
+          aria-label="Github"
+        >
+          <i class="fab fa-github" />
         </a>
         <a
           href="https://space.bilibili.com/276555959"
@@ -19,7 +28,7 @@
           rel="noopener"
           aria-label="Bilibili"
         >
-          <i class="fab fa-bilibili"></i>
+          <i class="fab fa-bilibili" />
         </a>
       </div>
     </div>

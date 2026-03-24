@@ -9,7 +9,11 @@
   <div class="about">
     <h1>关于我</h1>
     <div>
-      <img src="../assets/image/about.png" alt="about" class="about-img">
+      <img
+        src="../assets/image/about.png"
+        alt="about"
+        class="about-img"
+      >
     </div>
     <div class="about-content">
       <div class="personal-info">
@@ -60,7 +64,8 @@
             <h4>其他</h4>
             <ul>
               <li>Git,Redis,Docker</li>
-              <li>编程语言：
+              <li>
+                编程语言：
                 <ul>
                   <li>Python,JavaScript（熟练）</li>
                   <li>TypeScript,C++（熟悉）</li>
@@ -75,12 +80,20 @@
       <div class="contact">
         <h2>联系我</h2>
         <div class="contact-links">
-          <a href="https://github.com/Vorest0628" target="_blank" class="contact-item">
-            <i class="fab fa-github"></i>
+          <a
+            href="https://github.com/Vorest0628"
+            target="_blank"
+            class="contact-item"
+          >
+            <i class="fab fa-github" />
             <span>GitHub</span>
           </a>
-          <a href="https://space.bilibili.com/276555959" target="_blank" class="contact-item">
-            <i class="fab fa-bilibili"></i>
+          <a
+            href="https://space.bilibili.com/276555959"
+            target="_blank"
+            class="contact-item"
+          >
+            <i class="fab fa-bilibili" />
             <span>哔哩哔哩</span>
           </a>
         </div>

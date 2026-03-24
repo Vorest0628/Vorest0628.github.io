@@ -2,50 +2,97 @@
   <div class="admin-document-manager">
     <div class="manager-header">
       <h2>文档管理</h2>
-      <button @click="showCreateModal = true" class="create-btn">
+      <button
+        class="create-btn"
+        @click="showCreateModal = true"
+      >
         📄 上传文档
       </button>
     </div>
 
     <!-- 筛选选项 -->
     <div class="filter-bar">
-      <select v-model="categoryFilter" @change="filterDocuments">
-        <option value="">全部分类</option>
-        <option v-for="category in availableCategories" :key="category" :value="category">
+      <select
+        v-model="categoryFilter"
+        @change="filterDocuments"
+      >
+        <option value="">
+          全部分类
+        </option>
+        <option
+          v-for="category in availableCategories"
+          :key="category"
+          :value="category"
+        >
           {{ category }}
         </option>
       </select>
-      <select v-model="typeFilter" @change="filterDocuments">
-        <option value="">全部类型</option>
-        <option value="PDF">PDF</option>
-        <option value="DOCX">DOCX</option>
-        <option value="PPT">PPT</option>
-        <option value="XLSX">XLSX</option>
-        <option value="TXT">TXT</option>
-        <option value="MD">MD</option>
+      <select
+        v-model="typeFilter"
+        @change="filterDocuments"
+      >
+        <option value="">
+          全部类型
+        </option>
+        <option value="PDF">
+          PDF
+        </option>
+        <option value="DOCX">
+          DOCX
+        </option>
+        <option value="PPT">
+          PPT
+        </option>
+        <option value="XLSX">
+          XLSX
+        </option>
+        <option value="TXT">
+          TXT
+        </option>
+        <option value="MD">
+          MD
+        </option>
       </select>
       <input
         v-model="searchQuery"
         placeholder="搜索文档标题或描述..."
         @input="filterDocuments"
-      />
+      >
     </div>
 
     <!-- 文档列表 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载文档...</p>
     </div>
     
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getDocuments" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getDocuments"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="document-list">
-      <div v-for="doc in filteredDocuments" :key="doc._id || doc.id" class="document-card">
+    <div
+      v-else
+      class="document-list"
+    >
+      <div
+        v-for="doc in filteredDocuments"
+        :key="doc._id || doc.id"
+        class="document-card"
+      >
         <div class="doc-icon">
-          <i :class="getDocIcon(doc.type)"></i>
+          <i :class="getDocIcon(doc.type)" />
         </div>
         
         <div class="document-info">
@@ -62,133 +109,259 @@
             </span>
           </div>
           
-          <div v-if="doc.secondaryTags && doc.secondaryTags.length" class="doc-tags">
-            <span v-for="tag in doc.secondaryTags" :key="tag" class="tag">{{ tag }}</span>
+          <div
+            v-if="doc.secondaryTags && doc.secondaryTags.length"
+            class="doc-tags"
+          >
+            <span
+              v-for="tag in doc.secondaryTags"
+              :key="tag"
+              class="tag"
+            >{{ tag }}</span>
           </div>
         </div>
         
         <div class="document-actions">
-          <button @click="editDocument(doc)" class="edit-btn">编辑</button>
-          <button @click="deleteDocument(doc._id || doc.id)" class="delete-btn">删除</button>
-          <button @click="downloadDocument(doc)" class="download-btn">下载</button>
+          <button
+            class="edit-btn"
+            @click="editDocument(doc)"
+          >
+            编辑
+          </button>
+          <button
+            class="delete-btn"
+            @click="deleteDocument(doc._id || doc.id)"
+          >
+            删除
+          </button>
+          <button
+            class="download-btn"
+            @click="downloadDocument(doc)"
+          >
+            下载
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && !error && filteredDocuments.length === 0" class="empty-state">
+    <div
+      v-if="!loading && !error && filteredDocuments.length === 0"
+      class="empty-state"
+    >
       <h3>暂无文档</h3>
       <p>还没有上传任何文档，点击创建按钮开始添加文档</p>
     </div>
 
     <!-- 创建/编辑模态框 -->
     <Teleport to="body">
-      <div v-if="showCreateModal || showEditModal" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ showCreateModal ? '上传文档' : '编辑文档' }}</h3>
-          <button @click="closeModal" class="close-btn">✕</button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveDocument">
-            <!-- 文件上传 (仅创建时显示) -->
-            <div v-if="showCreateModal" class="form-group">
-              <label>📁 选择文档文件</label>
-              <div class="file-upload-area" @click="$refs.fileInput?.click()" @dragover.prevent @drop.prevent="handleFileDrop">
-                <input ref="fileInput" type="file" @change="handleFileSelect" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md" style="display: none" />
+      <div
+        v-if="showCreateModal || showEditModal"
+        class="modal-overlay"
+        @click="closeModal"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
+          <div class="modal-header">
+            <h3>{{ showCreateModal ? '上传文档' : '编辑文档' }}</h3>
+            <button
+              class="close-btn"
+              @click="closeModal"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="saveDocument">
+              <!-- 文件上传 (仅创建时显示) -->
+              <div
+                v-if="showCreateModal"
+                class="form-group"
+              >
+                <label>📁 选择文档文件</label>
+                <div
+                  class="file-upload-area"
+                  @click="$refs.fileInput?.click()"
+                  @dragover.prevent
+                  @drop.prevent="handleFileDrop"
+                >
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
+                    style="display: none"
+                    @change="handleFileSelect"
+                  >
                 
-                <div v-if="!selectedFile" class="upload-placeholder">
-                  <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                  <p>点击选择文件或拖拽文件到此处</p>
-                  <p class="upload-hint">支持 PDF、Word、PowerPoint、Excel、TXT、Markdown 文件</p>
-                  <p class="size-limit">文件大小限制：50MB</p>
-                </div>
-                
-                <div v-else class="selected-file">
-                  <i :class="getDocIcon(getFileType(selectedFile.name))" class="file-icon"></i>
-                  <div class="file-details">
-                    <span class="file-name">{{ selectedFile.name }}</span>
-                    <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+                  <div
+                    v-if="!selectedFile"
+                    class="upload-placeholder"
+                  >
+                    <i class="fas fa-cloud-upload-alt upload-icon" />
+                    <p>点击选择文件或拖拽文件到此处</p>
+                    <p class="upload-hint">
+                      支持 PDF、Word、PowerPoint、Excel、TXT、Markdown 文件
+                    </p>
+                    <p class="size-limit">
+                      文件大小限制：50MB
+                    </p>
                   </div>
-                  <button type="button" @click.stop="clearSelectedFile" class="remove-file-btn">✕</button>
+                
+                  <div
+                    v-else
+                    class="selected-file"
+                  >
+                    <i
+                      :class="getDocIcon(getFileType(selectedFile.name))"
+                      class="file-icon"
+                    />
+                    <div class="file-details">
+                      <span class="file-name">{{ selectedFile.name }}</span>
+                      <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="remove-file-btn"
+                      @click.stop="clearSelectedFile"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
             
-            <div class="form-group">
-              <label>标题</label>
-              <input v-model="currentDocument.title" type="text" required />
-            </div>
-            <div class="form-group">
-              <label>描述</label>
-              <textarea v-model="currentDocument.description" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-              <label>分类</label>
-              <select v-model="currentDocument.category" @change="onCategoryChange" required>
-                <option value="">选择分类</option>
-                <option v-for="category in availableCategories" :key="category" :value="category">
-                  {{ category }}
-                </option>
-                <option value="__other__">其他</option>
-              </select>
-              
-              <!-- 自定义分类输入 -->
-              <div v-if="currentDocument.category === '__other__'" class="mt-2">
-                <input 
-                  v-model="currentDocument.newCategoryText" 
-                  type="text" 
-                  placeholder="输入新分类名称" 
+              <div class="form-group">
+                <label>标题</label>
+                <input
+                  v-model="currentDocument.title"
+                  type="text"
                   required
-                  class="form-control"
+                >
+              </div>
+              <div class="form-group">
+                <label>描述</label>
+                <textarea
+                  v-model="currentDocument.description"
+                  rows="3"
                 />
               </div>
-            </div>
-            <div class="form-group">
-              <label>二级标签</label>
-              <input v-model="currentDocument.secondaryTagsInput" type="text" placeholder="用逗号分隔多个标签，如：Vue3,JavaScript,Composition API" />
-            </div>
-            
-            <!-- 仅在编辑时显示文件信息 -->
-            <div v-if="showEditModal" class="form-group">
-              <label>当前文件</label>
-              <div class="current-file-info">
-                <i :class="getDocIcon(currentDocument.type)"></i>
-                <span>{{ currentDocument.title }}.{{ currentDocument.type?.toLowerCase() }}</span>
-                <span class="file-size">({{ currentDocument.size }})</span>
-            </div>
-              <p class="file-note">💡 提示：要更换文件请重新上传</p>
-            </div>
-            <div class="form-group">
-              <label>状态</label>
-              <select v-model="currentDocument.status">
-                <option value="draft">私人</option>
-                <option value="published">公开</option>
-                <option value="pinned">置顶</option>
-              </select>
-            </div>
-            <!-- 上传进度 -->
-            <div v-if="uploading" class="upload-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: uploadProgress + '%' }"></div>
+              <div class="form-group">
+                <label>分类</label>
+                <select
+                  v-model="currentDocument.category"
+                  required
+                  @change="onCategoryChange"
+                >
+                  <option value="">
+                    选择分类
+                  </option>
+                  <option
+                    v-for="category in availableCategories"
+                    :key="category"
+                    :value="category"
+                  >
+                    {{ category }}
+                  </option>
+                  <option value="__other__">
+                    其他
+                  </option>
+                </select>
+              
+                <!-- 自定义分类输入 -->
+                <div
+                  v-if="currentDocument.category === '__other__'"
+                  class="mt-2"
+                >
+                  <input 
+                    v-model="currentDocument.newCategoryText" 
+                    type="text" 
+                    placeholder="输入新分类名称" 
+                    required
+                    class="form-control"
+                  >
+                </div>
               </div>
-              <p class="progress-text">{{ showCreateModal ? '正在上传文档...' : '正在保存...' }} {{ uploadProgress }}%</p>
-            </div>
+              <div class="form-group">
+                <label>二级标签</label>
+                <input
+                  v-model="currentDocument.secondaryTagsInput"
+                  type="text"
+                  placeholder="用逗号分隔多个标签，如：Vue3,JavaScript,Composition API"
+                >
+              </div>
+            
+              <!-- 仅在编辑时显示文件信息 -->
+              <div
+                v-if="showEditModal"
+                class="form-group"
+              >
+                <label>当前文件</label>
+                <div class="current-file-info">
+                  <i :class="getDocIcon(currentDocument.type)" />
+                  <span>{{ currentDocument.title }}.{{ currentDocument.type?.toLowerCase() }}</span>
+                  <span class="file-size">({{ currentDocument.size }})</span>
+                </div>
+                <p class="file-note">
+                  💡 提示：要更换文件请重新上传
+                </p>
+              </div>
+              <div class="form-group">
+                <label>状态</label>
+                <select v-model="currentDocument.status">
+                  <option value="draft">
+                    私人
+                  </option>
+                  <option value="published">
+                    公开
+                  </option>
+                  <option value="pinned">
+                    置顶
+                  </option>
+                </select>
+              </div>
+              <!-- 上传进度 -->
+              <div
+                v-if="uploading"
+                class="upload-progress"
+              >
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    :style="{ width: uploadProgress + '%' }"
+                  />
+                </div>
+                <p class="progress-text">
+                  {{ showCreateModal ? '正在上传文档...' : '正在保存...' }} {{ uploadProgress }}%
+                </p>
+              </div>
 
-            <div class="form-actions">
-              <button type="button" @click="closeModal" :disabled="uploading" class="cancel-btn">取消</button>
-              <button type="submit" :disabled="uploading" class="save-btn">
-                <span v-if="uploading">
-                  <i class="fas fa-spinner fa-spin"></i>
-                  {{ showCreateModal ? '上传中...' : '保存中...' }}
-                </span>
-                <span v-else>
-                  {{ showCreateModal ? '📁 上传文档' : '💾 保存' }}
-                </span>
-              </button>
-            </div>
-          </form>
-        </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  :disabled="uploading"
+                  class="cancel-btn"
+                  @click="closeModal"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  :disabled="uploading"
+                  class="save-btn"
+                >
+                  <span v-if="uploading">
+                    <i class="fas fa-spinner fa-spin" />
+                    {{ showCreateModal ? '上传中...' : '保存中...' }}
+                  </span>
+                  <span v-else>
+                    {{ showCreateModal ? '📁 上传文档' : '💾 保存' }}
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </Teleport>

@@ -1,35 +1,33 @@
-import { defineConfig, loadEnv } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import js from '@eslint/js'
+import pluginVue from 'eslint-plugin-vue'
+import globals from 'globals'
 
-export default defineConfig({
-  plugins: [vue()],
-  
-  // GitHub Pages 部署配置
-  base: '/my-website/',  // 替换为你的仓库名
-  
-  // 构建优化
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: false,
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // 分离第三方库
-          vendor: ['vue', 'vue-router', 'pinia'],
-          particles: ['particles.js'],
-          ui: ['element-plus']
-        }
-      }
-    }
+export default [
+  {
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'node_modules/**',
+      'public/**',
+      '**/*.ts',
+      '**/*.d.ts'
+    ]
   },
-  
-  // 路径别名
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
+  js.configs.recommended,
+  ...pluginVue.configs['flat/recommended'],
+  {
+    files: ['**/*.{js,mjs,cjs,vue}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
+    },
+    rules: {
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'vue/multi-word-component-names': 'off'
     }
   }
-})
+]

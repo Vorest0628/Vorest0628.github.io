@@ -14,15 +14,28 @@
             <div class="form-row">
               <div class="form-group">
                 <label>用户名</label>
-                <input v-model="profileForm.username" type="text" readonly class="readonly" />
+                <input
+                  v-model="profileForm.username"
+                  type="text"
+                  readonly
+                  class="readonly"
+                >
                 <small>用户名无法修改</small>
               </div>
               <div class="form-group">
                 <label>邮箱</label>
-                <input v-model="profileForm.email" type="email" required />
+                <input
+                  v-model="profileForm.email"
+                  type="email"
+                  required
+                >
               </div>
             </div>
-            <button type="submit" class="save-btn" :disabled="profileLoading">
+            <button
+              type="submit"
+              class="save-btn"
+              :disabled="profileLoading"
+            >
               {{ profileLoading ? '保存中...' : '保存资料' }}
             </button>
           </form>
@@ -36,25 +49,49 @@
           <form @submit.prevent="changePassword">
             <div class="form-group">
               <label>当前密码</label>
-              <input v-model="passwordForm.currentPassword" type="password" required />
+              <input
+                v-model="passwordForm.currentPassword"
+                type="password"
+                required
+              >
             </div>
             <div class="form-group">
               <label>新密码</label>
-              <input v-model="passwordForm.newPassword" type="password" required minlength="6" />
+              <input
+                v-model="passwordForm.newPassword"
+                type="password"
+                required
+                minlength="6"
+              >
               <small>密码至少6位</small>
             </div>
             <div class="form-group">
               <label>确认新密码</label>
-              <input v-model="passwordForm.confirmPassword" type="password" required />
-              <small v-if="passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="error">
+              <input
+                v-model="passwordForm.confirmPassword"
+                type="password"
+                required
+              >
+              <small
+                v-if="passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword"
+                class="error"
+              >
                 两次输入的密码不一致
               </small>
             </div>
             <div class="form-actions">
-              <button type="submit" class="save-btn" :disabled="passwordLoading || !canChangePassword">
+              <button
+                type="submit"
+                class="save-btn"
+                :disabled="passwordLoading || !canChangePassword"
+              >
                 {{ passwordLoading ? '修改中...' : '修改密码' }}
               </button>
-              <button type="button" @click="showResetPassword = true" class="forgot-btn">
+              <button
+                type="button"
+                class="forgot-btn"
+                @click="showResetPassword = true"
+              >
                 忘记密码？
               </button>
             </div>
@@ -63,33 +100,72 @@
       </div>
 
       <!-- 密码重置模态框 -->
-      <div v-if="showResetPassword" class="modal-overlay" @click="closeResetPassword">
-        <div class="modal-content" @click.stop>
+      <div
+        v-if="showResetPassword"
+        class="modal-overlay"
+        @click="closeResetPassword"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
           <div class="modal-header">
             <h3>重置密码</h3>
-            <button @click="closeResetPassword" class="close-btn">✕</button>
+            <button
+              class="close-btn"
+              @click="closeResetPassword"
+            >
+              ✕
+            </button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="resetPassword">
               <div class="form-group">
                 <label>邮箱地址</label>
-                <input v-model="resetForm.email" type="email" required placeholder="输入您的邮箱地址" />
+                <input
+                  v-model="resetForm.email"
+                  type="email"
+                  required
+                  placeholder="输入您的邮箱地址"
+                >
               </div>
               <div class="form-group">
                 <label>新密码</label>
-                <input v-model="resetForm.newPassword" type="password" required minlength="6" />
+                <input
+                  v-model="resetForm.newPassword"
+                  type="password"
+                  required
+                  minlength="6"
+                >
                 <small>密码至少6位</small>
               </div>
               <div class="form-group">
                 <label>确认新密码</label>
-                <input v-model="resetForm.confirmPassword" type="password" required />
-                <small v-if="resetForm.newPassword && resetForm.confirmPassword && resetForm.newPassword !== resetForm.confirmPassword" class="error">
+                <input
+                  v-model="resetForm.confirmPassword"
+                  type="password"
+                  required
+                >
+                <small
+                  v-if="resetForm.newPassword && resetForm.confirmPassword && resetForm.newPassword !== resetForm.confirmPassword"
+                  class="error"
+                >
                   两次输入的密码不一致
                 </small>
               </div>
               <div class="form-actions">
-                <button type="button" @click="closeResetPassword" class="cancel-btn">取消</button>
-                <button type="submit" class="save-btn" :disabled="resetLoading || !canResetPassword">
+                <button
+                  type="button"
+                  class="cancel-btn"
+                  @click="closeResetPassword"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  class="save-btn"
+                  :disabled="resetLoading || !canResetPassword"
+                >
                   {{ resetLoading ? '重置中...' : '重置密码' }}
                 </button>
               </div>
@@ -97,8 +173,6 @@
           </div>
         </div>
       </div>
-
-
     </div>
   </div>
 </template>

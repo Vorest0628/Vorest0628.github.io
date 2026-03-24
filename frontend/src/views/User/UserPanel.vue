@@ -21,7 +21,11 @@
     <!-- 普通用户界面 -->
     <div class="user-section">
       <div class="section-tabs">
-        <el-tabs v-model="activeTab" type="border-card" class="custom-tabs">
+        <el-tabs
+          v-model="activeTab"
+          type="border-card"
+          class="custom-tabs"
+        >
           <el-tab-pane 
             v-for="tab in userTabs" 
             :key="tab.key"
@@ -45,12 +49,18 @@
 
       <div class="tab-content">
         <!-- 我的评论 -->
-        <div v-show="activeTab === 'my-comments'" class="my-comments">
+        <div
+          v-show="activeTab === 'my-comments'"
+          class="my-comments"
+        >
           <UserCommentManager />
         </div>
 
         <!-- 账户设置 -->
-        <div v-show="activeTab === 'settings'" class="account-settings">
+        <div
+          v-show="activeTab === 'settings'"
+          class="account-settings"
+        >
           <UserAccountSettings />
         </div>
       </div>

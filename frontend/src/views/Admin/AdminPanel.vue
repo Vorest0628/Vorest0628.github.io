@@ -4,7 +4,9 @@
     <div class="admin-header">
       <div class="welcome-section">
         <h1>管理员控制台</h1>
-        <p class="welcome-text">欢迎回来，{{ userInfo?.username }}！</p>
+        <p class="welcome-text">
+          欢迎回来，{{ userInfo?.username }}！
+        </p>
       </div>
     </div>
 
@@ -15,13 +17,18 @@
           v-for="navItem in adminNavItems" 
           :key="navItem.key"
           class="nav-card"
-          @click="currentView = navItem.key"
           :class="{ active: currentView === navItem.key }"
+          @click="currentView = navItem.key"
         >
-          <div class="nav-icon">{{ navItem.icon }}</div>
+          <div class="nav-icon">
+            {{ navItem.icon }}
+          </div>
           <h3>{{ navItem.label }}</h3>
           <p>{{ navItem.description }}</p>
-          <div v-if="navItem.pending > 0" class="pending-badge">
+          <div
+            v-if="navItem.pending > 0"
+            class="pending-badge"
+          >
             {{ navItem.pending }}
           </div>
         </div>
@@ -31,21 +38,40 @@
     <!-- 管理内容区域 -->
     <div class="admin-content">
       <!-- 总览页面 -->
-      <div v-if="currentView === 'overview'" class="overview-content">
+      <div
+        v-if="currentView === 'overview'"
+        class="overview-content"
+      >
         <h2>系统总览</h2>
         
         <div class="recent-activities">
           <h3>最近活动</h3>
-          <div v-if="recentActivities.length > 0" class="activity-list">
-            <div v-for="activity in recentActivities.slice(0, 3)" :key="activity.id" class="activity-item">
-              <div class="activity-icon">{{ activity.icon }}</div>
+          <div
+            v-if="recentActivities.length > 0"
+            class="activity-list"
+          >
+            <div
+              v-for="activity in recentActivities.slice(0, 3)"
+              :key="activity.id"
+              class="activity-item"
+            >
+              <div class="activity-icon">
+                {{ activity.icon }}
+              </div>
               <div class="activity-content">
-                <div class="activity-text">{{ activity.text }}</div>
-                <div class="activity-time">{{ formatTime(activity.time) }}</div>
+                <div class="activity-text">
+                  {{ activity.text }}
+                </div>
+                <div class="activity-time">
+                  {{ formatTime(activity.time) }}
+                </div>
               </div>
             </div>
           </div>
-          <div v-else class="empty-activity">
+          <div
+            v-else
+            class="empty-activity"
+          >
             <p>暂无最近活动</p>
           </div>
         </div>

@@ -61,7 +61,7 @@
 - **热重载**: `nodemon`
 - **代码规范**: `ESLint`
 - **版本控制**: `Git`
-- **部署平台**: `Vercel` (后端), `GitHub Pages` (前端), `MongoDB Atlas` (数据库), `Cloudflare Workers` (API代理)
+- **部署平台**: `阿里云` (前后端), `MongoDB Atlas` (数据库), `Cloudflare Workers` (API代理)
 
 ## 🚀 快速开始
 
@@ -118,21 +118,20 @@ my-website/
 │   │   └── ⚡ main.js      # 应用入口
 │   └── ⚡ vite.config.js  # Vite 配置
 ├── 📄 cloudflare-worker.js # Cloudflare Worker API 代理
-├── 📄 CNAME                # 自定义域名（如使用 GitHub Pages）
 ├── 📄 .gitignore
-├── 📄 package.json        # 根项目配置
+├── 📄 package.json         # 根项目配置
 └── 📖 README.md           # 就是你现在看到的这个文件
 ```
 
 ## 部署指南
 
-本项目已为 `Vercel` 平台优化，推荐使用 Vercel 进行一键部署。
+本项目当前采用前后端分离部署：前端静态资源部署在 `阿里云`，后端接口部署在 `Vercel`。
 如果你想基于本项目效仿属于自己的个人网站，在运营上线时可以参考如下配置：
 
 
-1.  **前端部署 (Vercel)**
-    - 使用vite进行 `npm run build` 的构建
-    - 将全部项目内容部署到github并使用github pages
+1.  **前端部署 (阿里云)**
+    - 在 `frontend` 目录执行 `npm run build`，产物输出到 `frontend/dist`
+    - 将 `frontend/dist` 中的静态资源上传到阿里云静态站点或你的 Web 服务器
 
 2.  **后端部署 (Vercel)**
     - 将 `backend` 目录作为另一个 Vercel 项目进行部署。
@@ -158,7 +157,7 @@ my-website/
          ```
          VITE_APP_API_URL=https://your-worker.workers.dev/api
          ```
-      4) 确认后端的 `CORS_ORIGIN` 覆盖到你的前端实际域名（含 GitHub Pages/Vercel 域名）。
+      4) 确认后端的 `CORS_ORIGIN` 覆盖到你的前端实际域名（含阿里云站点域名）。
 
 ## 🤝 贡献
 

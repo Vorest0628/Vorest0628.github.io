@@ -1,5 +1,8 @@
 <template>
-  <div id="particles-js" class="particles-container"></div>
+  <div
+    id="particles-js"
+    class="particles-container"
+  />
 </template>
 
 <script setup>

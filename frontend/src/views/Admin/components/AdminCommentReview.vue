@@ -9,32 +9,61 @@
 
     <!-- 筛选选项 -->
     <div class="filter-bar">
-      <select v-model="sourceFilter" @change="getComments">
-        <option value="">全部来源</option>
-        <option value="blog">博客</option>
-        <option value="comment">评论区</option>
-        <option value="General">留言板</option>
+      <select
+        v-model="sourceFilter"
+        @change="getComments"
+      >
+        <option value="">
+          全部来源
+        </option>
+        <option value="blog">
+          博客
+        </option>
+        <option value="comment">
+          评论区
+        </option>
+        <option value="General">
+          留言板
+        </option>
       </select>
       <input 
         v-model="searchQuery" 
         placeholder="搜索评论内容或用户..." 
         @input="getComments"
-      />
+      >
     </div>
 
     <!-- 评论列表 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载评论...</p>
     </div>
     
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getComments" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getComments"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="comment-list">
-      <div v-for="comment in comments" :key="comment.id || comment._id" class="comment-card">
+    <div
+      v-else
+      class="comment-list"
+    >
+      <div
+        v-for="comment in comments"
+        :key="comment.id || comment._id"
+        class="comment-card"
+      >
         <div class="comment-info">
           <div class="comment-header">
             <div class="user-info">
@@ -43,9 +72,9 @@
             <div class="comment-source">
               <span class="source-label">来源:</span>
               <button 
-                @click="jumpToSource(comment)" 
-                class="source-link"
+                class="source-link" 
                 :title="`点击跳转到${getFullSourceText(comment)}`"
+                @click="jumpToSource(comment)"
               >
                 {{ getFullSourceText(comment) }}
               </button>
@@ -54,7 +83,10 @@
           
           <div class="comment-meta">
             <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
-            <span v-if="comment.parentComment" class="reply-indicator">回复评论</span>
+            <span
+              v-if="comment.parentComment"
+              class="reply-indicator"
+            >回复评论</span>
           </div>
           
           <div class="comment-content">
@@ -62,7 +94,10 @@
           </div>
           
           <!-- 如果是回复，显示原评论 -->
-          <div v-if="comment.parentComment" class="parent-comment">
+          <div
+            v-if="comment.parentComment"
+            class="parent-comment"
+          >
             <span class="parent-label">回复:</span>
             <span class="parent-content">{{ comment.parentComment.content }}</span>
           </div>
@@ -73,21 +108,21 @@
           <span class="like-count">{{ comment.likeCount || 0 }} ❤️</span>
           <!-- 公开/私有切换按钮 -->
           <button 
-            @click="toggleVisibility(comment)"
             class="visibility-btn"
             :class="{ private: !comment.isPublic }"
+            @click="toggleVisibility(comment)"
           >
             {{ comment.isPublic ? '🔒 设为私有' : '🔓 设为公开' }}
           </button>
           <button 
-            @click="jumpToSource(comment)" 
-            class="jump-btn"
+            class="jump-btn" 
+            @click="jumpToSource(comment)"
           >
             🔗 跳转
           </button>
           <button 
-            @click="deleteComment(comment.id || comment._id)" 
-            class="delete-btn"
+            class="delete-btn" 
+            @click="deleteComment(comment.id || comment._id)"
           >
             🗑️ 删除
           </button>
@@ -96,7 +131,10 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && !error && comments.length === 0" class="empty-state">
+    <div
+      v-if="!loading && !error && comments.length === 0"
+      class="empty-state"
+    >
       <h3>暂无评论</h3>
       <p>还没有任何评论数据</p>
     </div>

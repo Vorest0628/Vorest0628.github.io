@@ -16,54 +16,88 @@
           <span class="comment-author">{{ comment.author?.username || '匿名用户' }}</span>
           <span class="comment-time">{{ formattedDate }}</span>
           <!-- 添加公开状态标识 -->
-          <span v-if="!comment.isPublic" class="private-badge">私有</span>
+          <span
+            v-if="!isPublic"
+            class="private-badge"
+          >私有</span>
         </div>
-        <div class="comment-text">{{ comment.content }}</div>
+        <div class="comment-text">
+          {{ comment.content }}
+        </div>
         <div class="comment-actions">
           <!-- 点赞按钮 -->
-          <button @click="toggleLike" class="action-btn like-btn" :class="{ liked: isLiked }">
-            {{ isLiked ? '❤️' : '🤍' }} {{ comment.likeCount || 0 }}
+          <button
+            class="action-btn like-btn"
+            :class="{ liked: isLiked }"
+            @click="toggleLike"
+          >
+            {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
           </button>
-          <button @click="showReply = !showReply" class="action-btn">回复</button>
+          <button
+            class="action-btn"
+            @click="showReply = !showReply"
+          >
+            回复
+          </button>
           <!-- 公开/私有切换按钮 -->
           <button 
             v-if="canManageVisibility"
-            @click="toggleVisibility"
             class="action-btn visibility-btn"
-            :class="{ private: !comment.isPublic }"
+            :class="{ private: !isPublic }"
+            @click="toggleVisibility"
           >
-            {{ comment.isPublic ? '设为私有' : '设为公开' }}
+            {{ isPublic ? '设为私有' : '设为公开' }}
           </button>
           <button 
             v-if="canDelete"
-            @click="handleDelete"
             class="action-btn delete-btn"
+            @click="handleDelete"
           >
             删除
           </button>
         </div>
 
         <!-- 回复输入框 -->
-        <div v-if="showReply" class="reply-form">
-          <textarea v-model="replyContent" placeholder="输入你的回复..." rows="3"></textarea>
+        <div
+          v-if="showReply"
+          class="reply-form"
+        >
+          <textarea
+            v-model="replyContent"
+            placeholder="输入你的回复..."
+            rows="3"
+          />
           <div class="reply-options">
             <label class="checkbox-label">
               <input 
                 v-model="replyIsPublic" 
                 type="checkbox" 
                 class="checkbox-input"
-              />
+              >
               <span class="checkbox-text">公开回复</span>
             </label>
           </div>
-          <button @click="submitReply" :disabled="isSubmitting">提交回复</button>
-          <button @click="showReply = false" class="cancel-btn">取消</button>
+          <button
+            :disabled="isSubmitting"
+            @click="submitReply"
+          >
+            提交回复
+          </button>
+          <button
+            class="cancel-btn"
+            @click="showReply = false"
+          >
+            取消
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 递归渲染子评论 -->
-    <div v-if="comment.replies && comment.replies.length > 0" class="comment-replies">
+    <div
+      v-if="comment.replies && comment.replies.length > 0"
+      class="comment-replies"
+    >
       <CommentNode
         v-for="reply in comment.replies"
         :key="reply.id || reply._id"
@@ -77,7 +111,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits, onMounted } from 'vue';
+import { ref, computed, defineProps, defineEmits, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
 import { commentApi } from '@/api/comment';
 import { formatDistanceToNow } from 'date-fns';
@@ -104,6 +138,16 @@ const replyIsPublic = ref(true); // 默认公开回复
 const isSubmitting = ref(false);
 // 添加新的响应式数据
 const isLiked = ref(false);
+const likeCount = ref(props.comment.likeCount || 0);
+const isPublic = ref(props.comment.isPublic !== false);
+
+watch(() => props.comment.likeCount, (value) => {
+  likeCount.value = value || 0;
+});
+
+watch(() => props.comment.isPublic, (value) => {
+  isPublic.value = value !== false;
+});
 
 const formattedDate = computed(() => {
   if (!props.comment.createdAt) return '';
@@ -194,10 +238,10 @@ const toggleLike = async () => {
   try {
     if (isLiked.value) {
       await commentApi.unlikeComment(props.comment.id || props.comment._id);
-      props.comment.likeCount = Math.max(0, (props.comment.likeCount || 0) - 1);
+      likeCount.value = Math.max(0, likeCount.value - 1);
     } else {
       await commentApi.likeComment(props.comment.id || props.comment._id);
-      props.comment.likeCount = (props.comment.likeCount || 0) + 1;
+      likeCount.value += 1;
     }
     isLiked.value = !isLiked.value;
   } catch (error) {
@@ -208,9 +252,9 @@ const toggleLike = async () => {
 
 const toggleVisibility = async () => {
   try {
-    const newVisibility = !props.comment.isPublic;
+    const newVisibility = !isPublic.value;
     await commentApi.updateCommentVisibility(props.comment.id || props.comment._id, newVisibility);
-    props.comment.isPublic = newVisibility;
+    isPublic.value = newVisibility;
     alert(`评论已${newVisibility ? '设为公开' : '设为私有'}`);
   } catch (error) {
     console.error('更新可见性失败:', error);

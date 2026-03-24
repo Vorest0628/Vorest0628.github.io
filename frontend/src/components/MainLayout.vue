@@ -1,15 +1,23 @@
 <template>
   <transition name="initial-load">
-    <div v-if="isInitialLoading" class="initial-loading-overlay">
+    <div
+      v-if="isInitialLoading"
+      class="initial-loading-overlay"
+    >
       <div class="loading-core">
-        <div class="sun-ring"></div>
-        <div class="sun-inner"></div>
+        <div class="sun-ring" />
+        <div class="sun-inner" />
       </div>
-      <p class="loading-text">加载中...</p>
+      <p class="loading-text">
+        加载中...
+      </p>
     </div>
   </transition>
 
-  <div class="app" :class="{ 'app-loaded': !isInitialLoading }">
+  <div
+    class="app"
+    :class="{ 'app-loaded': !isInitialLoading }"
+  >
     <ParticlesBackground v-if="showParticles" />
 
     <div class="container">
@@ -17,7 +25,10 @@
 
       <main class="main-content">
         <router-view v-slot="{ Component, route }">
-          <transition name="page-fade" mode="out-in">
+          <transition
+            name="page-fade"
+            mode="out-in"
+          >
             <keep-alive>
               <component
                 :is="Component"
@@ -27,7 +38,10 @@
             </keep-alive>
           </transition>
 
-          <transition name="page-fade" mode="out-in">
+          <transition
+            name="page-fade"
+            mode="out-in"
+          >
             <component
               :is="Component"
               v-if="Component && !route.meta.keepAlive"
@@ -36,9 +50,12 @@
           </transition>
 
           <transition name="page-fade">
-            <div v-if="!Component" class="loading">
+            <div
+              v-if="!Component"
+              class="loading"
+            >
               <div class="loading-spinner-small">
-                <div class="spinner-ring-small"></div>
+                <div class="spinner-ring-small" />
               </div>
               <p>页面加载中...</p>
             </div>

@@ -6,19 +6,37 @@
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>加载中...</p>
     </div>
 
     <!-- 错误状态 -->
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <p>{{ error }}</p>
-      <button @click="loadComments" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="loadComments"
+      >
+        重试
+      </button>
     </div>
 
     <!-- 评论列表 -->
-    <div v-else class="comments-list">
-      <div v-for="comment in comments" :key="comment.id || comment._id" class="comment-card">
+    <div
+      v-else
+      class="comments-list"
+    >
+      <div
+        v-for="comment in comments"
+        :key="comment.id || comment._id"
+        class="comment-card"
+      >
         <div class="comment-header">
           <div class="comment-meta">
             <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
@@ -28,9 +46,9 @@
             <div class="comment-source">
               <span class="source-label">来源:</span>
               <button 
-                @click="jumpToSource(comment)" 
-                class="source-link"
+                class="source-link" 
                 :title="`点击跳转到${getFullSourceText(comment)}`"
+                @click="jumpToSource(comment)"
               >
                 {{ getFullSourceText(comment) }}
               </button>
@@ -43,7 +61,10 @@
         </div>
         
         <!-- 如果是回复，显示原评论 -->
-        <div v-if="comment.parentComment" class="parent-comment">
+        <div
+          v-if="comment.parentComment"
+          class="parent-comment"
+        >
           <span class="parent-label">回复:</span>
           <span class="parent-content">{{ comment.parentComment.content }}</span>
         </div>
@@ -51,45 +72,102 @@
         <div class="comment-actions">
           <!-- 点赞显示 -->
           <span class="like-count">{{ comment.likeCount || 0 }} ❤️</span>
-          <button @click="editComment(comment)" class="edit-btn">编辑</button>
-          <button @click="togglePublic(comment)" class="toggle-btn">
+          <button
+            class="edit-btn"
+            @click="editComment(comment)"
+          >
+            编辑
+          </button>
+          <button
+            class="toggle-btn"
+            @click="togglePublic(comment)"
+          >
             {{ comment.isPublic ? '设为私有' : '设为公开' }}
           </button>
-          <button @click="jumpToSource(comment)" class="jump-btn">跳转到来源</button>
-          <button @click="deleteComment(comment.id || comment._id)" class="delete-btn">删除</button>
+          <button
+            class="jump-btn"
+            @click="jumpToSource(comment)"
+          >
+            跳转到来源
+          </button>
+          <button
+            class="delete-btn"
+            @click="deleteComment(comment.id || comment._id)"
+          >
+            删除
+          </button>
         </div>
       </div>
       
-      <div v-if="comments.length === 0" class="empty-state">
-        <div class="empty-icon">💬</div>
+      <div
+        v-if="comments.length === 0"
+        class="empty-state"
+      >
+        <div class="empty-icon">
+          💬
+        </div>
         <h3>还没有评论</h3>
         <p>去发表您的第一条评论吧！</p>
-        <button @click="goToComments" class="comment-btn">立即评论</button>
+        <button
+          class="comment-btn"
+          @click="goToComments"
+        >
+          立即评论
+        </button>
       </div>
     </div>
 
     <!-- 编辑模态框 -->
-    <div v-if="editingComment" class="modal-overlay" @click="closeEdit">
-      <div class="modal-content" @click.stop>
+    <div
+      v-if="editingComment"
+      class="modal-overlay"
+      @click="closeEdit"
+    >
+      <div
+        class="modal-content"
+        @click.stop
+      >
         <div class="modal-header">
           <h3>编辑评论</h3>
-          <button @click="closeEdit" class="close-btn">✕</button>
+          <button
+            class="close-btn"
+            @click="closeEdit"
+          >
+            ✕
+          </button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="saveEdit">
             <div class="form-group">
               <label>评论内容</label>
-              <textarea v-model="editForm.content" rows="4" required></textarea>
+              <textarea
+                v-model="editForm.content"
+                rows="4"
+                required
+              />
             </div>
             <div class="form-group">
               <label class="checkbox-label">
-                <input v-model="editForm.isPublic" type="checkbox" />
+                <input
+                  v-model="editForm.isPublic"
+                  type="checkbox"
+                >
                 公开评论
               </label>
             </div>
             <div class="form-actions">
-              <button type="button" @click="closeEdit" class="cancel-btn">取消</button>
-              <button type="submit" class="save-btn" :disabled="saving">
+              <button
+                type="button"
+                class="cancel-btn"
+                @click="closeEdit"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                class="save-btn"
+                :disabled="saving"
+              >
                 {{ saving ? '保存中...' : '保存' }}
               </button>
             </div>

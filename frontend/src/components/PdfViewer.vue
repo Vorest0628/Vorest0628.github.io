@@ -1,47 +1,91 @@
 <template>
   <div class="pdf-viewer">
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
+    <div
+      v-if="loading"
+      class="loading-container"
+    >
+      <div class="loading-spinner" />
       <p>正在加载PDF...</p>
     </div>
     
-    <div v-else-if="error" class="error-container">
-      <div class="error-icon">⚠️</div>
+    <div
+      v-else-if="error"
+      class="error-container"
+    >
+      <div class="error-icon">
+        ⚠️
+      </div>
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="retry" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="retry"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="pdf-container">
+    <div
+      v-else
+      class="pdf-container"
+    >
       <!-- PDF工具栏 -->
       <div class="pdf-toolbar">
         <div class="toolbar-left">
-          <button @click="previousPage" :disabled="currentPage <= 1" class="nav-btn">
+          <button
+            :disabled="currentPage <= 1"
+            class="nav-btn"
+            @click="previousPage"
+          >
             ⬅️ 上一页
           </button>
           <span class="page-info">
             第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
           </span>
-          <button @click="nextPage" :disabled="currentPage >= totalPages" class="nav-btn">
+          <button
+            :disabled="currentPage >= totalPages"
+            class="nav-btn"
+            @click="nextPage"
+          >
             下一页 ➡️
           </button>
         </div>
         
         <div class="toolbar-right">
-          <button @click="zoomOut" :disabled="scale <= 0.5" class="zoom-btn">🔍-</button>
+          <button
+            :disabled="scale <= 0.5"
+            class="zoom-btn"
+            @click="zoomOut"
+          >
+            🔍-
+          </button>
           <span class="zoom-info">{{ Math.round(scale * 100) }}%</span>
-          <button @click="zoomIn" :disabled="scale >= 3" class="zoom-btn">🔍+</button>
-          <button @click="resetZoom" class="zoom-btn">重置</button>
+          <button
+            :disabled="scale >= 3"
+            class="zoom-btn"
+            @click="zoomIn"
+          >
+            🔍+
+          </button>
+          <button
+            class="zoom-btn"
+            @click="resetZoom"
+          >
+            重置
+          </button>
         </div>
       </div>
       
       <!-- PDF内容区域 -->
-      <div class="pdf-content" ref="pdfContainer">
+      <div
+        ref="pdfContainer"
+        class="pdf-content"
+      >
         <canvas 
           ref="pdfCanvas" 
           class="pdf-canvas"
           @wheel="handleWheel"
-        ></canvas>
+        />
       </div>
     </div>
   </div>

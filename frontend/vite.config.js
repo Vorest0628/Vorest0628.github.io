@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
       ext: '.br'
   })],
     
-    // GitHub Pages 部署配置
+    // 生产环境构建配置
     base: mode === 'production' ? '/' : '/',
     
   resolve: {

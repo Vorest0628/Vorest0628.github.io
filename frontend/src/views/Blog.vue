@@ -1,20 +1,24 @@
 <template>
   <div class="blog-page">
     <header class="page-head">
-      <p class="head-kicker">Article Stream</p>
+      <p class="head-kicker">
+        Article Stream
+      </p>
       <h1>博客</h1>
-      <p class="head-desc">记录开发、灵感和日常更新。</p>
+      <p class="head-desc">
+        记录开发、灵感和日常更新。
+      </p>
     </header>
 
     <section class="filter-card">
       <div class="search-box">
-        <i class="fas fa-magnifying-glass"></i>
+        <i class="fas fa-magnifying-glass" />
         <input
           v-model="searchQuery"
           type="text"
           placeholder="搜索文章..."
           @input="filterPosts"
-        />
+        >
       </div>
 
       <div class="category-filter">
@@ -31,15 +35,26 @@
     </section>
 
     <section class="content-area">
-      <div v-if="loading" class="state-box">
-        <div class="state-spinner"></div>
+      <div
+        v-if="loading"
+        class="state-box"
+      >
+        <div class="state-spinner" />
         <p>正在加载博客文章...</p>
       </div>
 
-      <div v-else-if="error" class="state-box error">
+      <div
+        v-else-if="error"
+        class="state-box error"
+      >
         <h3>加载失败</h3>
         <p>{{ error }}</p>
-        <button class="retry-btn" @click="loadPosts">重试</button>
+        <button
+          class="retry-btn"
+          @click="loadPosts"
+        >
+          重试
+        </button>
       </div>
 
       <template v-else>
@@ -63,41 +78,70 @@
                 {{ post.excerpt || post.description || '暂无摘要。' }}
               </p>
 
-              <div class="post-tags" v-if="post.tags && post.tags.length">
-                <span v-for="tag in post.tags" :key="tag" class="tag-item">{{ tag }}</span>
+              <div
+                v-if="post.tags && post.tags.length"
+                class="post-tags"
+              >
+                <span
+                  v-for="tag in post.tags"
+                  :key="tag"
+                  class="tag-item"
+                >{{ tag }}</span>
               </div>
             </div>
 
-            <aside class="post-side" @click.stop>
-              <div class="post-cover" v-if="getCoverSrc(post)">
+            <aside
+              class="post-side"
+              @click.stop
+            >
+              <div
+                v-if="getCoverSrc(post)"
+                class="post-cover"
+              >
                 <img
                   :src="getCoverSrc(post)"
                   alt="文章封面"
                   loading="lazy"
                   decoding="async"
                   @error="onCoverError(post)"
-                />
+                >
               </div>
-              <div class="read-more">阅读更多 <i class="fas fa-arrow-right"></i></div>
+              <div class="read-more">
+                阅读更多 <i class="fas fa-arrow-right" />
+              </div>
             </aside>
           </div>
         </article>
       </template>
     </section>
 
-    <div v-if="!loading && !error && filteredPosts.length === 0" class="state-box empty">
+    <div
+      v-if="!loading && !error && filteredPosts.length === 0"
+      class="state-box empty"
+    >
       <h3>暂无文章</h3>
       <p>
         {{ searchQuery || selectedCategory !== '全部' ? '没有找到匹配的文章。' : '还没有发布任何文章。' }}
       </p>
     </div>
 
-    <footer v-if="totalPages > 1" class="pagination">
-      <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
+    <footer
+      v-if="totalPages > 1"
+      class="pagination"
+    >
+      <button
+        class="page-btn"
+        :disabled="currentPage === 1"
+        @click="changePage(currentPage - 1)"
+      >
         上一页
       </button>
       <span class="page-info">第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
-      <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)">
+      <button
+        class="page-btn"
+        :disabled="currentPage === totalPages"
+        @click="changePage(currentPage + 1)"
+      >
         下一页
       </button>
     </footer>

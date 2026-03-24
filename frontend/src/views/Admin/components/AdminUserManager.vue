@@ -6,35 +6,67 @@
 
     <!-- 筛选选项 -->
     <div class="filter-bar">
-      <select v-model="roleFilter" @change="filterUsers">
-        <option value="">全部角色</option>
-        <option value="admin">管理员</option>
-        <option value="user">普通用户</option>
+      <select
+        v-model="roleFilter"
+        @change="filterUsers"
+      >
+        <option value="">
+          全部角色
+        </option>
+        <option value="admin">
+          管理员
+        </option>
+        <option value="user">
+          普通用户
+        </option>
       </select>
-      <select v-model="statusFilter" @change="filterUsers">
-        <option value="">全部状态</option>
-        <option value="approved">已启用</option>
-        <option value="pending">待审核</option>
+      <select
+        v-model="statusFilter"
+        @change="filterUsers"
+      >
+        <option value="">
+          全部状态
+        </option>
+        <option value="approved">
+          已启用
+        </option>
+        <option value="pending">
+          待审核
+        </option>
       </select>
       <input
         v-model="searchQuery"
         placeholder="搜索用户名或邮箱..."
         @input="filterUsers"
-      />
+      >
     </div>
 
     <!-- 用户列表 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载用户数据...</p>
     </div>
     
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getUsers" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getUsers"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="users-table">
+    <div
+      v-else
+      class="users-table"
+    >
       <table>
         <thead>
           <tr>
@@ -47,14 +79,23 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in sortedUsers" :key="user._id || user.id" :class="{ 'pending-user': user.status === 'pending' }">
+          <tr
+            v-for="user in sortedUsers"
+            :key="user._id || user.id"
+            :class="{ 'pending-user': user.status === 'pending' }"
+          >
             <td>
               <div class="user-info">
                 <div class="username">
-                  <span v-if="user.status === 'pending'" class="pending-dot"></span>
+                  <span
+                    v-if="user.status === 'pending'"
+                    class="pending-dot"
+                  />
                   {{ user.username }}
                 </div>
-                <div class="user-id">ID: {{ user._id || user.id }}</div>
+                <div class="user-id">
+                  ID: {{ user._id || user.id }}
+                </div>
               </div>
             </td>
             <td>{{ user.email }}</td>
@@ -71,18 +112,23 @@
             <td>{{ formatDate(user.createdAt || user.registerTime) }}</td>
             <td>
               <div class="action-buttons">
-                <button @click="editUser(user)" class="edit-btn">编辑</button>
+                <button
+                  class="edit-btn"
+                  @click="editUser(user)"
+                >
+                  编辑
+                </button>
                 <button 
                   v-if="user.status === 'pending'"
-                  @click="approveUser(user._id || user.id)" 
-                  class="approve-btn"
+                  class="approve-btn" 
+                  @click="approveUser(user._id || user.id)"
                 >
                   启用
                 </button>
                 <button 
                   v-if="user.role !== 'admin' || user._id !== currentUserId" 
-                  @click="deleteUser(user._id || user.id)" 
-                  class="delete-btn"
+                  class="delete-btn" 
+                  @click="deleteUser(user._id || user.id)"
                 >
                   删除
                 </button>
@@ -94,56 +140,111 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && !error && filteredUsers.length === 0" class="empty-state">
+    <div
+      v-if="!loading && !error && filteredUsers.length === 0"
+      class="empty-state"
+    >
       <h3>暂无用户数据</h3>
       <p>没有找到符合条件的用户</p>
     </div>
 
     <!-- 编辑模态框 -->
     <Teleport to="body">
-      <div v-if="showEditModal" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>编辑用户</h3>
-          <button @click="closeModal" class="close-btn">✕</button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveUser">
-            <div class="form-group">
-              <label>用户名</label>
-              <input v-model="currentUser.username" type="text" required />
-            </div>
-            <div class="form-group">
-              <label>邮箱</label>
-              <input v-model="currentUser.email" type="email" required />
-            </div>
-            <div class="form-group">
-              <label>密码</label>
-              <div class="password-input-group">
-                <input v-model="currentUser.password" type="password" placeholder="留空则不修改密码" />
-                <button type="button" @click="resetPassword" class="reset-password-btn">重置密码</button>
+      <div
+        v-if="showEditModal"
+        class="modal-overlay"
+        @click="closeModal"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
+          <div class="modal-header">
+            <h3>编辑用户</h3>
+            <button
+              class="close-btn"
+              @click="closeModal"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="saveUser">
+              <div class="form-group">
+                <label>用户名</label>
+                <input
+                  v-model="currentUser.username"
+                  type="text"
+                  required
+                >
               </div>
-            </div>
-            <div class="form-group">
-              <label>角色</label>
-              <select v-model="currentUser.role" required>
-                <option value="user">普通用户</option>
-                <option value="admin">管理员</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>状态</label>
-              <select v-model="currentUser.status">
-                <option value="pending">待审核</option>
-                <option value="approved">已启用</option>
-              </select>
-            </div>
-            <div class="form-actions">
-              <button type="button" @click="closeModal" class="cancel-btn">取消</button>
-              <button type="submit" class="save-btn">更新</button>
-            </div>
-          </form>
-        </div>
+              <div class="form-group">
+                <label>邮箱</label>
+                <input
+                  v-model="currentUser.email"
+                  type="email"
+                  required
+                >
+              </div>
+              <div class="form-group">
+                <label>密码</label>
+                <div class="password-input-group">
+                  <input
+                    v-model="currentUser.password"
+                    type="password"
+                    placeholder="留空则不修改密码"
+                  >
+                  <button
+                    type="button"
+                    class="reset-password-btn"
+                    @click="resetPassword"
+                  >
+                    重置密码
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>角色</label>
+                <select
+                  v-model="currentUser.role"
+                  required
+                >
+                  <option value="user">
+                    普通用户
+                  </option>
+                  <option value="admin">
+                    管理员
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>状态</label>
+                <select v-model="currentUser.status">
+                  <option value="pending">
+                    待审核
+                  </option>
+                  <option value="approved">
+                    已启用
+                  </option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="cancel-btn"
+                  @click="closeModal"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  class="save-btn"
+                >
+                  更新
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </Teleport>

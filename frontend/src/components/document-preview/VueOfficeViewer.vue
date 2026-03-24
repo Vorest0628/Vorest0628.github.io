@@ -1,24 +1,45 @@
 <template>
   <div class="vue-office-viewer">
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
+    <div
+      v-if="loading"
+      class="loading-container"
+    >
+      <div class="loading-spinner" />
       <p>{{ loadingText }}</p>
     </div>
     
     <!-- 错误状态 -->
-    <div v-else-if="error" class="error-container">
-      <div class="error-icon">⚠️</div>
+    <div
+      v-else-if="error"
+      class="error-container"
+    >
+      <div class="error-icon">
+        ⚠️
+      </div>
       <h3>预览失败</h3>
       <p>{{ error }}</p>
       <div class="error-actions">
-        <button @click="retry" class="retry-btn">重试</button>
-        <button @click="download" class="download-btn">下载文档</button>
+        <button
+          class="retry-btn"
+          @click="retry"
+        >
+          重试
+        </button>
+        <button
+          class="download-btn"
+          @click="download"
+        >
+          下载文档
+        </button>
       </div>
     </div>
     
     <!-- 预览内容 -->
-    <div v-else class="preview-container">
+    <div
+      v-else
+      class="preview-container"
+    >
       <!-- Word文档预览 -->
       <vue-office-docx
         v-if="fileType === 'docx'"
@@ -55,11 +76,21 @@
       />
       
       <!-- 不支持的文件类型 -->
-      <div v-else class="unsupported-container">
-        <div class="unsupported-icon">📄</div>
+      <div
+        v-else
+        class="unsupported-container"
+      >
+        <div class="unsupported-icon">
+          📄
+        </div>
         <h3>不支持的文件类型</h3>
         <p>当前文件类型 ({{ fileType }}) 暂不支持在线预览</p>
-        <button @click="download" class="download-btn">下载文档</button>
+        <button
+          class="download-btn"
+          @click="download"
+        >
+          下载文档
+        </button>
       </div>
     </div>
   </div>

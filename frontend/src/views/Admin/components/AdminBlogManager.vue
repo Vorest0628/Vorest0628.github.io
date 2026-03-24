@@ -2,7 +2,10 @@
   <div class="admin-blog-manager">
     <div class="manager-header">
       <h2>博客管理</h2>
-      <button @click="showCreateModal = true" class="create-btn">
+      <button
+        class="create-btn"
+        @click="showCreateModal = true"
+      >
         ➕ 创建博客
       </button>
     </div>
@@ -15,14 +18,25 @@
             v-model="searchQuery"
             placeholder="搜索博客标题或内容..."
             @input="filterBlogs"
-          />
+          >
         </div>
         <div class="filter-bar">
-          <select v-model="statusFilter" @change="filterBlogs">
-            <option value="">全部状态</option>
-            <option value="published">已发布</option>
-            <option value="draft">草稿</option>
-            <option value="pinned">置顶</option>
+          <select
+            v-model="statusFilter"
+            @change="filterBlogs"
+          >
+            <option value="">
+              全部状态
+            </option>
+            <option value="published">
+              已发布
+            </option>
+            <option value="draft">
+              草稿
+            </option>
+            <option value="pinned">
+              置顶
+            </option>
           </select>
         </div>
       </div>
@@ -40,11 +54,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="blog in filteredBlogs" :key="blog._id || blog.id">
+            <tr
+              v-for="blog in filteredBlogs"
+              :key="blog._id || blog.id"
+            >
               <td>
                 <div class="blog-title">
                   {{ blog.title }}
-                  <span v-if="blog.status === 'pinned'" class="pinned-indicator">📌</span>
+                  <span
+                    v-if="blog.status === 'pinned'"
+                    class="pinned-indicator"
+                  >📌</span>
                   <span class="blog-summary">{{ blog.excerpt }}</span>
                 </div>
               </td>
@@ -62,8 +82,18 @@
               <td>{{ formatDate(blog.updatedAt) }}</td>
               <td>
                 <div class="action-buttons">
-                  <button @click="editBlog(blog)" class="edit-btn">编辑</button>
-                  <button @click="deleteBlog(blog._id || blog.id)" class="delete-btn">删除</button>
+                  <button
+                    class="edit-btn"
+                    @click="editBlog(blog)"
+                  >
+                    编辑
+                  </button>
+                  <button
+                    class="delete-btn"
+                    @click="deleteBlog(blog._id || blog.id)"
+                  >
+                    删除
+                  </button>
                 </div>
               </td>
             </tr>
@@ -74,116 +104,242 @@
 
     <!-- 创建/编辑博客模态框 -->
     <Teleport to="body">
-      <div v-if="showCreateModal || showEditModal" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ showCreateModal ? '创建博客' : '编辑博客' }}</h3>
-          <button @click="closeModal" class="close-btn">✕</button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveBlog">
-            <div class="form-group">
-              <label>标题</label>
-              <input v-model="currentBlog.title" type="text" required />
-            </div>
-            <div class="form-group">
-              <label>摘要</label>
-              <div class="excerpt-wrapper">
-                <textarea v-model="currentBlog.excerpt" rows="3" placeholder="请输入博客摘要，或点击AI生成按钮自动生成..."></textarea>
-                <button type="button" class="ai-summary-btn" @click="generateAiExcerpt" :disabled="aiGenerating || !currentBlog.content">
-                  <span v-if="!aiGenerating">
-                    <span class="ai-icon">✨</span> AI生成摘要
-                  </span>
-                  <span v-else class="loading-text">
-                    <span class="spinner"></span> AI思考中...
-                  </span>
+      <div
+        v-if="showCreateModal || showEditModal"
+        class="modal-overlay"
+        @click="closeModal"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
+          <div class="modal-header">
+            <h3>{{ showCreateModal ? '创建博客' : '编辑博客' }}</h3>
+            <button
+              class="close-btn"
+              @click="closeModal"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="saveBlog">
+              <div class="form-group">
+                <label>标题</label>
+                <input
+                  v-model="currentBlog.title"
+                  type="text"
+                  required
+                >
+              </div>
+              <div class="form-group">
+                <label>摘要</label>
+                <div class="excerpt-wrapper">
+                  <textarea
+                    v-model="currentBlog.excerpt"
+                    rows="3"
+                    placeholder="请输入博客摘要，或点击AI生成按钮自动生成..."
+                  />
+                  <button
+                    type="button"
+                    class="ai-summary-btn"
+                    :disabled="aiGenerating || !currentBlog.content"
+                    @click="generateAiExcerpt"
+                  >
+                    <span v-if="!aiGenerating">
+                      <span class="ai-icon">✨</span> AI生成摘要
+                    </span>
+                    <span
+                      v-else
+                      class="loading-text"
+                    >
+                      <span class="spinner" /> AI思考中...
+                    </span>
+                  </button>
+                </div>
+                <div
+                  v-if="!currentBlog.content"
+                  class="hint-text"
+                >
+                  💡 提示：请先填写博客内容后再使用AI生成摘要
+                </div>
+                <div
+                  v-if="aiError"
+                  class="error-text"
+                >
+                  ❌ {{ aiError }}
+                </div>
+                <div
+                  v-if="aiSuccess"
+                  class="success-text"
+                >
+                  ✅ AI摘要生成成功！
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="content-header">
+                  <label>内容 (Markdown)</label>
+                  <button
+                    type="button"
+                    class="upload-md-btn"
+                    @click="triggerFileUpload"
+                  >
+                    从文件上传
+                  </button>
+                  <input
+                    ref="markdownFileInput"
+                    type="file"
+                    accept=".md"
+                    style="display: none;"
+                    @change="handleMarkdownUpload"
+                  >
+                  <button
+                    type="button"
+                    class="upload-md-btn"
+                    @click="triggerAssetsSelect"
+                  >
+                    添加资源
+                  </button>
+                  <input
+                    ref="assetsInput"
+                    type="file"
+                    multiple
+                    style="display: none;"
+                    accept="image/*,.zip"
+                    @change="handleAssetsSelect"
+                  >
+                  <span
+                    v-if="selectedAssetsFiles.length"
+                    class="assets-counter"
+                  >已添加 {{ selectedAssetsFiles.length }} 个资源</span>
+                </div>
+                <div class="markdown-editor">
+                  <textarea 
+                    ref="markdownTextarea" 
+                    v-model="currentBlog.content"
+                    rows="15" 
+                    required 
+                    class="markdown-input"
+                    @paste="handlePasteImage"
+                    @drop="handleDropImage"
+                    @dragover.prevent
+                  />
+                  <div
+                    class="markdown-preview"
+                    v-html="markdownPreview"
+                  />
+                </div>
+              </div>
+              <!-- 上传封面：位于内容下方、标签上方 -->
+              <div class="form-group">
+                <label>封面图（可选）</label>
+                <div class="cover-row">
+                  <input
+                    v-model="currentBlog.coverImage"
+                    type="text"
+                    placeholder="封面图 URL 或相对路径"
+                  >
+                  <input
+                    ref="coverInput"
+                    type="file"
+                    accept="image/*"
+                    style="display:none"
+                    @change="handleCoverUpload"
+                  >
+                  <button
+                    type="button"
+                    class="upload-md-btn"
+                    @click="triggerCoverSelect"
+                  >
+                    上传封面
+                  </button>
+                </div>
+                <div
+                  v-if="currentBlog.coverImage"
+                  class="cover-preview"
+                >
+                  <img
+                    :src="resolveCover(currentBlog.coverImage)"
+                    alt="封面预览"
+                    @error="onCoverPreviewError"
+                  >
+                </div>
+              </div>
+              <div class="form-group">
+                <label>标签</label>
+                <input
+                  v-model="currentBlog.tags"
+                  type="text"
+                  placeholder="用逗号分隔多个标签"
+                >
+              </div>
+              <div class="form-group">
+                <label>分类</label>
+                <select
+                  v-model="currentBlog.category"
+                  required
+                  @change="onCategoryChange"
+                >
+                  <option value="">
+                    请选择分类
+                  </option>
+                  <option
+                    v-for="category in availableCategories"
+                    :key="category"
+                    :value="category"
+                  >
+                    {{ category }}
+                  </option>
+                  <option value="__other__">
+                    其他
+                  </option>
+                </select>
+              
+                <!-- 自定义分类输入 -->
+                <div
+                  v-if="currentBlog.category === '__other__'"
+                  class="mt-2"
+                >
+                  <input 
+                    v-model="currentBlog.newCategoryText" 
+                    type="text" 
+                    placeholder="输入新分类名称" 
+                    required
+                    class="form-control"
+                  >
+                </div>
+              </div>
+              <div class="form-group">
+                <label>状态</label>
+                <select v-model="currentBlog.status">
+                  <option value="draft">
+                    草稿
+                  </option>
+                  <option value="published">
+                    发布
+                  </option>
+                  <option value="pinned">
+                    置顶
+                  </option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="cancel-btn"
+                  @click="closeModal"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  class="save-btn"
+                >
+                  {{ showCreateModal ? '创建' : '保存' }}
                 </button>
               </div>
-              <div v-if="!currentBlog.content" class="hint-text">
-                💡 提示：请先填写博客内容后再使用AI生成摘要
-              </div>
-              <div v-if="aiError" class="error-text">
-                ❌ {{ aiError }}
-              </div>
-              <div v-if="aiSuccess" class="success-text">
-                ✅ AI摘要生成成功！
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="content-header">
-                <label>内容 (Markdown)</label>
-                <button type="button" @click="triggerFileUpload" class="upload-md-btn">从文件上传</button>
-                <input type="file" ref="markdownFileInput" @change="handleMarkdownUpload" accept=".md" style="display: none;">
-                <button type="button" @click="triggerAssetsSelect" class="upload-md-btn">添加资源</button>
-                <input type="file" ref="assetsInput" @change="handleAssetsSelect" multiple style="display: none;" accept="image/*,.zip">
-                <span v-if="selectedAssetsFiles.length" class="assets-counter">已添加 {{ selectedAssetsFiles.length }} 个资源</span>
-
-              </div>
-              <div class="markdown-editor">
-                <textarea 
-                  v-model="currentBlog.content" 
-                  ref="markdownTextarea"
-                  rows="15" 
-                  required 
-                  class="markdown-input"
-                  @paste="handlePasteImage"
-                  @drop="handleDropImage"
-                  @dragover.prevent
-                ></textarea>
-                <div v-html="markdownPreview" class="markdown-preview"></div>
-              </div>
-            </div>
-            <!-- 上传封面：位于内容下方、标签上方 -->
-            <div class="form-group">
-              <label>封面图（可选）</label>
-              <div class="cover-row">
-                <input v-model="currentBlog.coverImage" type="text" placeholder="封面图 URL 或相对路径" />
-                <input type="file" ref="coverInput" accept="image/*" style="display:none" @change="handleCoverUpload">
-                <button type="button" class="upload-md-btn" @click="triggerCoverSelect">上传封面</button>
-              </div>
-              <div v-if="currentBlog.coverImage" class="cover-preview">
-                <img :src="resolveCover(currentBlog.coverImage)" alt="封面预览" @error="onCoverPreviewError" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>标签</label>
-              <input v-model="currentBlog.tags" type="text" placeholder="用逗号分隔多个标签" />
-            </div>
-            <div class="form-group">
-              <label>分类</label>
-              <select v-model="currentBlog.category" @change="onCategoryChange" required>
-                <option value="">请选择分类</option>
-                <option v-for="category in availableCategories" :key="category" :value="category">
-                  {{ category }}
-                </option>
-                <option value="__other__">其他</option>
-              </select>
-              
-              <!-- 自定义分类输入 -->
-              <div v-if="currentBlog.category === '__other__'" class="mt-2">
-                <input 
-                  v-model="currentBlog.newCategoryText" 
-                  type="text" 
-                  placeholder="输入新分类名称" 
-                  required
-                  class="form-control"
-                />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>状态</label>
-              <select v-model="currentBlog.status">
-                <option value="draft">草稿</option>
-                <option value="published">发布</option>
-                <option value="pinned">置顶</option>
-              </select>
-            </div>
-            <div class="form-actions">
-              <button type="button" @click="closeModal" class="cancel-btn">取消</button>
-              <button type="submit" class="save-btn">{{ showCreateModal ? '创建' : '保存' }}</button>
-            </div>
-          </form>
-        </div>
+            </form>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -264,8 +420,8 @@ renderer.image = (href = '', title, text) => {
     src = API_ORIGIN ? `${API_ORIGIN}${href}` : href
   }
   
-  const t = title ? ` title=\"${title}\"` : ''
-  return `<img src=\"${src}\" alt=\"${text || ''}\"${t} loading=\"lazy\" decoding=\"async\">`
+  const t = title ? ` title="${title}"` : ''
+  return `<img src="${src}" alt="${text || ''}"${t} loading="lazy" decoding="async">`
 }
 marked.setOptions({ renderer })
 
@@ -548,7 +704,7 @@ const saveBlog = async () => {
 
     let response
     // 如果内容中含有相对图片路径，且选择了本地资源，则使用导入接口以便后端统一上传并重写链接
-    const hasRelativeImages = /!\[[^\]]*\]\((?!https?:|data:|\/api\/blog\/)[^\)]+\)/i.test(blogData.content)
+    const hasRelativeImages = /!\[[^\]]*\]\((?!https?:|data:|\/api\/blog\/)[^)]+\)/i.test(blogData.content)
     if (hasRelativeImages && (selectedAssetsFiles.value?.length || 0) > 0) {
       const form = new FormData()
       const mdBlob = new Blob([blogData.content], { type: 'text/markdown' })

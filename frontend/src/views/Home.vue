@@ -2,59 +2,106 @@
   <div class="home">
     <section class="hero-section">
       <div class="hero-panel hero-copy">
-        <p class="hero-kicker">Summer ACG Vibe</p>
-        <h1 class="hero-title">Blog</h1>
+        <p class="hero-kicker">
+          Summer ACG Vibe
+        </p>
+        <h1 class="hero-title">
+          Blog
+        </h1>
         <p class="hero-desc">
           用清爽的天空色记录开发、灵感与日常。
         </p>
         <div class="hero-actions">
-          <button class="hero-btn primary" @click="router.push('/blog')">进入博客</button>
-          <button class="hero-btn ghost" @click="router.push('/documents')">文档库</button>
+          <button
+            class="hero-btn primary"
+            @click="router.push('/blog')"
+          >
+            进入博客
+          </button>
+          <button
+            class="hero-btn ghost"
+            @click="router.push('/documents')"
+          >
+            文档库
+          </button>
         </div>
       </div>
 
       <div class="hero-panel hero-info">
-        <p class="info-date">{{ currentDate }}</p>
-        <p class="info-time">{{ currentTime }}</p>
-        <p class="info-location">{{ weatherCard.location }} · {{ currentWeekday }}</p>
-        <p class="info-weather">{{ weatherHeadline }}</p>
-        <p class="info-tip">{{ weatherSummary }}</p>
-        <p class="info-meta">{{ weatherMeta }}</p>
+        <p class="info-date">
+          {{ currentDate }}
+        </p>
+        <p class="info-time">
+          {{ currentTime }}
+        </p>
+        <p class="info-location">
+          {{ weatherCard.location }} · {{ currentWeekday }}
+        </p>
+        <p class="info-weather">
+          {{ weatherHeadline }}
+        </p>
+        <p class="info-tip">
+          {{ weatherSummary }}
+        </p>
+        <p class="info-meta">
+          {{ weatherMeta }}
+        </p>
       </div>
     </section>
 
-    <section class="cloud-bridge" aria-label="动态云朵衔接区">
+    <section
+      class="cloud-bridge"
+      aria-label="动态云朵衔接区"
+    >
       <div class="cloud-track track-one">
-        <span class="cloud c1"></span>
-        <span class="cloud c2"></span>
-        <span class="cloud c3"></span>
-        <span class="cloud c4"></span>
-        <span class="cloud c5"></span>
+        <span class="cloud c1" />
+        <span class="cloud c2" />
+        <span class="cloud c3" />
+        <span class="cloud c4" />
+        <span class="cloud c5" />
       </div>
       <div class="cloud-track track-two">
-        <span class="cloud c6"></span>
-        <span class="cloud c7"></span>
-        <span class="cloud c8"></span>
-        <span class="cloud c9"></span>
+        <span class="cloud c6" />
+        <span class="cloud c7" />
+        <span class="cloud c8" />
+        <span class="cloud c9" />
       </div>
-      <div class="bridge-shimmer"></div>
-      <p class="bridge-label">Cloud Motion Zone · 动态云朵衔接预留区</p>
+      <div class="bridge-shimmer" />
+      <p class="bridge-label">
+        Cloud Motion Zone · 动态云朵衔接预留区
+      </p>
     </section>
 
     <section class="home-main">
       <section class="block">
         <div class="section-head">
           <h2>置顶内容</h2>
-          <button class="link-btn" @click="navigateToReadme">使用指南</button>
+          <button
+            class="link-btn"
+            @click="navigateToReadme"
+          >
+            使用指南
+          </button>
         </div>
 
-        <div v-if="pinnedDocuments.length === 0 && pinnedBlogs.length === 0" class="state-box empty">
+        <div
+          v-if="pinnedDocuments.length === 0 && pinnedBlogs.length === 0"
+          class="state-box empty"
+        >
           暂无置顶内容
         </div>
 
-        <div v-else class="pin-grid">
-          <article class="pin-card pin-card-special" @click="navigateToReadme">
-            <div class="pin-icon">📘</div>
+        <div
+          v-else
+          class="pin-grid"
+        >
+          <article
+            class="pin-card pin-card-special"
+            @click="navigateToReadme"
+          >
+            <div class="pin-icon">
+              📘
+            </div>
             <div class="pin-body">
               <h3>网站使用指南</h3>
               <p>快速了解站点功能、分类结构和常见问题。</p>
@@ -68,7 +115,9 @@
             class="pin-card"
             @click="navigateToDocument(doc)"
           >
-            <div class="pin-icon">📄</div>
+            <div class="pin-icon">
+              📄
+            </div>
             <div class="pin-body">
               <h3>{{ doc.title }}</h3>
               <p>{{ getDocumentExcerpt(doc) }}</p>
@@ -85,7 +134,9 @@
             class="pin-card"
             @click="navigateToBlog(blog)"
           >
-            <div class="pin-icon">📝</div>
+            <div class="pin-icon">
+              📝
+            </div>
             <div class="pin-body">
               <h3>{{ blog.title }}</h3>
               <p>{{ blog.description || blog.excerpt || '点击阅读完整内容。' }}</p>
@@ -101,19 +152,45 @@
       <section class="block">
         <div class="section-head">
           <h2>最近博客</h2>
-          <button class="link-btn" @click="router.push('/blog')">查看全部</button>
+          <button
+            class="link-btn"
+            @click="router.push('/blog')"
+          >
+            查看全部
+          </button>
         </div>
 
-        <div v-if="loading" class="state-box">内容加载中...</div>
+        <div
+          v-if="loading"
+          class="state-box"
+        >
+          内容加载中...
+        </div>
 
-        <div v-else-if="error" class="state-box error">
+        <div
+          v-else-if="error"
+          class="state-box error"
+        >
           <span>{{ error }}</span>
-          <button class="retry-btn" @click="loadContent">重试</button>
+          <button
+            class="retry-btn"
+            @click="loadContent"
+          >
+            重试
+          </button>
         </div>
 
-        <div v-else-if="recentBlogs.length === 0" class="state-box empty">暂无最近博客</div>
+        <div
+          v-else-if="recentBlogs.length === 0"
+          class="state-box empty"
+        >
+          暂无最近博客
+        </div>
 
-        <div v-else class="recent-list">
+        <div
+          v-else
+          class="recent-list"
+        >
           <article
             v-for="blog in recentBlogs"
             :key="blog.id || blog._id"
@@ -125,7 +202,10 @@
             <div class="meta-line">
               <span class="pill">{{ formatDate(blog.publishedAt || blog.createdAt || blog.date) }}</span>
               <span class="pill">{{ blog.category || '未分类' }}</span>
-              <span v-if="blog.tags && blog.tags.length" class="pill">
+              <span
+                v-if="blog.tags && blog.tags.length"
+                class="pill"
+              >
                 {{ blog.tags.slice(0, 2).join(' · ') }}
               </span>
             </div>

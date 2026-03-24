@@ -6,8 +6,13 @@
         <h1 v-if="searchQuery">
           "{{ searchQuery }}" 的搜索结果
         </h1>
-        <h1 v-else>搜索结果</h1>
-        <div v-if="searchQuery && !loading" class="result-stats">
+        <h1 v-else>
+          搜索结果
+        </h1>
+        <div
+          v-if="searchQuery && !loading"
+          class="result-stats"
+        >
           找到约 {{ total }} 个结果 ({{ searchTime }}秒)
         </div>
       </div>
@@ -36,23 +41,44 @@
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading">
-      <div class="loading-spinner"></div>
+    <div
+      v-if="loading"
+      class="loading"
+    >
+      <div class="loading-spinner" />
       <p>正在搜索...</p>
     </div>
 
     <!-- 错误状态 -->
-    <div v-if="error" class="error-message">
-      <div class="error-icon">❌</div>
+    <div
+      v-if="error"
+      class="error-message"
+    >
+      <div class="error-icon">
+        ❌
+      </div>
       <p>{{ error }}</p>
-      <button @click="retry" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="retry"
+      >
+        重试
+      </button>
     </div>
 
     <!-- 搜索结果 -->
-    <div v-if="!loading && !error" class="search-results">
+    <div
+      v-if="!loading && !error"
+      class="search-results"
+    >
       <!-- 无结果 -->
-      <div v-if="displayResults.length === 0 && searchQuery && !loading" class="no-results">
-        <div class="no-results-icon">🔍</div>
+      <div
+        v-if="displayResults.length === 0 && searchQuery && !loading"
+        class="no-results"
+      >
+        <div class="no-results-icon">
+          🔍
+        </div>
         <h3>未找到相关结果</h3>
         <p>尝试使用不同的关键词或检查拼写</p>
         <div class="search-suggestions">
@@ -67,7 +93,10 @@
       </div>
 
       <!-- 结果列表 -->
-      <div v-else class="results-list">
+      <div
+        v-else
+        class="results-list"
+      >
         <div 
           v-for="result in displayResults" 
           :key="`${result.type}-${result.id}`" 
@@ -77,12 +106,17 @@
           <div class="result-header">
             <span class="result-icon">{{ result.icon }}</span>
             <span class="result-type">{{ result.typeLabel }}</span>
-            <span v-if="result.fileType" class="file-type">{{ result.fileType }}</span>
+            <span
+              v-if="result.fileType"
+              class="file-type"
+            >{{ result.fileType }}</span>
           </div>
 
           <!-- 标题 -->
           <h3 class="result-title">
-            <router-link :to="result.url" v-html="result.title"></router-link>
+            <router-link :to="result.url">
+              <span v-html="result.title" />
+            </router-link>
           </h3>
 
           <!-- URL预览 -->
@@ -92,24 +126,44 @@
 
           <!-- 摘要和片段 -->
           <div class="result-content">
-            <p v-if="result.excerpt" v-html="result.excerpt" class="result-excerpt"></p>
-            <p v-if="result.snippet" v-html="result.snippet" class="result-snippet"></p>
+            <p
+              v-if="result.excerpt"
+              class="result-excerpt"
+              v-html="result.excerpt"
+            />
+            <p
+              v-if="result.snippet"
+              class="result-snippet"
+              v-html="result.snippet"
+            />
           </div>
 
           <!-- 元数据 -->
           <div class="result-meta">
             <span class="result-date">{{ formatDate(result.date) }}</span>
-            <span v-if="result.category" class="result-category">{{ result.category }}</span>
-            <span v-if="result.downloadCount" class="download-count">
+            <span
+              v-if="result.category"
+              class="result-category"
+            >{{ result.category }}</span>
+            <span
+              v-if="result.downloadCount"
+              class="download-count"
+            >
               下载: {{ result.downloadCount }}
             </span>
-            <span v-if="result.fileSize" class="file-size">
+            <span
+              v-if="result.fileSize"
+              class="file-size"
+            >
               大小: {{ formatFileSize(result.fileSize) }}
             </span>
           </div>
 
           <!-- 标签 -->
-          <div v-if="result.tags && result.tags.length" class="result-tags">
+          <div
+            v-if="result.tags && result.tags.length"
+            class="result-tags"
+          >
             <span 
               v-for="tag in result.tags.slice(0, 3)" 
               :key="tag" 
@@ -117,7 +171,10 @@
             >
               {{ tag }}
             </span>
-            <span v-if="result.tags.length > 3" class="more-tags">
+            <span
+              v-if="result.tags.length > 3"
+              class="more-tags"
+            >
               +{{ result.tags.length - 3 }}
             </span>
           </div>
@@ -125,11 +182,14 @@
       </div>
 
       <!-- 分页 -->
-      <div v-if="totalPages > 1" class="pagination">
+      <div
+        v-if="totalPages > 1"
+        class="pagination"
+      >
         <button 
-          @click="goToPage(currentPage - 1)"
           :disabled="currentPage === 1"
           class="page-btn"
+          @click="goToPage(currentPage - 1)"
         >
           上一页
         </button>
@@ -138,17 +198,17 @@
           <button
             v-for="page in visiblePages"
             :key="page"
-            @click="goToPage(page)"
             :class="['page-number', { active: page === currentPage }]"
+            @click="goToPage(page)"
           >
             {{ page }}
           </button>
         </div>
 
         <button 
-          @click="goToPage(currentPage + 1)"
           :disabled="currentPage === totalPages"
           class="page-btn"
+          @click="goToPage(currentPage + 1)"
         >
           下一页
         </button>

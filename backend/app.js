@@ -1,14 +1,49 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+const fs = require('fs')
 const path = require('path')
+const dotenv = require('dotenv')
 const { errorHandler } = require('./utils/error')
 
 // 检查是否在Vercel环境中
 const isVercel = process.env.VERCEL === '1'
 
-// 配置dotenv读取setting.env文件
-require('dotenv').config({ path: path.join(__dirname, 'setting.env') })
+// 依次加载本地环境变量文件，保留运行环境中已注入的变量
+const envCandidates = [
+  path.join(__dirname, 'setting.env'),
+  path.join(__dirname, '.env'),
+  path.join(process.cwd(), 'setting.env'),
+  path.join(process.cwd(), '.env')
+]
+
+const loadedEnvFiles = []
+for (const envPath of envCandidates) {
+  if (!fs.existsSync(envPath)) continue
+
+  const result = dotenv.config({ path: envPath, override: false })
+  if (!result.error) {
+    loadedEnvFiles.push(path.relative(process.cwd(), envPath) || path.basename(envPath))
+  }
+}
+
+const ENV_HELP_MESSAGE = '请复制 backend/setting.env.example 为 backend/setting.env，并填写有效的 MONGODB_URI，或在运行环境中直接注入该变量。'
+
+const resolveMongoUri = () => {
+  const candidates = [
+    process.env.MONGODB_URI,
+    process.env.MONGO_URI,
+    process.env.MONGO_URL
+  ]
+
+  const uri = candidates.find(value => typeof value === 'string' && value.trim())
+  return uri ? uri.trim() : ''
+}
+
+const maskMongoUri = (uri) => {
+  if (!uri) return 'undefined'
+  return uri.replace(/\/\/([^:@/]+):([^@/]+)@/, '//$1:***@')
+}
 
 // 创建Express应用实例
 const app = express()
@@ -18,10 +53,10 @@ console.log('🔍 环境检查:')
 console.log('NODE_ENV:', process.env.NODE_ENV)
 console.log('VERCEL:', process.env.VERCEL)
 console.log('isVercel:', isVercel)
-console.log('MONGODB_URI存在:', !!process.env.MONGODB_URI)
-console.log('MONGODB_URI长度:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0)
-console.log('MONGODB_URI前缀:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'undefined')
-console.log('MONGODB_URI完整值:', process.env.MONGODB_URI)
+console.log('已加载环境文件:', loadedEnvFiles.length ? loadedEnvFiles.join(', ') : '未找到本地环境文件，继续读取系统环境变量')
+console.log('MONGODB_URI存在:', !!resolveMongoUri())
+console.log('MONGODB_URI长度:', resolveMongoUri() ? resolveMongoUri().length : 0)
+console.log('MONGODB_URI掩码:', maskMongoUri(resolveMongoUri()))
 console.log('所有环境变量:', Object.keys(process.env).filter(key => key.includes('MONGODB') || key.includes('VERCEL')))
 console.log('🔄 CORS配置已更新 - 包含HTTP和HTTPS域名')
 
@@ -76,6 +111,14 @@ app.get('/api/health', (req, res) => {
 // 数据库连接状态中间件
 app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
+    if (!resolveMongoUri()) {
+      return res.status(503).json({
+        success: false,
+        message: `${databaseConfigError || '数据库未配置。'} ${ENV_HELP_MESSAGE}`.trim(),
+        readyState: mongoose.connection.readyState
+      })
+    }
+
     console.log('⚠️ 数据库连接未就绪，尝试重连...')
     console.log('🔍 当前连接状态:', mongoose.connection.readyState)
     
@@ -151,7 +194,7 @@ app.use((err, req, res, next) => {
 })
 
 // 数据库连接
-let MONGODB_URI = process.env.MONGODB_URI
+let databaseConfigError = ''
 
 console.log('🔗 尝试连接数据库...')
 
@@ -170,9 +213,17 @@ const connectDB = async (retryCount = 0) => {
       console.log('✅ 数据库已连接')
       return
     }
+
+    const mongoUri = resolveMongoUri()
+    if (!mongoUri) {
+      databaseConfigError = '未检测到 MONGODB_URI 环境变量。'
+      throw new Error(`${databaseConfigError} ${ENV_HELP_MESSAGE}`)
+    }
+
+    databaseConfigError = ''
     
     console.log(`🔗 尝试连接数据库... (第${retryCount + 1}次)`)
-    await mongoose.connect(MONGODB_URI, mongooseOptions)
+    await mongoose.connect(mongoUri, mongooseOptions)
     
     // 等待连接完全建立
     let waitRetries = 0
@@ -183,14 +234,17 @@ const connectDB = async (retryCount = 0) => {
     }
     
     if (mongoose.connection.readyState === 1) {
-    console.log('✅ 数据库连接成功')
-      console.log('📍 连接地址:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@'))
+      console.log('✅ 数据库连接成功')
+      console.log('📍 连接地址:', maskMongoUri(mongoUri))
     } else {
       throw new Error('连接超时')
     }
   } catch (err) {
     console.error('❌ 数据库连接失败:', err.message)
-    console.error('🔍 完整错误:', err)
+
+    if (!databaseConfigError) {
+      console.error('🔍 完整错误:', err)
+    }
     
     if (isVercel) {
       if (err.message.includes('whitelist') || err.message.includes('IP')) {
@@ -199,6 +253,11 @@ const connectDB = async (retryCount = 0) => {
       } else {
         console.error('🔍 请检查MongoDB Atlas网络访问设置')
       }
+    }
+
+    if (databaseConfigError) {
+      console.error('🛠️ 配置指引:', ENV_HELP_MESSAGE)
+      return
     }
     
     // 如果是网络问题，尝试重连
@@ -210,17 +269,28 @@ const connectDB = async (retryCount = 0) => {
   }
 }
 
-// 立即连接数据库
-connectDB()
+const initialMongoUri = resolveMongoUri()
+if (!initialMongoUri) {
+  databaseConfigError = '未检测到 MONGODB_URI 环境变量。'
+  console.error(`❌ ${databaseConfigError} ${ENV_HELP_MESSAGE}`)
+}
+
+if (initialMongoUri) {
+  connectDB()
+}
 
 // Vercel适配：只在非Vercel环境中启动服务器
 if (!isVercel) {
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`🚀 服务器运行在端口 ${PORT}`)
-  console.log(`📖 API文档: http://localhost:${PORT}/api/health`)
-  console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
-})
+  if (!initialMongoUri) {
+    process.exitCode = 1
+  } else {
+    const PORT = process.env.PORT || 3000
+    app.listen(PORT, () => {
+      console.log(`🚀 服务器运行在端口 ${PORT}`)
+      console.log(`📖 API文档: http://localhost:${PORT}/api/health`)
+      console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
+    })
+  }
 } else {
   console.log('✅ Vercel环境配置完成，等待函数调用...')
   

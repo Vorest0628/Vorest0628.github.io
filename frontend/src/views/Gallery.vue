@@ -1,9 +1,13 @@
 <template>
   <div class="gallery-page">
     <header class="page-head">
-      <p class="head-kicker">Visual Board</p>
+      <p class="head-kicker">
+        Visual Board
+      </p>
       <h1>图库展示</h1>
-      <p class="head-desc">精选图像集合，支持分类与标签筛选。</p>
+      <p class="head-desc">
+        精选图像集合，支持分类与标签筛选。
+      </p>
     </header>
 
     <section class="filter-card">
@@ -22,7 +26,10 @@
         </div>
       </div>
 
-      <div v-if="availableTags.length > 0" class="filter-group">
+      <div
+        v-if="availableTags.length > 0"
+        class="filter-group"
+      >
         <h3>标签</h3>
         <div class="filter-pills">
           <button
@@ -45,18 +52,32 @@
       </div>
     </section>
 
-    <div v-if="loading" class="state-box">
-      <div class="state-spinner"></div>
+    <div
+      v-if="loading"
+      class="state-box"
+    >
+      <div class="state-spinner" />
       <p>正在加载图片...</p>
     </div>
 
-    <div v-else-if="error" class="state-box error">
+    <div
+      v-else-if="error"
+      class="state-box error"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="loadImages">重试</button>
+      <button
+        class="retry-btn"
+        @click="loadImages"
+      >
+        重试
+      </button>
     </div>
 
-    <section v-else class="masonry-grid">
+    <section
+      v-else
+      class="masonry-grid"
+    >
       <article
         v-for="(image, index) in filteredImages"
         :key="image._id || image.id"
@@ -70,13 +91,18 @@
             :alt="image.title"
             loading="lazy"
             @error="handleImageError"
-          />
+          >
           <div class="image-overlay">
             <h4>{{ image.title }}</h4>
-            <p v-if="image.description">{{ image.description }}</p>
+            <p v-if="image.description">
+              {{ image.description }}
+            </p>
             <div class="meta-line">
               <span class="pill category">{{ image.category || '未分类' }}</span>
-              <span v-if="image.secondaryTags && image.secondaryTags.length" class="pill">
+              <span
+                v-if="image.secondaryTags && image.secondaryTags.length"
+                class="pill"
+              >
                 {{ image.secondaryTags.slice(0, 2).join(' · ') }}
               </span>
             </div>
@@ -85,31 +111,59 @@
       </article>
     </section>
 
-    <div v-if="!loading && !error && filteredImages.length === 0" class="state-box empty">
+    <div
+      v-if="!loading && !error && filteredImages.length === 0"
+      class="state-box empty"
+    >
       <h3>暂无图片</h3>
       <p>{{ getEmptyStateMessage() }}</p>
     </div>
 
     <Teleport to="body">
-      <div v-if="showLightbox" class="lightbox-overlay" @click="closeLightbox">
-        <div class="lightbox-container" @click.stop>
-          <button class="lightbox-close" @click="closeLightbox">
-            <i class="fas fa-xmark"></i>
+      <div
+        v-if="showLightbox"
+        class="lightbox-overlay"
+        @click="closeLightbox"
+      >
+        <div
+          class="lightbox-container"
+          @click.stop
+        >
+          <button
+            class="lightbox-close"
+            @click="closeLightbox"
+          >
+            <i class="fas fa-xmark" />
           </button>
 
           <div class="lightbox-image">
-            <img :src="getImageUrl(currentImage?.fullSize || currentImage?.thumbnail)" :alt="currentImage?.title" />
+            <img
+              :src="getImageUrl(currentImage?.fullSize || currentImage?.thumbnail)"
+              :alt="currentImage?.title"
+            >
           </div>
 
           <div class="lightbox-info">
             <h3>{{ currentImage?.title }}</h3>
-            <p v-if="currentImage?.description">{{ currentImage.description }}</p>
+            <p v-if="currentImage?.description">
+              {{ currentImage.description }}
+            </p>
             <div class="meta-line">
               <span class="pill category">{{ currentImage?.category || '未分类' }}</span>
-              <span v-if="currentImage?.date" class="pill">{{ formatDate(currentImage.date) }}</span>
+              <span
+                v-if="currentImage?.date"
+                class="pill"
+              >{{ formatDate(currentImage.date) }}</span>
             </div>
-            <div class="tag-line" v-if="currentImage?.secondaryTags && currentImage.secondaryTags.length">
-              <span v-for="tag in currentImage.secondaryTags" :key="tag" class="tag-item">{{ tag }}</span>
+            <div
+              v-if="currentImage?.secondaryTags && currentImage.secondaryTags.length"
+              class="tag-line"
+            >
+              <span
+                v-for="tag in currentImage.secondaryTags"
+                :key="tag"
+                class="tag-item"
+              >{{ tag }}</span>
             </div>
           </div>
 
@@ -118,14 +172,14 @@
             class="lightbox-nav prev"
             @click="previousImage"
           >
-            <i class="fas fa-chevron-left"></i>
+            <i class="fas fa-chevron-left" />
           </button>
           <button
             v-if="currentImageIndex < filteredImages.length - 1"
             class="lightbox-nav next"
             @click="nextImage"
           >
-            <i class="fas fa-chevron-right"></i>
+            <i class="fas fa-chevron-right" />
           </button>
         </div>
       </div>

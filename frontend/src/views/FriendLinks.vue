@@ -20,28 +20,42 @@
       <button 
         v-for="category in categories" 
         :key="category"
-        @click="filterByCategory(category)"
         :class="{ active: selectedCategory === category }"
         class="category-btn"
+        @click="filterByCategory(category)"
       >
         {{ category }}
       </button>
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载友情链接...</p>
     </div>
 
     <!-- 错误状态 -->
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getFriendLinks" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getFriendLinks"
+      >
+        重试
+      </button>
     </div>
 
     <!-- 友链列表 -->
-    <div v-else class="links-grid">
+    <div
+      v-else
+      class="links-grid"
+    >
       <div 
         v-for="link in filteredLinks" 
         :key="link._id || link.id"
@@ -49,7 +63,10 @@
         @click="visitLink(link)"
       >
         <div class="link-avatar">
-          <img :src="getLinkAvatar(link.avatar)" :alt="link.name" />
+          <img
+            :src="getLinkAvatar(link.avatar)"
+            :alt="link.name"
+          >
         </div>
         
         <div class="link-info">
@@ -57,11 +74,17 @@
           <p>{{ link.description || '暂无描述' }}</p>
           <div class="link-meta">
             <span class="link-category">{{ link.category }}</span>
-            <span class="link-status" :class="getStatusClass(link.isActive)">
+            <span
+              class="link-status"
+              :class="getStatusClass(link.isActive)"
+            >
               {{ getStatusText(link.isActive) }}
             </span>
           </div>
-          <div v-if="link.tags && link.tags.length" class="link-tags">
+          <div
+            v-if="link.tags && link.tags.length"
+            class="link-tags"
+          >
             <span 
               v-for="tag in link.tags" 
               :key="tag"
@@ -73,7 +96,12 @@
         </div>
         
         <div class="link-actions">
-          <a :href="getFormattedUrl(link.url)" target="_blank" class="visit-btn" @click.stop>
+          <a
+            :href="getFormattedUrl(link.url)"
+            target="_blank"
+            class="visit-btn"
+            @click.stop
+          >
             🔗 访问
           </a>
           <span class="visit-count">访问: {{ link.visitCount || 0 }}</span>
@@ -82,7 +110,10 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && !error && filteredLinks.length === 0" class="empty-state">
+    <div
+      v-if="!loading && !error && filteredLinks.length === 0"
+      class="empty-state"
+    >
       <h3>暂无友链</h3>
       <p>该分类下还没有友情链接</p>
     </div>

@@ -1,9 +1,16 @@
 <template>
   <Teleport to="body">
-    <nav ref="navElement" class="main-nav">
+    <nav
+      ref="navElement"
+      class="main-nav"
+    >
       <div class="nav-top">
-        <router-link to="/" class="site-brand" @click="handleRouteClick">
-          <span class="brand-orb"></span>
+        <router-link
+          to="/"
+          class="site-brand"
+          @click="handleRouteClick"
+        >
+          <span class="brand-orb" />
           <span class="brand-text">Main Website</span>
         </router-link>
 
@@ -13,17 +20,40 @@
           :aria-label="mobileMenuOpen ? '收起菜单' : '展开菜单'"
           @click="toggleMobileMenu"
         >
-          <i :class="mobileMenuOpen ? 'fas fa-xmark' : 'fas fa-bars'"></i>
+          <i :class="mobileMenuOpen ? 'fas fa-xmark' : 'fas fa-bars'" />
         </button>
       </div>
 
-      <div class="nav-content" :class="{ open: mobileMenuOpen }">
+      <div
+        class="nav-content"
+        :class="{ open: mobileMenuOpen }"
+      >
         <ul class="nav-menu">
-          <li><router-link to="/" @click="handleRouteClick">主页</router-link></li>
-          <li><router-link to="/blog" @click="handleRouteClick">博客</router-link></li>
+          <li>
+            <router-link
+              to="/"
+              @click="handleRouteClick"
+            >
+              主页
+            </router-link>
+          </li>
+          <li>
+            <router-link
+              to="/blog"
+              @click="handleRouteClick"
+            >
+              博客
+            </router-link>
+          </li>
 
           <li>
-            <button class="nav-link-btn toolbox-btn" type="button" @click="handleToolbox">工具箱</button>
+            <button
+              class="nav-link-btn toolbox-btn"
+              type="button"
+              @click="handleToolbox"
+            >
+              工具箱
+            </button>
           </li>
 
           <li
@@ -31,14 +61,35 @@
             @mouseenter="setDesktopDropdown('resources', true)"
             @mouseleave="setDesktopDropdown('resources', false)"
           >
-            <button class="dropdown-toggle" type="button" @click="toggleDropdown('resources')">
+            <button
+              class="dropdown-toggle"
+              type="button"
+              @click="toggleDropdown('resources')"
+            >
               资源库
-              <i class="fas fa-angle-down"></i>
+              <i class="fas fa-angle-down" />
             </button>
             <transition name="dropdown">
-              <ul v-show="showResourcesDropdown" class="dropdown-menu">
-                <li><router-link to="/gallery" @click="handleRouteClick">图库</router-link></li>
-                <li><router-link to="/documents" @click="handleRouteClick">文档库</router-link></li>
+              <ul
+                v-show="showResourcesDropdown"
+                class="dropdown-menu"
+              >
+                <li>
+                  <router-link
+                    to="/gallery"
+                    @click="handleRouteClick"
+                  >
+                    图库
+                  </router-link>
+                </li>
+                <li>
+                  <router-link
+                    to="/documents"
+                    @click="handleRouteClick"
+                  >
+                    文档库
+                  </router-link>
+                </li>
               </ul>
             </transition>
           </li>
@@ -48,15 +99,43 @@
             @mouseenter="setDesktopDropdown('others', true)"
             @mouseleave="setDesktopDropdown('others', false)"
           >
-            <button class="dropdown-toggle" type="button" @click="toggleDropdown('others')">
+            <button
+              class="dropdown-toggle"
+              type="button"
+              @click="toggleDropdown('others')"
+            >
               其他
-              <i class="fas fa-angle-down"></i>
+              <i class="fas fa-angle-down" />
             </button>
             <transition name="dropdown">
-              <ul v-show="showOthersDropdown" class="dropdown-menu">
-                <li><router-link to="/comments" @click="handleRouteClick">评论</router-link></li>
-                <li><router-link to="/friends" @click="handleRouteClick">友情链接</router-link></li>
-                <li><router-link to="/about" @click="handleRouteClick">关于我</router-link></li>
+              <ul
+                v-show="showOthersDropdown"
+                class="dropdown-menu"
+              >
+                <li>
+                  <router-link
+                    to="/comments"
+                    @click="handleRouteClick"
+                  >
+                    评论
+                  </router-link>
+                </li>
+                <li>
+                  <router-link
+                    to="/friends"
+                    @click="handleRouteClick"
+                  >
+                    友情链接
+                  </router-link>
+                </li>
+                <li>
+                  <router-link
+                    to="/about"
+                    @click="handleRouteClick"
+                  >
+                    关于我
+                  </router-link>
+                </li>
               </ul>
             </transition>
           </li>
@@ -70,30 +149,52 @@
               :title="authStore.isAdmin ? '管理员控制台' : '用户面板'"
               @click="goToUserPanel"
             >
-              <i class="fas fa-sliders"></i>
+              <i class="fas fa-sliders" />
               {{ authStore.isAdmin ? '控制台' : '用户面板' }}
             </button>
-            <button type="button" class="logout-btn" title="退出登录" @click="handleLogout">
-              <i class="fas fa-right-from-bracket"></i>
+            <button
+              type="button"
+              class="logout-btn"
+              title="退出登录"
+              @click="handleLogout"
+            >
+              <i class="fas fa-right-from-bracket" />
             </button>
           </template>
           <template v-else>
-            <button type="button" class="login-btn" title="用户登录" @click="handleShowLogin">
-              <i class="fas fa-user"></i>
+            <button
+              type="button"
+              class="login-btn"
+              title="用户登录"
+              @click="handleShowLogin"
+            >
+              <i class="fas fa-user" />
               登录
             </button>
           </template>
 
-          <form class="search-form" @submit.prevent="handleSearch">
-            <input v-model="searchQuery" type="search" placeholder="搜索博客或文档..." />
-            <button type="submit"><i class="fas fa-magnifying-glass"></i></button>
+          <form
+            class="search-form"
+            @submit.prevent="handleSearch"
+          >
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="搜索博客或文档..."
+            >
+            <button type="submit">
+              <i class="fas fa-magnifying-glass" />
+            </button>
           </form>
         </div>
       </div>
     </nav>
   </Teleport>
 
-  <div class="nav-placeholder" :style="{ height: `${navHeight}px` }"></div>
+  <div
+    class="nav-placeholder"
+    :style="{ height: `${navHeight}px` }"
+  />
 </template>
 
 <script setup>

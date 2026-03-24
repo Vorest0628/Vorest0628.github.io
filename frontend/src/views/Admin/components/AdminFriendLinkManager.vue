@@ -2,58 +2,116 @@
   <div class="admin-friend-link-manager">
     <div class="manager-header">
       <h2>友情链接管理</h2>
-      <button @click="showCreateModal = true" class="create-btn">
+      <button
+        class="create-btn"
+        @click="showCreateModal = true"
+      >
         ➕ 添加友情链接
       </button>
     </div>
 
     <!-- 筛选选项 -->
     <div class="filter-bar">
-      <select v-model="statusFilter" @change="filterFriendLinks">
-        <option value="">全部状态</option>
-        <option value="approved">已通过</option>
-        <option value="pending">待审核</option>
-        <option value="rejected">已拒绝</option>
+      <select
+        v-model="statusFilter"
+        @change="filterFriendLinks"
+      >
+        <option value="">
+          全部状态
+        </option>
+        <option value="approved">
+          已通过
+        </option>
+        <option value="pending">
+          待审核
+        </option>
+        <option value="rejected">
+          已拒绝
+        </option>
       </select>
-      <select v-model="categoryFilter" @change="filterFriendLinks">
-        <option value="">全部分类</option>
-        <option value="个人博客">个人博客</option>
-        <option value="技术社区">技术社区</option>
-        <option value="学习资源">学习资源</option>
-        <option value="工具网站">工具网站</option>
-        <option value="其他">其他</option>
+      <select
+        v-model="categoryFilter"
+        @change="filterFriendLinks"
+      >
+        <option value="">
+          全部分类
+        </option>
+        <option value="个人博客">
+          个人博客
+        </option>
+        <option value="技术社区">
+          技术社区
+        </option>
+        <option value="学习资源">
+          学习资源
+        </option>
+        <option value="工具网站">
+          工具网站
+        </option>
+        <option value="其他">
+          其他
+        </option>
       </select>
       <input
         v-model="searchQuery"
         placeholder="搜索网站名称或描述..."
         @input="filterFriendLinks"
-      />
+      >
     </div>
 
     <!-- 友情链接列表 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载友情链接...</p>
     </div>
     
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getFriendLinks" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getFriendLinks"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="friend-links-grid">
-      <div v-for="link in filteredFriendLinks" :key="link._id || link.id" class="link-card">
+    <div
+      v-else
+      class="friend-links-grid"
+    >
+      <div
+        v-for="link in filteredFriendLinks"
+        :key="link._id || link.id"
+        class="link-card"
+      >
         <div class="link-header">
-          <img :src="getLinkAvatar(link.avatar)" :alt="link.name" class="link-logo" />
+          <img
+            :src="getLinkAvatar(link.avatar)"
+            :alt="link.name"
+            class="link-logo"
+          >
           <div class="link-info">
-            <div class="link-name">{{ link.name }}</div>
+            <div class="link-name">
+              {{ link.name }}
+            </div>
             <div class="link-url">
-              <a :href="link.url" target="_blank">{{ link.url }}</a>
+              <a
+                :href="link.url"
+                target="_blank"
+              >{{ link.url }}</a>
             </div>
           </div>
         </div>
         <div class="link-content">
-                        <div class="link-description">{{ link.description || '暂无描述' }}</div>
+          <div class="link-description">
+            {{ link.description || '暂无描述' }}
+          </div>
           <div class="link-meta">
             <span class="category">{{ link.category }}</span>
             <span :class="['status', getStatusClass(link.isActive)]">
@@ -63,120 +121,192 @@
           </div>
         </div>
         <div class="link-actions">
-          <button @click="editFriendLink(link)" class="edit-btn">编辑</button>
+          <button
+            class="edit-btn"
+            @click="editFriendLink(link)"
+          >
+            编辑
+          </button>
           <button 
             v-if="!link.isActive" 
-            @click="toggleLinkStatus(link._id || link.id, true)" 
-            class="approve-btn"
+            class="approve-btn" 
+            @click="toggleLinkStatus(link._id || link.id, true)"
           >
             通过
           </button>
           <button 
             v-if="link.isActive" 
-            @click="toggleLinkStatus(link._id || link.id, false)" 
-            class="reject-btn"
+            class="reject-btn" 
+            @click="toggleLinkStatus(link._id || link.id, false)"
           >
             禁用
           </button>
-          <button @click="deleteFriendLink(link._id || link.id)" class="delete-btn">删除</button>
+          <button
+            class="delete-btn"
+            @click="deleteFriendLink(link._id || link.id)"
+          >
+            删除
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && !error && filteredFriendLinks.length === 0" class="empty-state">
+    <div
+      v-if="!loading && !error && filteredFriendLinks.length === 0"
+      class="empty-state"
+    >
       <h3>暂无友情链接</h3>
       <p>还没有任何友情链接，点击添加按钮开始创建</p>
     </div>
 
     <!-- 创建/编辑模态框 -->
     <Teleport to="body">
-      <div v-if="showCreateModal || showEditModal" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ isEditing ? '编辑友情链接' : '添加友情链接' }}</h3>
-          <button @click="closeModal" class="close-btn">✕</button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveFriendLink">
-            <div class="form-group">
-              <label>网站名称</label>
-              <input v-model="currentFriendLink.name" type="text" required />
-            </div>
-            <div class="form-group">
-              <label>网站地址</label>
-              <div class="url-input-group">
-                <input 
-                  v-model="currentFriendLink.url" 
-                  type="text" 
-                  required 
-                  placeholder="例如：www.example.com 或 https://www.example.com"
-                  @blur="handleUrlBlur"
-                />
-                <button 
-                  type="button" 
-                  @click="fetchFavicon" 
-                  class="fetch-favicon-btn"
-                  :disabled="fetchingFavicon || !currentFriendLink.url"
+      <div
+        v-if="showCreateModal || showEditModal"
+        class="modal-overlay"
+        @click="closeModal"
+      >
+        <div
+          class="modal-content"
+          @click.stop
+        >
+          <div class="modal-header">
+            <h3>{{ isEditing ? '编辑友情链接' : '添加友情链接' }}</h3>
+            <button
+              class="close-btn"
+              @click="closeModal"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="saveFriendLink">
+              <div class="form-group">
+                <label>网站名称</label>
+                <input
+                  v-model="currentFriendLink.name"
+                  type="text"
+                  required
                 >
-                  {{ fetchingFavicon ? '获取中...' : '🔄 获取图标' }}
-                </button>
               </div>
-            </div>
-            <div class="form-group">
-              <label>网站描述</label>
-              <textarea v-model="currentFriendLink.description" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-              <label>分类</label>
-              <select v-model="currentFriendLink.category" required>
-                <option value="">选择分类</option>
-                <option value="个人博客">个人博客</option>
-                <option value="技术社区">技术社区</option>
-                <option value="学习资源">学习资源</option>
-                <option value="工具网站">工具网站</option>
-                <option value="其他">其他</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>网站Logo</label>
-              <div class="logo-input-group">
-                <input 
-                  v-model="currentFriendLink.avatar" 
-                  type="url" 
-                  placeholder="自动获取或手动输入Logo地址" 
-                />
-                <div v-if="currentFriendLink.avatar" class="logo-preview">
-                  <img 
-                    :src="currentFriendLink.avatar" 
-                    alt="Logo预览" 
-                    @error="handleLogoError"
-                  />
+              <div class="form-group">
+                <label>网站地址</label>
+                <div class="url-input-group">
+                  <input 
+                    v-model="currentFriendLink.url" 
+                    type="text" 
+                    required 
+                    placeholder="例如：www.example.com 或 https://www.example.com"
+                    @blur="handleUrlBlur"
+                  >
+                  <button 
+                    type="button" 
+                    class="fetch-favicon-btn" 
+                    :disabled="fetchingFavicon || !currentFriendLink.url"
+                    @click="fetchFavicon"
+                  >
+                    {{ fetchingFavicon ? '获取中...' : '🔄 获取图标' }}
+                  </button>
                 </div>
               </div>
-              <small class="form-hint">留空将自动获取网站favicon作为Logo</small>
-            </div>
-            <div class="form-group">
-              <label>联系邮箱</label>
-              <input v-model="currentFriendLink.email" type="email" />
-            </div>
-            <div class="form-group">
-              <label>联系信息</label>
-              <input v-model="currentFriendLink.contactInfo" type="text" placeholder="QQ、微信等联系方式" />
-            </div>
-            <div class="form-group">
-              <label>状态</label>
-              <select v-model="currentFriendLink.isActive">
-                <option value="false">待审核</option>
-                <option value="true">已通过</option>
-              </select>
-            </div>
-            <div class="form-actions">
-              <button type="button" @click="closeModal" class="cancel-btn">取消</button>
-              <button type="submit" class="save-btn">{{ isEditing ? '更新' : '创建' }}</button>
-            </div>
-          </form>
-        </div>
+              <div class="form-group">
+                <label>网站描述</label>
+                <textarea
+                  v-model="currentFriendLink.description"
+                  rows="3"
+                />
+              </div>
+              <div class="form-group">
+                <label>分类</label>
+                <select
+                  v-model="currentFriendLink.category"
+                  required
+                >
+                  <option value="">
+                    选择分类
+                  </option>
+                  <option value="个人博客">
+                    个人博客
+                  </option>
+                  <option value="技术社区">
+                    技术社区
+                  </option>
+                  <option value="学习资源">
+                    学习资源
+                  </option>
+                  <option value="工具网站">
+                    工具网站
+                  </option>
+                  <option value="其他">
+                    其他
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>网站Logo</label>
+                <div class="logo-input-group">
+                  <input 
+                    v-model="currentFriendLink.avatar" 
+                    type="url" 
+                    placeholder="自动获取或手动输入Logo地址" 
+                  >
+                  <div
+                    v-if="currentFriendLink.avatar"
+                    class="logo-preview"
+                  >
+                    <img 
+                      :src="currentFriendLink.avatar" 
+                      alt="Logo预览" 
+                      @error="handleLogoError"
+                    >
+                  </div>
+                </div>
+                <small class="form-hint">留空将自动获取网站favicon作为Logo</small>
+              </div>
+              <div class="form-group">
+                <label>联系邮箱</label>
+                <input
+                  v-model="currentFriendLink.email"
+                  type="email"
+                >
+              </div>
+              <div class="form-group">
+                <label>联系信息</label>
+                <input
+                  v-model="currentFriendLink.contactInfo"
+                  type="text"
+                  placeholder="QQ、微信等联系方式"
+                >
+              </div>
+              <div class="form-group">
+                <label>状态</label>
+                <select v-model="currentFriendLink.isActive">
+                  <option value="false">
+                    待审核
+                  </option>
+                  <option value="true">
+                    已通过
+                  </option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="cancel-btn"
+                  @click="closeModal"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  class="save-btn"
+                >
+                  {{ isEditing ? '更新' : '创建' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </Teleport>

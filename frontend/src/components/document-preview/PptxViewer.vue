@@ -1,24 +1,45 @@
 <template>
   <div class="pptx-viewer">
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
+    <div
+      v-if="loading"
+      class="loading-container"
+    >
+      <div class="loading-spinner" />
       <p>正在加载PowerPoint文档...</p>
     </div>
     
     <!-- 错误状态 -->
-    <div v-else-if="error" class="error-container">
-      <div class="error-icon">⚠️</div>
+    <div
+      v-else-if="error"
+      class="error-container"
+    >
+      <div class="error-icon">
+        ⚠️
+      </div>
       <h3>PowerPoint预览失败</h3>
       <p>{{ error }}</p>
       <div class="error-actions">
-        <button @click="retry" class="retry-btn">重试</button>
-        <button @click="download" class="download-btn">下载文档</button>
+        <button
+          class="retry-btn"
+          @click="retry"
+        >
+          重试
+        </button>
+        <button
+          class="download-btn"
+          @click="download"
+        >
+          下载文档
+        </button>
       </div>
     </div>
     
     <!-- PPTX预览内容 -->
-    <div v-else class="pptx-container">
+    <div
+      v-else
+      class="pptx-container"
+    >
       <VueOfficePptx
         v-if="documentSrc"
         :src="documentSrc"

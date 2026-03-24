@@ -8,33 +8,63 @@
 <template>
   <div class="blog-detail">
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading">
-      <div class="loading-spinner"></div>
+    <div
+      v-if="loading"
+      class="loading"
+    >
+      <div class="loading-spinner" />
       <p>加载中...</p>
     </div>
 
     <!-- 错误状态 -->
-    <div v-else-if="error" class="not-found">
+    <div
+      v-else-if="error"
+      class="not-found"
+    >
       <h2>加载文章失败</h2>
       <p>{{ error }}</p>
-      <router-link to="/blog" class="back-btn">返回博客列表</router-link>
+      <router-link
+        to="/blog"
+        class="back-btn"
+      >
+        返回博客列表
+      </router-link>
     </div>
 
     <!-- 文章不存在 -->
-    <div v-else-if="!article" class="not-found">
+    <div
+      v-else-if="!article"
+      class="not-found"
+    >
       <h2>文章不存在</h2>
       <p>抱歉，找不到您要查看的文章。</p>
-      <router-link to="/blog" class="back-btn">返回博客列表</router-link>
+      <router-link
+        to="/blog"
+        class="back-btn"
+      >
+        返回博客列表
+      </router-link>
     </div>
 
     <!-- 文章内容 -->
-    <article v-else class="article">
+    <article
+      v-else
+      class="article"
+    >
       <!-- 文章头部 -->
-      <div v-if="coverSrc" class="article-cover">
-          <img :src="coverSrc" alt="封面图" loading="lazy" decoding="async" @error="onDetailCoverError" />
-        </div> 
+      <div
+        v-if="coverSrc"
+        class="article-cover"
+      >
+        <img
+          :src="coverSrc"
+          alt="封面图"
+          loading="lazy"
+          decoding="async"
+          @error="onDetailCoverError"
+        >
+      </div> 
       <header class="article-header">
-        
         <div class="article-info">
           <h1>{{ article.title }}</h1>
           <div class="article-meta">
@@ -57,18 +87,31 @@
       </header>
 
       <!-- 文章内容 -->
-      <div class="article-content" v-html="renderedContent"></div>
+      <div
+        class="article-content"
+        v-html="renderedContent"
+      />
 
       <!-- 文章底部 -->
       <footer class="article-footer">
         <div class="article-actions">
-          <button @click="toggleLike" class="action-btn like-btn" :class="{ liked: isLiked }">
+          <button
+            class="action-btn like-btn"
+            :class="{ liked: isLiked }"
+            @click="toggleLike"
+          >
             {{ isLiked ? '❤️' : '🤍' }} {{ article.likeCount }}
           </button>
-          <button @click="shareArticle" class="action-btn share-btn">
+          <button
+            class="action-btn share-btn"
+            @click="shareArticle"
+          >
             📤 分享
           </button>
-          <button @click="scrollToComments" class="action-btn comment-btn">
+          <button
+            class="action-btn comment-btn"
+            @click="scrollToComments"
+          >
             💬 评论 ({{ commentCount }})
           </button>
         </div>
@@ -76,16 +119,30 @@
     </article>
 
     <!-- 评论区域 -->
-    <section v-if="article" class="comments-section" ref="commentsSection">
+    <section
+      v-if="article"
+      ref="commentsSection"
+      class="comments-section"
+    >
       <h3>评论 ({{ commentCount }})</h3>
       
       <!-- 发表评论 -->
       <div class="comment-form">
         <h4>发表评论</h4>
-        <div v-if="!authStore.isAuthenticated" class="login-prompt">
-          <p>请先<router-link to="/auth">登录</router-link>后再发表评论</p>
+        <div
+          v-if="!authStore.isAuthenticated"
+          class="login-prompt"
+        >
+          <p>
+            请先<router-link to="/auth">
+              登录
+            </router-link>后再发表评论
+          </p>
         </div>
-        <form v-else @submit.prevent="submitComment">
+        <form
+          v-else
+          @submit.prevent="submitComment"
+        >
           <div class="form-row">
             <textarea 
               v-model="newComment.content" 
@@ -93,7 +150,7 @@
               required 
               rows="4"
               class="form-textarea"
-            ></textarea>
+            />
           </div>
           <div class="comment-options">
             <label class="checkbox-label">
@@ -101,12 +158,16 @@
                 v-model="newComment.isPublic" 
                 type="checkbox" 
                 class="checkbox-input"
-              />
+              >
               <span class="checkbox-text">公开评论</span>
             </label>
           </div>
           <div class="form-actions">
-            <button type="submit" class="submit-btn" :disabled="isSubmittingComment">
+            <button
+              type="submit"
+              class="submit-btn"
+              :disabled="isSubmittingComment"
+            >
               {{ isSubmittingComment ? '发布中...' : '发布评论' }}
             </button>
           </div>
@@ -115,12 +176,15 @@
 
       <!-- 评论列表 -->
       <div class="comments-list">
-        <div v-if="commentsLoading" class="loading-state">
+        <div
+          v-if="commentsLoading"
+          class="loading-state"
+        >
           <p>正在加载评论...</p>
         </div>
         <CommentNode
-          v-else
           v-for="comment in comments"
+          v-else
           :key="comment.id || comment._id"
           :comment="comment"
           @comment-deleted="handleCommentDeleted"
@@ -129,7 +193,10 @@
       </div>
 
       <!-- 评论空状态 -->
-      <div v-if="!commentsLoading && comments.length === 0" class="comments-empty">
+      <div
+        v-if="!commentsLoading && comments.length === 0"
+        class="comments-empty"
+      >
         <p>还没有评论，快来抢沙发吧！</p>
       </div>
     </section>

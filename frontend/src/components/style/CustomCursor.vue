@@ -9,10 +9,10 @@
 -->
 <template>
   <div 
-    v-if="!isMobile"
+    v-if="shouldRenderCursor"
     class="custom-cursor"
     :class="{ 
-      'hidden': !isVisible,
+      'hidden': !isVisible || !hasPointerPosition,
       'expanded': isHoveringLink,
       'cursor-input': cursorType === 'input',
       'cursor-link': cursorType === 'link',
@@ -21,13 +21,13 @@
     :style="cursorStyle"
   >
     <!-- 鼠标圆点 -->
-    <div class="cursor-dot"></div>
+    <div class="cursor-dot" />
     
     <!-- 瞄准外圈（悬浮链接时显示） -->
     <div 
       class="cursor-ring" 
       :class="{ 'active': isHoveringLink }"
-    ></div>
+    />
     
     <!-- 点击波澜效果 -->
     <div 
@@ -35,34 +35,114 @@
       :key="ripple.id" 
       class="cursor-ripple"
       :style="{ animationDuration: ripple.duration + 'ms' }"
-    ></div>
+    />
     
     <!-- 自定义箭头（中心位置） -->
-    <div class="cursor-arrow" :class="`arrow-${cursorType}`">
+    <div
+      class="cursor-arrow"
+      :class="`arrow-${cursorType}`"
+    >
       <!-- 默认箭头（普通状态） -->
-      <svg v-if="cursorType === 'default'" class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg
+        v-if="cursorType === 'default'"
+        class="arrow-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
       
       <!-- 链接箭头（手指样式） -->
-      <svg v-else-if="cursorType === 'link'" class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M9 21L9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M6 13L9 9L12 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg
+        v-else-if="cursorType === 'link'"
+        class="arrow-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M9 21L9 9"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M6 13L9 9L12 13"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
       
       <!-- 输入框箭头（I-beam 样式） -->
-      <svg v-else-if="cursorType === 'input'" class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 4V20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M8 4H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M8 20H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <svg
+        v-else-if="cursorType === 'input'"
+        class="arrow-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 4V20"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M8 4H16"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M8 20H16"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
       </svg>
       
       <!-- 按钮箭头（手指样式） -->
-      <svg v-else-if="cursorType === 'button'" class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M9 21L9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M6 13L9 9L12 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg
+        v-else-if="cursorType === 'button'"
+        class="arrow-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M9 21L9 9"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          d="M6 13L9 9L12 13"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
     </div>
   </div>
@@ -124,8 +204,11 @@ const targetX = ref(0)
 const targetY = ref(0)
 const isHoveringLink = ref(false)
 const isHoveringInput = ref(false)
-const isVisible = ref(true)
+const isVisible = ref(false)
 const isMobile = ref(false)
+const isSafari = ref(false)
+const shouldRenderCursor = ref(false)
+const hasPointerPosition = ref(false)
 const cursorType = ref('default') // 'default', 'link', 'input', 'button'
 const ripples = ref([]) // 波澜效果数组
 
@@ -156,6 +239,19 @@ const detectMobile = () => {
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
   const isMobileUA = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile/i.test(navigator.userAgent)
   return isTouchDevice || isMobileUA
+}
+
+/**
+ * 检测是否为桌面端 Safari
+ */
+const detectSafariDesktop = () => {
+  const userAgent = navigator.userAgent
+  const vendor = navigator.vendor || ''
+  const isAppleVendor = /Apple/i.test(vendor)
+  const isSafariUA = /Safari/i.test(userAgent)
+  const isOtherBrowser = /Chrome|Chromium|CriOS|Edg|EdgiOS|OPR|Firefox|FxiOS/i.test(userAgent)
+
+  return isAppleVendor && isSafariUA && !isOtherBrowser
 }
 
 /**
@@ -220,12 +316,52 @@ const isButtonElement = (target) => {
 }
 
 /**
+ * 根据当前悬浮元素更新光标类型
+ */
+const updateCursorType = (target) => {
+  if (isInputElement(target)) {
+    cursorType.value = 'input'
+    isHoveringInput.value = true
+    isHoveringLink.value = false
+    return
+  }
+
+  if (isButtonElement(target)) {
+    cursorType.value = 'button'
+    isHoveringLink.value = true
+    isHoveringInput.value = false
+    return
+  }
+
+  if (isLinkElement(target)) {
+    cursorType.value = 'link'
+    isHoveringLink.value = true
+    isHoveringInput.value = false
+    return
+  }
+
+  cursorType.value = 'default'
+  isHoveringLink.value = false
+  isHoveringInput.value = false
+}
+
+/**
  * 处理鼠标移动事件
  */
 const handleMouseMove = (event) => {
   targetX.value = event.clientX
   targetY.value = event.clientY
-  
+
+  updateCursorType(event.target)
+
+  if (!hasPointerPosition.value) {
+    x.value = targetX.value
+    y.value = targetY.value
+    hasPointerPosition.value = true
+  }
+
+  isVisible.value = true
+
   if (!props.smoothFollow) {
     x.value = targetX.value
     y.value = targetY.value
@@ -233,54 +369,28 @@ const handleMouseMove = (event) => {
 }
 
 /**
- * 处理触摸移动事件（移动端）
+ * 鼠标离开页面时隐藏自定义光标
  */
-const handleTouchMove = (event) => {
-  if (event.touches.length > 0) {
-    const touch = event.touches[0]
-    targetX.value = touch.clientX
-    targetY.value = touch.clientY
-    
-    if (!props.smoothFollow) {
-      x.value = targetX.value
-      y.value = targetY.value
-    }
-  }
-}
-
-/**
- * 处理鼠标进入事件（检测元素类型）
- */
-const handleMouseOver = (event) => {
-  const target = event.target
-  
-  // 按优先级检测元素类型
-  if (isInputElement(target)) {
-    cursorType.value = 'input'
-    isHoveringInput.value = true
-    isHoveringLink.value = false
-  } else if (isLinkElement(target)) {
-    cursorType.value = 'link'
-    isHoveringLink.value = true
-    isHoveringInput.value = false
-  } else if (isButtonElement(target)) {
-    cursorType.value = 'button'
-    isHoveringLink.value = true // 按钮也显示为可点击
-    isHoveringInput.value = false
-  } else {
-    cursorType.value = 'default'
-    isHoveringLink.value = false
-    isHoveringInput.value = false
-  }
-}
-
-/**
- * 处理鼠标离开事件（重置状态）
- */
-const handleMouseOut = (event) => {
+const handleMouseLeave = () => {
+  isVisible.value = false
   cursorType.value = 'default'
   isHoveringLink.value = false
   isHoveringInput.value = false
+}
+
+/**
+ * 窗口失焦时隐藏自定义光标
+ */
+const handleWindowBlur = () => {
+  isVisible.value = false
+}
+
+/**
+ * 重新获得焦点后，等待下一次鼠标移动再显示
+ */
+const handleWindowFocus = () => {
+  if (!hasPointerPosition.value) return
+  isVisible.value = true
 }
 
 /**
@@ -298,6 +408,8 @@ const handleClick = () => {
   if (!isVisible.value) {
     isVisible.value = true
   }
+
+  if (!hasPointerPosition.value) return
   
   // 创建波澜效果
   const rippleId = ++rippleIdCounter
@@ -334,11 +446,19 @@ const updateCursorPosition = () => {
 onMounted(() => {
   // 检测设备类型
   isMobile.value = detectMobile()
+  isSafari.value = detectSafariDesktop()
   
   if (isMobile.value) {
     console.log('🔍 检测到移动端设备，自定义鼠标已禁用')
     return
   }
+
+  if (isSafari.value) {
+    console.log('🧭 Safari 已启用原生指针降级方案')
+    return
+  }
+
+  shouldRenderCursor.value = true
   
   console.log('✅ 自定义鼠标组件已启用')
   
@@ -354,10 +474,11 @@ onMounted(() => {
   
   // 绑定事件监听器（使用 passive 优化性能）
   document.addEventListener('mousemove', handleMouseMove, { passive: true })
-  document.addEventListener('mouseover', handleMouseOver, { passive: true })
-  document.addEventListener('mouseout', handleMouseOut, { passive: true })
+  document.addEventListener('mouseleave', handleMouseLeave, { passive: true })
   document.addEventListener('contextmenu', handleContextMenu, { passive: true })
   document.addEventListener('click', handleClick, { passive: true })
+  window.addEventListener('blur', handleWindowBlur, { passive: true })
+  window.addEventListener('focus', handleWindowFocus, { passive: true })
   
   // 启动动画帧循环
   rafId = requestAnimationFrame(updateCursorPosition)
@@ -367,7 +488,7 @@ onMounted(() => {
  * 组件卸载时清理
  */
 onUnmounted(() => {
-  if (isMobile.value) return
+  if (isMobile.value || isSafari.value) return
   
   // 移除全局样式，恢复原生鼠标指针
   if (globalStyleElement && globalStyleElement.parentNode) {
@@ -377,10 +498,11 @@ onUnmounted(() => {
   
   // 移除事件监听器
   document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseover', handleMouseOver)
-  document.removeEventListener('mouseout', handleMouseOut)
+  document.removeEventListener('mouseleave', handleMouseLeave)
   document.removeEventListener('contextmenu', handleContextMenu)
   document.removeEventListener('click', handleClick)
+  window.removeEventListener('blur', handleWindowBlur)
+  window.removeEventListener('focus', handleWindowFocus)
   
   // 取消动画帧
   if (rafId) {
@@ -402,9 +524,9 @@ onUnmounted(() => {
   left: 0;
   pointer-events: none;
   z-index: 9999;
-  transition: opacity var(--transition-duration) ease,
-              transform var(--transition-duration) ease;
+  transition: opacity var(--transition-duration) ease;
   will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 /* ========================================
@@ -529,7 +651,6 @@ onUnmounted(() => {
    ======================================== */
 .custom-cursor.hidden {
   opacity: 0;
-  transform: translate3d(var(--cursor-x, 0), var(--cursor-y, 0), 0) scale(0.5);
 }
 
 /* ========================================

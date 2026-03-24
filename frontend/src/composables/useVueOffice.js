@@ -56,7 +56,7 @@ export function useVueOffice() {
   }
   
   // 处理文档预览
-  const previewDocument = async (document, blob = null) => {
+  const previewDocument = async (document) => {
     if (!isSupported(document.type)) {
       error.value = `不支持的文件类型: ${document.type}`
       return false
@@ -66,15 +66,9 @@ export function useVueOffice() {
     error.value = null
     rendered.value = false
     
-    try {
-      // 这里可以添加额外的预处理逻辑
-      return true
-    } catch (err) {
-      error.value = err.message || '文档预览失败'
-      return false
-    } finally {
-      loading.value = false
-    }
+    // 这里可以添加额外的预处理逻辑
+    loading.value = false
+    return true
   }
   
   // 清理资源

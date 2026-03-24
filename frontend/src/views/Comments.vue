@@ -9,7 +9,9 @@
 <template>
   <div class="comments">
     <h1>留言板</h1>
-    <p class="page-description">欢迎在这里留下您的足迹，分享想法和建议～</p>
+    <p class="page-description">
+      欢迎在这里留下您的足迹，分享想法和建议～
+    </p>
     
     <!-- 留言统计 -->
     <div class="comment-stats">
@@ -30,10 +32,20 @@
     <!-- 发表留言表单 -->
     <div class="comment-form">
       <h3>发表留言</h3>
-      <div v-if="!authStore.isAuthenticated" class="login-prompt">
-        <p>请先<router-link to="/auth">登录</router-link>后再发表留言</p>
+      <div
+        v-if="!authStore.isAuthenticated"
+        class="login-prompt"
+      >
+        <p>
+          请先<router-link to="/auth">
+            登录
+          </router-link>后再发表留言
+        </p>
       </div>
-      <form v-else @submit.prevent="submitComment">
+      <form
+        v-else
+        @submit.prevent="submitComment"
+      >
         <div class="user-info">
           <span class="current-user">当前用户: {{ authStore.user.username }}</span>
         </div>
@@ -44,7 +56,7 @@
             required 
             rows="4"
             class="form-textarea"
-          ></textarea>
+          />
         </div>
         <div class="comment-options">
           <label class="checkbox-label">
@@ -52,12 +64,16 @@
               v-model="newComment.isPublic" 
               type="checkbox" 
               class="checkbox-input"
-            />
+            >
             <span class="checkbox-text">公开留言</span>
           </label>
         </div>
         <div class="form-actions">
-          <button type="submit" class="submit-btn" :disabled="isSubmitting">
+          <button
+            type="submit"
+            class="submit-btn"
+            :disabled="isSubmitting"
+          >
             {{ isSubmitting ? '发布中...' : '发布留言' }}
           </button>
         </div>
@@ -65,17 +81,31 @@
     </div>
 
     <!-- 评论列表 -->
-    <div v-if="loading" class="loading-state">
+    <div
+      v-if="loading"
+      class="loading-state"
+    >
       <p>正在加载评论...</p>
     </div>
     
-    <div v-else-if="error" class="error-state">
+    <div
+      v-else-if="error"
+      class="error-state"
+    >
       <h3>加载失败</h3>
       <p>{{ error }}</p>
-      <button @click="getComments" class="retry-btn">重试</button>
+      <button
+        class="retry-btn"
+        @click="getComments"
+      >
+        重试
+      </button>
     </div>
     
-    <div v-else class="comment-list">
+    <div
+      v-else
+      class="comment-list"
+    >
       <CommentNode
         v-for="comment in comments"
         :key="comment.id || comment._id"
@@ -86,7 +116,10 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && comments.length === 0" class="empty-state">
+    <div
+      v-if="!loading && comments.length === 0"
+      class="empty-state"
+    >
       <h3>还没有留言</h3>
       <p>成为第一个发表留言的人吧！</p>
     </div>
