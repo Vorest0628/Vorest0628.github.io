@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getApiBaseUrl } from './assetUrl'
 
 /*
 auth.js函数一览：
@@ -10,15 +11,7 @@ authStorage 本地存储管理
 
 // 解析 API 基地址（生产默认走 api 子域）
 const resolveBaseURL = () => {
-  const envUrl = import.meta.env.VITE_APP_API_URL
-  if (envUrl) return envUrl
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname
-    if (host === 'shirakawananase.top' || host.endsWith('.shirakawananase.top')) {
-      return 'https://api.shirakawananase.top/api'
-    }
-  }
-  return 'http://localhost:3000/api'
+  return getApiBaseUrl()
 }
 
 // 创建axios实例（保持原有行为）

@@ -316,6 +316,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { friendLinkApi } from '../../../api/friendLink'
+import { resolveStoredAssetUrl } from '@/utils/assetUrl'
 
 const friendLinks = ref([])
 const filteredFriendLinks = ref([])
@@ -588,13 +589,7 @@ const handleLogoError = (event) => {
 
 // 获取Logo URL
 const getLinkAvatar = (avatar) => {
-  if (!avatar) return '/image/default-logo.png'
-  if (avatar.startsWith('http')) return avatar
-  const baseUrl = (import.meta.env.VITE_APP_API_URL?.replace('/api', ''))
-    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
-      ? 'https://api.shirakawananase.top'
-      : 'http://localhost:3000')
-  return `${baseUrl}${avatar}`
+  return resolveStoredAssetUrl(avatar) || '/image/default-logo.png'
 }
 
 onMounted(() => {

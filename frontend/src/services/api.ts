@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosHeaders, AxiosInstance, AxiosProgressEvent, AxiosResponse, InternalAxiosRequestConfig, type AxiosRequestConfig } from 'axios'
+import { getApiBaseUrl } from '@/utils/assetUrl'
 
 declare module 'axios' {
   interface InternalAxiosRequestConfig {
@@ -69,15 +70,7 @@ export interface UploadResult {
 
 // 解析 baseURL
 const resolveBaseURL = (): string => {
-  const envUrl = getViteEnv('VITE_APP_API_URL')
-  if (envUrl) return envUrl
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname
-    if (host === 'shirakawananase.top' || host.endsWith('.shirakawananase.top')) {
-      return 'https://api.shirakawananase.top/api'
-    }
-  }
-  return '/api'
+  return getApiBaseUrl()
 }
 
 const api: AxiosInstance = axios.create({
@@ -232,5 +225,4 @@ export const apiService = {
 }
 
 export default api
-
 

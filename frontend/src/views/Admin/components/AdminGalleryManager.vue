@@ -544,6 +544,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { galleryApi } from '../../../api/gallery'
+import { resolveStoredAssetUrl } from '@/utils/assetUrl'
 
 const images = ref([])
 const filteredImages = ref([])
@@ -981,14 +982,7 @@ const formatDate = (dateString) => {
 }
 
 const getImageUrl = (url) => {
-  if (!url) return '/placeholder.jpg'
-  if (url.startsWith('http')) return url
-  const baseUrl = (import.meta.env.VITE_APP_API_URL?.replace('/api', ''))
-    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
-      ? 'https://api.shirakawananase.top'
-      : 'http://localhost:3000')
-  if (url.startsWith('/')) return `${baseUrl}${url}`
-  return `${baseUrl}/${url}`
+  return resolveStoredAssetUrl(url) || '/placeholder.jpg'
 }
 
 onMounted(() => {

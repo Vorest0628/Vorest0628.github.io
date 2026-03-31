@@ -46,6 +46,30 @@ const maskMongoUri = (uri) => {
   return uri.replace(/\/\/([^:@/]+):([^@/]+)@/, '//$1:***@')
 }
 
+const DEFAULT_CORS_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5174'
+]
+
+const parseOriginList = (value) => String(value || '')
+  .split(',')
+  .map(item => item.trim())
+  .filter(Boolean)
+
+const resolveCorsOrigins = () => {
+  const configuredOrigins = parseOriginList(process.env.CORS_ORIGIN)
+  return configuredOrigins.length > 0 ? configuredOrigins : DEFAULT_CORS_ORIGINS
+}
+
+const allowedCorsOrigins = new Set(resolveCorsOrigins())
+
+const isCorsOriginAllowed = (origin) => {
+  if (!origin) return true
+  if (allowedCorsOrigins.has('*')) return true
+  return allowedCorsOrigins.has(origin)
+}
+
 // 创建Express应用实例
 const app = express()
 
@@ -60,18 +84,18 @@ console.log('MONGODB_URI长度:', resolveMongoUri() ? resolveMongoUri().length :
 console.log('MONGODB_URI掩码:', maskMongoUri(resolveMongoUri()))
 console.log('JWT_SECRET存在:', !!getConfiguredJwtSecret())
 console.log('所有环境变量:', Object.keys(process.env).filter(key => key.includes('MONGODB') || key.includes('VERCEL')))
-console.log('🔄 CORS配置已更新 - 包含HTTP和HTTPS域名')
+console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN || '(未设置，使用本地开发默认值)')
+console.log('允许的CORS来源:', Array.from(allowedCorsOrigins).join(', '))
 
 // 中间件配置
 app.use(cors({
-  origin: [
-    'https://vorest0628.github.io',
-    'https://shirakawananase.top',
-    'http://shirakawananase.top',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5174'
-  ],
+  origin(origin, callback) {
+    if (isCorsOriginAllowed(origin)) {
+      return callback(null, true)
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`))
+  },
   credentials: true
 }))
 app.use(express.json())

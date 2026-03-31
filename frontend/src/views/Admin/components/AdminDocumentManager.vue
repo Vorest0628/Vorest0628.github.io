@@ -843,28 +843,6 @@ const getStatusText = (status) => {
   return statusMap[status] || '未知'
 }
 
-const getDocumentUrl = (url) => {
-  if (!url) return '#'
-  
-  // 如果是完整的URL（以http开头），直接返回
-  if (url.startsWith('http')) {
-    return url
-  }
-  
-  const baseUrl = (import.meta.env.VITE_APP_API_URL?.replace('/api', ''))
-    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
-      ? 'https://api.shirakawananase.top'
-      : 'http://localhost:3000')
-  
-  // 如果是相对路径，拼接后端服务器地址
-  if (url.startsWith('/')) {
-    return `${baseUrl}${url}`
-  }
-  
-  // 其他情况，拼接前缀
-  return `${baseUrl}/${url}`
-}
-
 onMounted(() => {
   getDocuments()
 })

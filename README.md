@@ -1,6 +1,6 @@
 # 🌟 Vorest's Personal Website
 
-一个功能全面、技术现代化的全栈个人网站项目，集成了博客、文档库、图库、评论系统、用户中心和强大的管理面板。项目为 Vercel Serverless 环境特别优化，并采用前后端分离架构。
+一个功能全面、技术现代化的全栈个人网站项目，集成了博客、文档库、图库、评论系统、用户中心和强大的管理面板。项目采用前后端分离架构，并支持传统服务器部署。
 
 ## ✨ 功能特性
 
@@ -50,7 +50,7 @@
 - **数据库**: `MongoDB` + `Mongoose`
 - **认证**: `JWT` (JSON Web Token)
 - **文件上传**: `Multer`
-- **Serverless部署适配**: `@vercel/blob` (用于文件存储)
+- **对象存储（可选）**: `@vercel/blob`
 - **密码加密**: `bcryptjs`
 - **图片处理**: `sharp`
  - **文档处理**: `libreoffice-convert`, `pdf-lib`, `pdf2pic`, `mammoth`
@@ -61,7 +61,7 @@
 - **热重载**: `nodemon`
 - **代码规范**: `ESLint`
 - **版本控制**: `Git`
-- **部署平台**: `阿里云` (前后端), `MongoDB Atlas` (数据库), `Cloudflare Workers` (API代理)
+- **部署平台**: `阿里云服务器` (前后端), `MongoDB Atlas` (数据库)
 
 ## 🚀 快速开始
 
@@ -105,7 +105,6 @@ my-website/
 │   ├── 📂 middleware/     # 中间件 (认证、权限)
 │   ├── 📂 utils/          # 工具函数
 │   ├── ⚙️ app.js           # 应用入口
-│   ├── 📄 vercel.json      # Vercel 路由/构建配置
 │   └── 🔧 setting.env     # 环境变量
 ├── 📂 frontend/           # 前端 (Vue 3 + Vite)
 │   ├── 📂 src/
@@ -117,7 +116,6 @@ my-website/
 │   │   ├── 📂 views/      # 页面组件
 │   │   └── ⚡ main.js      # 应用入口
 │   └── ⚡ vite.config.js  # Vite 配置
-├── 📄 cloudflare-worker.js # Cloudflare Worker API 代理
 ├── 📄 .gitignore
 ├── 📄 package.json         # 根项目配置
 └── 📖 README.md           # 就是你现在看到的这个文件
@@ -125,39 +123,33 @@ my-website/
 
 ## 部署指南
 
-本项目当前采用前后端分离部署：前端静态资源部署在 `阿里云`，后端接口部署在 `Vercel`。
-如果你想基于本项目效仿属于自己的个人网站，在运营上线时可以参考如下配置：
+本项目当前推荐采用阿里云服务器直连部署：前端静态资源与后端服务可部署在同一台服务器，由 Nginx 统一转发 `/` 和 `/api`。
+如果你想基于本项目搭建自己的站点，可以参考如下配置：
 
+1.  **前端部署**
+    - 在 `frontend` 目录执行 `npm run build`，产物输出到 `frontend/dist`。
+    - 将 `frontend/dist` 部署到 Nginx 静态目录，或由你现有的 Web 服务器托管。
 
-1.  **前端部署 (阿里云)**
-    - 在 `frontend` 目录执行 `npm run build`，产物输出到 `frontend/dist`
-    - 将 `frontend/dist` 中的静态资源上传到阿里云静态站点或你的 Web 服务器
+2.  **后端部署**
+    - 在 `backend` 目录配置生产环境变量（`MONGODB_URI`, `JWT_SECRET`, `PORT` 等）。
+    - 使用 `npm start`、`pm2` 或 `systemd` 运行 Node 服务。
+    - 建议通过 Nginx 将 `/api` 反向代理到后端端口，这样前端可直接同源访问 API，无需额外代理服务。
 
-2.  **后端部署 (Vercel)**
-    - 将 `backend` 目录作为另一个 Vercel 项目进行部署。
-    - Vercel 会自动识别为 Node.js Serverless Function。
-    - 在 Vercel 项目设置中，配置后端的环境变量（`MONGODB_URI`, `JWT_SECRET`, `BLOB_READ_WRITE_TOKEN` 等）。
+3.  **CORS 配置**
+    - 如果前后端同域部署，前端直接请求 `/api`，通常无需额外处理。
+    - 如果前后端分域部署，请在后端设置 `CORS_ORIGIN`，多个来源使用英文逗号分隔，例如：
+      ```
+      CORS_ORIGIN=https://www.example.com,https://admin.example.com
+      ```
 
-3.  **文件存储 (Vercel Blob)**
-    - 在 Vercel 后端项目中，集成 Vercel Blob 服务。
-    - 获取 `BLOB_READ_WRITE_TOKEN` 并配置到环境变量中。
-    - 项目中的文件上传（文档、图库）会自动使用 Vercel Blob 进行存储。
+4.  **文件存储**
+    - 默认可使用本地磁盘存储：`STORAGE_DRIVER=local`。
+    - 若你仍希望接入对象存储，可切换为 `STORAGE_DRIVER=blob`，并配置 `BLOB_READ_WRITE_TOKEN`。
 
-4.  **数据库 (MongoDB Atlas)**
+5.  **数据库**
     - 推荐使用 MongoDB Atlas 作为云数据库。
-    - 创建免费的数据库集群，并将连接字符串配置到后端环境变量 `MONGODB_URI` 中。
-    - **重要**: 确保在 MongoDB Atlas 的网络访问设置中，允许来自所有IP地址（`0.0.0.0/0`）的连接，以便 Vercel Serverless 函数可以访问。
-
-5.  **Cloudflare Worker 代理（可选但推荐）**
-    - 目的：绕过大陆地区访问 Vercel 的不稳定，提升 API 可用性。
-    - 步骤：
-      1) 打开仓库根目录的 `cloudflare-worker.js`，将常量 `API_ORIGIN` 设置为你的 Vercel 后端域名（例如 `https://your-backend.vercel.app`）。
-      2) 在 Cloudflare Dashboard 新建 Worker，粘贴脚本并发布；可绑定自定义域名或使用 `*.workers.dev` 子域。
-      3) 前端将 `frontend/setting.env` 中的 `VITE_APP_API_URL` 指向 Worker 域名的 `/api` 路径，例如：
-         ```
-         VITE_APP_API_URL=https://your-worker.workers.dev/api
-         ```
-      4) 确认后端的 `CORS_ORIGIN` 覆盖到你的前端实际域名（含阿里云站点域名）。
+    - 将连接字符串配置到后端环境变量 `MONGODB_URI`。
+    - 记得在 MongoDB Atlas 网络访问设置中放行你的服务器出口 IP。
 
 ## 🤝 贡献
 

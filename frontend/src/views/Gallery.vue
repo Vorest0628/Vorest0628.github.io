@@ -190,6 +190,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { galleryApi } from '@/api/gallery'
+import { resolveStoredAssetUrl } from '@/utils/assetUrl'
 
 const selectedCategory = ref('全部')
 const selectedTag = ref('全部')
@@ -287,16 +288,7 @@ const nextImage = () => {
 }
 
 const getImageUrl = (url) => {
-  if (!url) return '/placeholder.jpg'
-  if (url.startsWith('http')) return url
-
-  const baseUrl = import.meta.env.VITE_APP_API_URL?.replace('/api', '')
-    || (typeof window !== 'undefined' && (window.location.hostname === 'shirakawananase.top' || window.location.hostname.endsWith('.shirakawananase.top'))
-      ? 'https://api.shirakawananase.top'
-      : 'http://localhost:3000')
-
-  if (url.startsWith('/')) return `${baseUrl}${url}`
-  return `${baseUrl}/${url}`
+  return resolveStoredAssetUrl(url) || '/placeholder.jpg'
 }
 
 const handleImageError = (event) => {
