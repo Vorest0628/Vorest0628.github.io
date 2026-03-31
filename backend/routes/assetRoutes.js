@@ -1,7 +1,27 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const path = require('path')
 const router = express.Router()
 const BlogAsset = require('../models/BlogAsset')
+
+const LOCAL_UPLOAD_PREFIX = '/uploads/'
+const LOCAL_UPLOAD_ROOT = path.resolve(path.join(__dirname, '..', 'uploads'))
+
+function resolveLocalAssetPath(urlPath = '') {
+  const pathname = String(urlPath || '').trim()
+  if (!pathname.startsWith(LOCAL_UPLOAD_PREFIX)) {
+    return ''
+  }
+
+  const relativePath = pathname.slice(LOCAL_UPLOAD_PREFIX.length)
+  const absolutePath = path.resolve(LOCAL_UPLOAD_ROOT, ...relativePath.split('/'))
+
+  if (!absolutePath.startsWith(LOCAL_UPLOAD_ROOT)) {
+    return ''
+  }
+
+  return absolutePath
+}
 
 /**
  * 资源访问路由配置
@@ -33,8 +53,19 @@ router.get('/blog/:blogId/:filename', async (req, res, next) => {
       return res.status(404).json({ success: false, message: '资源不存在' })
     }
     
-    // 直接重定向到 Blob 公网地址
     res.set('Cache-Control', 'public, max-age=31536000, immutable')
+
+    // 本地存储时直接从后端发文件，避免生产环境额外暴露 /uploads 路径
+    if (typeof asset.blobUrl === 'string' && asset.blobUrl.startsWith(LOCAL_UPLOAD_PREFIX)) {
+      const localAssetPath = resolveLocalAssetPath(asset.blobUrl)
+      if (!localAssetPath) {
+        return res.status(400).json({ success: false, message: '资源路径无效' })
+      }
+
+      return res.sendFile(localAssetPath)
+    }
+
+    // 对象存储时保持重定向到公网地址
     return res.redirect(302, asset.blobUrl)
   } catch (err) {
     next(err)

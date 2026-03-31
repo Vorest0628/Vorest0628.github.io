@@ -192,9 +192,13 @@ const importMarkdown = [
         console.log(`💾 保存结果:`, savedAsset ? `SUCCESS - ${savedAsset._id}` : 'FAILED')
 
         const routeUrl = `/api/blog/${blogId}/${encodeURIComponent(safeFilename)}`
-        console.log(`🔄 重写链接: ${href} -> ${routeUrl}`)
-        if (!firstRewrittenUrl) firstRewrittenUrl = routeUrl
-        return match.replace(href, routeUrl)
+        const publicUrl = typeof blobUrl === 'string' && blobUrl.startsWith('/uploads/')
+          ? blobUrl
+          : routeUrl
+
+        console.log(`🔄 重写链接: ${href} -> ${publicUrl}`)
+        if (!firstRewrittenUrl) firstRewrittenUrl = publicUrl
+        return match.replace(href, publicUrl)
       })
 
       blog.content = rewritten

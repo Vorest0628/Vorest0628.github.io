@@ -246,6 +246,14 @@ const resolveBlogAssetUrl = (href = '') => {
   const rawValue = String(href || '').trim()
   if (!rawValue) return ''
 
+  const localAssetRouteMatch = rawValue.match(/^\/api\/blog\/([^/]+)\/(.+)$/i)
+  const isLocalBlogStorage = String(article.value?.coverImage || '').trim().startsWith('/uploads/')
+  if (localAssetRouteMatch && isLocalBlogStorage) {
+    const [, blogId, encodedFilename] = localAssetRouteMatch
+    const decodedFilename = decodeURIComponent(encodedFilename)
+    return resolveStoredAssetUrl(`/uploads/blogs/${blogId}/images/${decodedFilename}`)
+  }
+
   if (/^(https?:|data:)/i.test(rawValue) || /^\/api\//i.test(rawValue) || /^\/uploads\//i.test(rawValue)) {
     return resolveStoredAssetUrl(rawValue)
   }
