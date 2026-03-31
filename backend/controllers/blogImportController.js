@@ -1,10 +1,13 @@
 // backend/controllers/blogImportController.js
+const fs = require('fs')
 const multer = require('multer')
 const sharp = require('sharp')
 const JSZip = require('jszip')
 const mongoose = require('mongoose')
+const path = require('path')
 const { marked } = require('marked')
 const { uploadBufferToBlob } = require('../utils/uploader')
+const { getStorageDriver } = require('../utils/storage')
 const Blog = require('../models/Blog')
 const BlogAsset = require('../models/BlogAsset')
 const { MARKDOWN_IMAGE_REGEX, normalizeMarkdownImageDestinations } = require('../utils/markdown')
@@ -19,6 +22,44 @@ replaceAsync 异步替换
 
 // 统一使用内存存储（兼容 Vercel）
 const upload = multer({ storage: multer.memoryStorage() })
+const LOCAL_UPLOAD_PREFIX = '/uploads/'
+const LOCAL_UPLOAD_ROOT = path.resolve(path.join(__dirname, '..', 'uploads'))
+
+function resolveLocalAssetPath(urlPath = '') {
+  const pathname = String(urlPath || '').trim()
+  if (!pathname.startsWith(LOCAL_UPLOAD_PREFIX)) {
+    return ''
+  }
+
+  const relativePath = pathname.slice(LOCAL_UPLOAD_PREFIX.length)
+  const absolutePath = path.resolve(LOCAL_UPLOAD_ROOT, ...relativePath.split('/'))
+
+  if (!absolutePath.startsWith(LOCAL_UPLOAD_ROOT)) {
+    return ''
+  }
+
+  return absolutePath
+}
+
+function shouldRefreshExistingAsset(existingAsset) {
+  if (!existingAsset || typeof existingAsset.blobUrl !== 'string') {
+    return false
+  }
+
+  const prefersLocalStorage = getStorageDriver() === 'local'
+  const usesLocalPath = existingAsset.blobUrl.startsWith(LOCAL_UPLOAD_PREFIX)
+
+  if (prefersLocalStorage && !usesLocalPath) {
+    return true
+  }
+
+  if (!usesLocalPath) {
+    return false
+  }
+
+  const localAssetPath = resolveLocalAssetPath(existingAsset.blobUrl)
+  return !(localAssetPath && fs.existsSync(localAssetPath))
+}
 
 // 1) 图片直传：POST /api/uploads/images  (管理员)
 //    form-data: image
@@ -165,11 +206,17 @@ const importMarkdown = [
         let existingAsset = await BlogAsset.findOne({ blogId: blogObjectId, filename: safeFilename })
         let blobUrl
         
-        if (existingAsset) {
+        const needsAssetRefresh = shouldRefreshExistingAsset(existingAsset)
+
+        if (existingAsset && !needsAssetRefresh) {
           // 复用现有资源
           blobUrl = existingAsset.blobUrl
           console.log(`🔄 复用现有资源: ${safeFilename} -> ${blobUrl}`)
         } else {
+          if (existingAsset && needsAssetRefresh) {
+            console.log(`♻️ 发现旧资源映射不可用，重新写入: ${safeFilename} -> ${existingAsset.blobUrl}`)
+          }
+
           // 上传新资源
           const ext = (safeFilename.split('.').pop() || 'bin').toLowerCase()
           const mime = ext === 'png' ? 'image/png'
