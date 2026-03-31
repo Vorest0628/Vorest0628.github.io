@@ -8,144 +8,146 @@
   5. 性能优化：使用 requestAnimationFrame 和 transform
 -->
 <template>
-  <div 
-    v-if="shouldRenderCursor"
-    class="custom-cursor"
-    :class="{ 
-      'hidden': !isVisible || !hasPointerPosition,
-      'expanded': isHoveringLink,
-      'cursor-input': cursorType === 'input',
-      'cursor-link': cursorType === 'link',
-      'cursor-button': cursorType === 'button'
-    }"
-    :style="cursorStyle"
-  >
-    <!-- 鼠标圆点 -->
-    <div class="cursor-dot" />
-    
-    <!-- 瞄准外圈（悬浮链接时显示） -->
+  <Teleport to="body">
     <div 
-      class="cursor-ring" 
-      :class="{ 'active': isHoveringLink }"
-    />
-    
-    <!-- 点击波澜效果 -->
-    <div 
-      v-for="ripple in ripples" 
-      :key="ripple.id" 
-      class="cursor-ripple"
-      :style="{ animationDuration: ripple.duration + 'ms' }"
-    />
-    
-    <!-- 自定义箭头（中心位置） -->
-    <div
-      class="cursor-arrow"
-      :class="`arrow-${cursorType}`"
+      v-if="shouldRenderCursor"
+      class="custom-cursor"
+      :class="{ 
+        'hidden': !isVisible || !hasPointerPosition,
+        'expanded': isHoveringLink,
+        'cursor-input': cursorType === 'input',
+        'cursor-link': cursorType === 'link',
+        'cursor-button': cursorType === 'button'
+      }"
+      :style="cursorStyle"
     >
-      <!-- 默认箭头（普通状态） -->
-      <svg
-        v-if="cursorType === 'default'"
-        class="arrow-icon"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      <!-- 鼠标圆点 -->
+      <div class="cursor-dot" />
       
-      <!-- 链接箭头（手指样式） -->
-      <svg
-        v-else-if="cursorType === 'link'"
-        class="arrow-icon"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M9 21L9 9"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M6 13L9 9L12 13"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      <!-- 瞄准外圈（悬浮链接时显示） -->
+      <div 
+        class="cursor-ring" 
+        :class="{ 'active': isHoveringLink }"
+      />
       
-      <!-- 输入框箭头（I-beam 样式） -->
-      <svg
-        v-else-if="cursorType === 'input'"
-        class="arrow-icon"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M12 4V20"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M8 4H16"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M8 20H16"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-      </svg>
+      <!-- 点击波澜效果 -->
+      <div 
+        v-for="ripple in ripples" 
+        :key="ripple.id" 
+        class="cursor-ripple"
+        :style="{ animationDuration: ripple.duration + 'ms' }"
+      />
       
-      <!-- 按钮箭头（手指样式） -->
-      <svg
-        v-else-if="cursorType === 'button'"
-        class="arrow-icon"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <!-- 自定义箭头（中心位置） -->
+      <div
+        class="cursor-arrow"
+        :class="`arrow-${cursorType}`"
       >
-        <path
-          d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M9 21L9 9"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M6 13L9 9L12 13"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+        <!-- 默认箭头（普通状态） -->
+        <svg
+          v-if="cursorType === 'default'"
+          class="arrow-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        
+        <!-- 链接箭头（手指样式） -->
+        <svg
+          v-else-if="cursorType === 'link'"
+          class="arrow-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M9 21L9 9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M6 13L9 9L12 13"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        
+        <!-- 输入框箭头（I-beam 样式） -->
+        <svg
+          v-else-if="cursorType === 'input'"
+          class="arrow-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 4V20"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M8 4H16"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M8 20H16"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+        
+        <!-- 按钮箭头（手指样式） -->
+        <svg
+          v-else-if="cursorType === 'button'"
+          class="arrow-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 3L15 3C16.6569 3 18 4.34315 18 6L18 15C18 16.6569 16.6569 18 15 18L12 18"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M9 21L9 9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M6 13L9 9L12 13"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -523,7 +525,7 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 2147483647;
   transition: opacity var(--transition-duration) ease;
   will-change: transform, opacity;
   backface-visibility: hidden;

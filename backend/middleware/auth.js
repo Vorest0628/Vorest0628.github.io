@@ -1,6 +1,5 @@
-const jwt = require('jsonwebtoken')
-const User = require('../models/User')
 const { ApiError } = require('../utils/error')
+const { verifyToken } = require('../utils/jwt')
 
 /*
 auth.js函数一览：
@@ -21,7 +20,7 @@ exports.auth = async (req, res, next) => {
     const token = authHeader.split(' ')[1]
 
     // 验证令牌
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = verifyToken(token)
 
     // 将解码后的用户信息（包含id和role）直接附加到请求对象
     req.user = decoded
@@ -43,7 +42,7 @@ exports.optionalAuth = async (req, res, next) => {
     const authHeader = req.headers.authorization
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1]
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      const decoded = verifyToken(token)
       // 直接使用解码后的用户信息
       req.user = decoded
     }

@@ -5,9 +5,17 @@ const UPLOAD_ROOT = path.join(__dirname, '..', 'uploads')
 const PUBLIC_UPLOAD_PREFIX = '/uploads'
 
 let blobClient = null
+let hasWarnedAboutBlobFallback = false
 
 function getStorageDriver() {
   return (process.env.STORAGE_DRIVER || 'local').toLowerCase()
+}
+
+function warnBlobFallback(reason) {
+  if (hasWarnedAboutBlobFallback) return
+
+  hasWarnedAboutBlobFallback = true
+  console.warn(`[storage] STORAGE_DRIVER=blob 但 ${reason}，已自动回退到 local 存储。`)
 }
 
 function sanitizeSegment(segment) {
@@ -64,16 +72,33 @@ async function getBlobClient() {
   return blobClient
 }
 
+async function resolveStorageDriver() {
+  const configuredDriver = getStorageDriver()
+
+  if (configuredDriver !== 'blob') {
+    return configuredDriver
+  }
+
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    warnBlobFallback('缺少 BLOB_READ_WRITE_TOKEN')
+    return 'local'
+  }
+
+  try {
+    await getBlobClient()
+    return 'blob'
+  } catch (error) {
+    warnBlobFallback(error.message)
+    return 'local'
+  }
+}
+
 async function uploadBuffer(key, buffer, options = {}) {
   const { contentType, allowOverwrite = false } = options
   const normalizedKey = normalizeStorageKey(key)
-  const driver = getStorageDriver()
+  const driver = await resolveStorageDriver()
 
   if (driver === 'blob') {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      throw new Error('BLOB_READ_WRITE_TOKEN is required when STORAGE_DRIVER=blob')
-    }
-
     const { put } = await getBlobClient()
     const result = await put(normalizedKey, buffer, {
       access: 'public',
@@ -106,7 +131,7 @@ async function deleteStoredFile(urlOrPath) {
   const pathname = extractPathname(urlOrPath)
   if (!pathname) return false
 
-  const driver = getStorageDriver()
+  const driver = await resolveStorageDriver()
   if (driver === 'blob') {
     if (!/^https?:\/\//i.test(String(urlOrPath || ''))) return false
     const { del } = await getBlobClient()

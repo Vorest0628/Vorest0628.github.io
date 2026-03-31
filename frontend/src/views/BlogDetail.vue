@@ -215,6 +215,8 @@ import 'highlight.js/styles/github-dark.css'
 import DOMPurify from 'dompurify'
 import { useAuthStore } from '@/store/modules/auth'
 import CommentNode from '@/components/CommentNode.vue'
+import { resolveStoredAssetUrl } from '@/utils/assetUrl'
+import { normalizeMarkdownImageDestinations } from '@/utils/markdown'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -240,9 +242,24 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'yyyy年MM月dd日')
 }
 
+const resolveBlogAssetUrl = (href = '') => {
+  const rawValue = String(href || '').trim()
+  if (!rawValue) return ''
+
+  if (/^(https?:|data:)/i.test(rawValue) || /^\/api\//i.test(rawValue) || /^\/uploads\//i.test(rawValue)) {
+    return resolveStoredAssetUrl(rawValue)
+  }
+
+  const normalized = rawValue.replace(/^\.\//, '').replace(/\\/g, '/').replace(/^\/+/, '')
+  const filename = normalized.split('/').pop()
+  if (article.value?.id && filename) {
+    return resolveStoredAssetUrl(`/api/blog/${article.value.id}/${encodeURIComponent(filename)}`)
+  }
+
+  return resolveStoredAssetUrl(normalized)
+}
+
 // 配置marked renderer
-const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
-const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
 const renderer = new marked.Renderer()
 renderer.image = (href = '', title, text) => {
   // 修复 marked 新版本参数传递问题
@@ -253,20 +270,7 @@ renderer.image = (href = '', title, text) => {
     text = token.text || token.alt || ''
   }
   
-  const isAbs = /^(https?:|data:)/i.test(href)
-  const isApiRoute = /^\/api\/blog\//i.test(href)
-  let src = href
-  
-  if (!isAbs && !isApiRoute) {
-    // 处理相对路径
-    src = ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
-  }
-  // 对于 /api/blog/ 路径，生产环境强制走 API 子域，避免主站路由兼容性问题
-  if (isApiRoute && API_ORIGIN) {
-    src = `${API_ORIGIN}${href}`
-  }
-  // 绝对 URL 直接使用
-  
+  const src = resolveBlogAssetUrl(href)
   const t = title ? ` title="${title}"` : ''
   return `<img src="${src}" alt="${text || ''}"${t} loading="lazy" decoding="async">`
 }
@@ -331,19 +335,13 @@ marked.setOptions({ renderer })
 
 const renderedContent = computed(() => {
   if (!article.value?.content) return ''
-  const html = marked(article.value.content)
+  const html = marked(normalizeMarkdownImageDestinations(article.value.content))
   return DOMPurify.sanitize(html)
 });
 
 // 详情封面地址解析与错误日志
 const coverSrc = computed(() => {
-  const href = article.value?.coverImage
-  if (!href) return ''
-  const isAbs = /^(https?:|data:)/i.test(href)
-  const isApiRoute = /^\/api\/blog\//i.test(href)
-  if (isAbs) return href
-  if (isApiRoute && API_ORIGIN) return `${API_ORIGIN}${href}`
-  return ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
+  return resolveBlogAssetUrl(article.value?.coverImage)
 })
 const onDetailCoverError = () => {
   console.error('文章封面图加载失败或未设置:', article.value?.id, article.value?.coverImage)
@@ -663,6 +661,7 @@ watch(() => route.params.id, (newId) => {
 }
 
 .article-content {
+  --article-code-font: 'Cascadia Code', 'Cascadia Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   line-height: 1.8;
   font-size: 1.1rem;
   color: #333;
@@ -683,6 +682,8 @@ watch(() => route.params.id, (newId) => {
 
 .article-content :deep(p) {
   margin-bottom: 1.5rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .article-content :deep(ul),
@@ -691,12 +692,24 @@ watch(() => route.params.id, (newId) => {
   margin-bottom: 1.5rem;
 }
 
+.article-content :deep(li) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .article-content :deep(blockquote) {
   border-left: 4px solid #3498db;
   margin: 2rem 0;
   padding: 1rem 1.5rem;
   background-color: #f8f9fa;
   color: #555;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.article-content :deep(a) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .article-content :deep(.article-code-block) {
@@ -738,9 +751,11 @@ watch(() => route.params.id, (newId) => {
   min-width: 100%;
   width: max-content;
   white-space: pre;
-  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 0.88rem;
-  line-height: 1.65;
+  font-family: var(--article-code-font);
+  font-size: 0.9rem;
+  line-height: 1.58;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
 .article-content :deep(.article-code-block pre::-webkit-scrollbar) {
@@ -758,12 +773,14 @@ watch(() => route.params.id, (newId) => {
 }
 
 .article-content :deep(:not(pre) > code) {
-  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+  font-family: var(--article-code-font);
   background: #f1f5f9;
   color: #0f172a;
   padding: 0.12rem 0.38rem;
   border-radius: 4px;
   font-size: 0.9em;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
 .article-content :deep(img) {

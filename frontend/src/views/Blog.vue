@@ -152,6 +152,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { blogApi } from '@/api/blog'
+import { resolveStoredAssetUrl } from '@/utils/assetUrl'
 
 const router = useRouter()
 const route = useRoute()
@@ -267,23 +268,13 @@ const formatDate = (dateString) => {
   })
 }
 
-const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
-const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
-
 const getCoverSrc = (post) => {
   const id = getPostId(post)
   if (id && coverErrorMap.value[id]) return ''
   const href = post?.coverImage
   if (!href) return ''
 
-  const isAbs = /^(https?:|data:)/i.test(href)
-  const isApiRoute = /^\/api\/blog\//i.test(href)
-
-  if (isAbs) return href
-  if (isApiRoute) return API_ORIGIN ? `${API_ORIGIN}${href}` : href
-  return ASSET_BASE
-    ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}`
-    : href
+  return resolveStoredAssetUrl(href)
 }
 
 const onCoverError = (post) => {

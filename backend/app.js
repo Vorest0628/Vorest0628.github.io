@@ -5,6 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
 const { errorHandler } = require('./utils/error')
+const { getConfiguredJwtSecret } = require('./utils/jwt')
 
 // 检查是否在Vercel环境中
 const isVercel = process.env.VERCEL === '1'
@@ -57,6 +58,7 @@ console.log('已加载环境文件:', loadedEnvFiles.length ? loadedEnvFiles.joi
 console.log('MONGODB_URI存在:', !!resolveMongoUri())
 console.log('MONGODB_URI长度:', resolveMongoUri() ? resolveMongoUri().length : 0)
 console.log('MONGODB_URI掩码:', maskMongoUri(resolveMongoUri()))
+console.log('JWT_SECRET存在:', !!getConfiguredJwtSecret())
 console.log('所有环境变量:', Object.keys(process.env).filter(key => key.includes('MONGODB') || key.includes('VERCEL')))
 console.log('🔄 CORS配置已更新 - 包含HTTP和HTTPS域名')
 

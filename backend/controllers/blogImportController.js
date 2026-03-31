@@ -7,6 +7,7 @@ const { marked } = require('marked')
 const { uploadBufferToBlob } = require('../utils/uploader')
 const Blog = require('../models/Blog')
 const BlogAsset = require('../models/BlogAsset')
+const { MARKDOWN_IMAGE_REGEX, normalizeMarkdownImageDestinations } = require('../utils/markdown')
 
 /*
 blogImportController.js函数一览：
@@ -53,7 +54,7 @@ const importMarkdown = [
 
       const mdFile = (req.files || []).find(f => /\.md$/i.test(f.originalname))
       if (!mdFile) return res.status(400).json({ success: false, message: '请提供 .md 文件' })
-      let content = mdFile.buffer.toString('utf-8')
+      let content = normalizeMarkdownImageDestinations(mdFile.buffer.toString('utf-8'))
 
       // 收集可用资源：来自 zip 或多文件
       const assetMap = new Map() // 相对路径(标准化) -> Buffer
@@ -121,18 +122,19 @@ const importMarkdown = [
       }
 
       const warnings = []
-      const imageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)/g //imageRegex表示图片链接的正则表达式
       const blogId = String(blog._id)
 
       //重写图片链接
       let firstRewrittenUrl = ''
-      const rewritten = await replaceAsync(content, imageRegex, async (match, altText, href) => {
+      const rewritten = await replaceAsync(content, MARKDOWN_IMAGE_REGEX, async (match, altText, angleHref, plainHref) => {
+        const href = String(angleHref || plainHref || '').trim()
         console.log(`🔍 处理图片: ${match}`)
         console.log(`  - altText: "${altText}"`)
         console.log(`  - href: "${href}"`)
         
-        const isAbs = /^(https?:|data:)/i.test(href) //isAbs表示img是否是绝对链接
-        if (isAbs) {
+        const isRemote = /^(https?:|data:)/i.test(href)
+        const isStoredRoute = /^\/api\/blog\//i.test(href) || /^\/uploads\//i.test(href)
+        if (isRemote || isStoredRoute) {
           console.log(`  - 跳过绝对链接: ${href}`)
           return match
         }
@@ -189,7 +191,7 @@ const importMarkdown = [
         )
         console.log(`💾 保存结果:`, savedAsset ? `SUCCESS - ${savedAsset._id}` : 'FAILED')
 
-        const routeUrl = `/api/blog/${blogId}/${safeFilename}`
+        const routeUrl = `/api/blog/${blogId}/${encodeURIComponent(safeFilename)}`
         console.log(`🔄 重写链接: ${href} -> ${routeUrl}`)
         if (!firstRewrittenUrl) firstRewrittenUrl = routeUrl
         return match.replace(href, routeUrl)

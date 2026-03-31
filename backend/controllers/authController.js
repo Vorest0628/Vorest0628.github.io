@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { ApiError } = require('../utils/error')
+const { signToken } = require('../utils/jwt')
 
 /*
 authController.js函数一览：
@@ -13,7 +13,7 @@ getAiConfig 获取AI配置（仅限管理员）
 
 // 生成JWT令牌
 const generateToken = (userId, userRole) => {
-  return jwt.sign({ id: userId, role: userRole }, process.env.JWT_SECRET, {
+  return signToken({ id: userId, role: userRole }, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   })
 }

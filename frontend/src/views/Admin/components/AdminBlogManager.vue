@@ -355,6 +355,8 @@ import { authApi } from '../../../api/auth'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { OpenAI } from 'openai'
+import { resolveStoredAssetUrl } from '@/utils/assetUrl'
+import { normalizeMarkdownImageDestinations } from '@/utils/markdown'
 
 const authStore = useAuthStore()
 const blogs = ref([])
@@ -389,9 +391,29 @@ const currentBlog = reactive({
   coverImage: ''
 })
 
+const resolveEditorAssetSrc = (href = '') => {// 处理编辑器中的图片链接，支持绝对URL、相对URL和本地资源映射
+  const rawValue = String(href || '').trim()
+  if (!rawValue) return ''
+
+  if (/^(https?:|data:)/i.test(rawValue) || /^\/api\//i.test(rawValue) || /^\/uploads\//i.test(rawValue)) {
+    return resolveStoredAssetUrl(rawValue)
+  }
+
+  const key = rawValue.replace(/^\.\//, '').replace(/\\/g, '/').replace(/^\/+/, '')
+  const filename = key.split('/').pop()
+  const localUrl = assetsUrlMap.value.get(key) || (filename ? assetsUrlMap.value.get(filename) : '')
+  if (localUrl) {
+    return localUrl
+  }
+
+  if (currentBlog.id && filename) {
+    return resolveStoredAssetUrl(`/api/blog/${currentBlog.id}/${encodeURIComponent(filename)}`)
+  }
+
+  return resolveStoredAssetUrl(key)
+}
+
 // 与博客详情页一致的图片渲染与安全清理
-const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
-const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
 const renderer = new marked.Renderer()
 renderer.image = (href = '', title, text) => {
   // 修复 marked 新版本参数传递问题
@@ -402,31 +424,14 @@ renderer.image = (href = '', title, text) => {
     text = token.text || token.alt || ''
   }
   
-  const isAbs = /^(https?:|data:)/i.test(href)
-  const isApiRoute = /^\/api\/blog\//i.test(href)
-  let src = href
-  
-  if (!isAbs && !isApiRoute) {
-    // 处理相对路径：优先使用本地映射，再使用服务器路径
-    const key = String(href).replace(/^\.\//, '').replace(/\\/g, '/').replace(/^\//, '')
-    const localUrl = assetsUrlMap.value.get(key)
-    if (localUrl) {
-      src = localUrl
-    } else {
-      src = ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${key}` : href
-    }
-  } else if (isApiRoute) {
-    // 对于 /api/blog/ 路径，生产环境强制走 API 子域（后端会重定向到 Blob）
-    src = API_ORIGIN ? `${API_ORIGIN}${href}` : href
-  }
-  
+  const src = resolveEditorAssetSrc(href)
   const t = title ? ` title="${title}"` : ''
   return `<img src="${src}" alt="${text || ''}"${t} loading="lazy" decoding="async">`
 }
 marked.setOptions({ renderer })
 
 const markdownPreview = computed(() => {
-  const html = marked(currentBlog.content || '')
+  const html = marked(normalizeMarkdownImageDestinations(currentBlog.content || ''))
   const sanitized = DOMPurify.sanitize(html)
   return sanitized
 });
@@ -666,10 +671,12 @@ const saveBlog = async () => {
       ? currentBlog.newCategoryText.trim() 
       : currentBlog.category
     
+    const normalizedContent = normalizeMarkdownImageDestinations(currentBlog.content)
+
     const blogData = {
       title: currentBlog.title,
       excerpt: currentBlog.excerpt,
-      content: currentBlog.content,
+      content: normalizedContent,
       category: finalCategory,
       tags: currentBlog.tags.split(',').map(tag => tag.trim()).filter(Boolean),
       status: currentBlog.status,
@@ -712,6 +719,7 @@ const saveBlog = async () => {
       form.append('title', blogData.title)
       form.append('excerpt', blogData.excerpt)
       form.append('category', blogData.category)
+      form.append('coverImage', blogData.coverImage || '')
       for (const tag of blogData.tags) form.append('tags', tag)
       form.append('status', blogData.status)
       // 如果是编辑模式，传递现有博客ID避免重复创建
@@ -904,14 +912,7 @@ const handleCoverUpload = async (event) => {
 
 // 管理端预览解析与错误日志
 const resolveCover = (href) => {
-  const ASSET_BASE = import.meta.env.PROD ? (import.meta.env.VITE_ASSET_BASE_URL || '') : '/uploads/'
-  const API_ORIGIN = import.meta.env.PROD ? (import.meta.env.VITE_APP_API_ORIGIN || 'https://api.shirakawananase.top') : ''
-  if (!href) return ''
-  const isAbs = /^(https?:|data:)/i.test(href)
-  const isApiRoute = /^\/api\/blog\//i.test(href)
-  if (isAbs) return href
-  if (isApiRoute) return API_ORIGIN ? `${API_ORIGIN}${href}` : href
-  return ASSET_BASE ? `${ASSET_BASE.replace(/\/$/, '')}/${String(href).replace(/^\//, '')}` : href
+  return resolveEditorAssetSrc(href)
 }
 const onCoverPreviewError = () => {
   console.error('封面预览加载失败:', currentBlog.coverImage)
@@ -1269,12 +1270,36 @@ onMounted(() => {
 
 .markdown-input {
   resize: none;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Cascadia Code', 'Cascadia Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
 .markdown-preview {
   background-color: #f8f9fa;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.markdown-preview :deep(pre),
+.markdown-preview :deep(code) {
+  font-family: 'Cascadia Code', 'Cascadia Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
+
+.markdown-preview :deep(pre) {
+  padding: 1rem 1.15rem;
+  border-radius: 10px;
+  overflow: auto;
+  background: #0b1220;
+  color: #e5eefc;
+}
+
+.markdown-preview :deep(:not(pre) > code) {
+  padding: 0.12rem 0.38rem;
+  border-radius: 4px;
+  background: #e9eef6;
+  color: #0f172a;
 }
 
 .markdown-preview > :first-child {
