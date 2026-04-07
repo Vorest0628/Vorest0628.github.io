@@ -245,9 +245,9 @@
             <li><strong>邮箱</strong>：georgechen7861@163.com</li>
             <li>
               <strong>GitHub</strong>：<a
-                href="https://github.com/vorest0628"
+                href="https://github.com/vorest3679"
                 target="_blank"
-              >vorest0628</a>
+              >vorest3679</a>
             </li>
             <li><strong>网站反馈</strong>：在任意博客文章下留言</li>
           </ul>
@@ -255,7 +255,7 @@
             我会尽快回复您的消息，感谢您的支持！
           </p>
           <h3>赞助我</h3>
-          <p>如果你喜欢，可以赞助我用于调用大模型API以及维护各类项目，欢迎请我喝柠檬茶（</p>
+          <p>如果你喜欢，可以赞助我用于调用大模型API,服务器费用以及维护各类项目，欢迎请我喝柠檬茶（</p>
           <ul>
             <img
               src="@/assets/image/alipay.jpg"

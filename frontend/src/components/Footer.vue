@@ -10,12 +10,12 @@
       </p>
 
       <p class="copyright">
-        © {{ currentYear }} Vorest0628. All rights reserved.
+        © {{ currentYear }} Vorest3679. All rights reserved.
       </p>
 
       <div class="social-links">
         <a
-          href="https://github.com/Vorest0628"
+          href="https://github.com/Vorest3679"
           target="_blank"
           rel="noopener"
           aria-label="Github"

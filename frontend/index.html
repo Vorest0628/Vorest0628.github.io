@@ -22,6 +22,31 @@
     <link rel="modulepreload" href="/src/main.js">
     
     <title>Vorest's Personal Website</title>
+    <script>
+      (function () {
+        const { history, location } = window
+        const searchParams = new URLSearchParams(location.search)
+        const redirect = searchParams.get('__spa')
+
+        // 还原 GitHub Pages 404 中转过来的 history 路径。
+        if (redirect && redirect.startsWith('/')) {
+          history.replaceState(null, '', redirect)
+          return
+        }
+
+        if (!location.hash.startsWith('#/')) {
+          return
+        }
+
+        const hashTarget = location.hash.slice(1)
+        const target =
+          (hashTarget.startsWith('/') && hashTarget !== '/')
+            ? hashTarget
+            : `${location.pathname}${location.search}` || '/'
+
+        history.replaceState(null, '', target)
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

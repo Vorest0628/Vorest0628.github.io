@@ -39,7 +39,7 @@
           <div class="skill-item">
             <h4>前端技术</h4>
             <ul>
-              <li>Vue.js</li>
+              <li>Vue.js / React</li>
               <li>JavaScript / TypeScript</li>
               <li>HTML5 / CSS3</li>
             </ul>
@@ -49,7 +49,7 @@
             <ul>
               <li>Node.js / Express</li>
               <li>Python / Flask / FastAPI</li>
-              <li>MySQL / MongoDB</li>
+              <li>MySQL / MongoDB / PostgreSQL</li>
             </ul>
           </div>
           <div class="skill-item">
@@ -67,9 +67,9 @@
               <li>
                 编程语言：
                 <ul>
-                  <li>Python,JavaScript（熟练）</li>
-                  <li>TypeScript,C++（熟悉）</li>
-                  <li>Java,C#,Go（了解/在学）</li>
+                  <li>Python,JavaScript,TypeScript（熟练）</li>
+                  <li>C++,Go（熟悉）</li>
+                  <li>Java,C,Kotlin,Dart（了解/在学）</li>
                 </ul>   
               </li>
             </ul>
