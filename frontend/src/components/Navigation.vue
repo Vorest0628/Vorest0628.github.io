@@ -46,14 +46,36 @@
             </router-link>
           </li>
 
-          <li>
+          <li
+            class="dropdown"
+            @mouseenter="setDesktopDropdown('toolbox', true)"
+            @mouseleave="setDesktopDropdown('toolbox', false)"
+          >
             <button
-              class="nav-link-btn toolbox-btn"
+              class="dropdown-toggle toolbox-btn"
               type="button"
-              @click="handleToolbox"
+              @click="toggleDropdown('toolbox')"
             >
               工具箱
+              <i class="fas fa-angle-down" />
             </button>
+            <transition name="dropdown">
+              <ul
+                v-show="showToolboxDropdown"
+                class="dropdown-menu"
+              >
+                <li>
+                  <a
+                    href="https://arcadegent.shirakawananase.top"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    @click="handleRouteClick"
+                  >
+                    机厅Agent
+                  </a>
+                </li>
+              </ul>
+            </transition>
           </li>
 
           <li
@@ -206,6 +228,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const searchQuery = ref('')
+const showToolboxDropdown = ref(false)
 const showResourcesDropdown = ref(false)
 const showOthersDropdown = ref(false)
 const mobileMenuOpen = ref(false)
@@ -213,10 +236,6 @@ const navElement = ref(null)
 const navHeight = ref(88)
 
 const isMobileViewport = () => window.innerWidth <= 980
-
-const handleToolbox = () => {
-  alert('工具箱功能开发中，敬请期待。')
-}
 
 const handleSearch = () => {
   const query = searchQuery.value.trim()
@@ -255,6 +274,7 @@ const handleShowLogin = () => {
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
   if (!mobileMenuOpen.value) {
+    showToolboxDropdown.value = false
     showResourcesDropdown.value = false
     showOthersDropdown.value = false
   }
@@ -263,6 +283,7 @@ const toggleMobileMenu = () => {
 
 const handleRouteClick = () => {
   mobileMenuOpen.value = false
+  showToolboxDropdown.value = false
   showResourcesDropdown.value = false
   showOthersDropdown.value = false
   nextTick(updateNavHeight)
@@ -270,6 +291,10 @@ const handleRouteClick = () => {
 
 const setDesktopDropdown = (type, visible) => {
   if (isMobileViewport()) return
+  if (type === 'toolbox') {
+    showToolboxDropdown.value = visible
+    return
+  }
   if (type === 'resources') {
     showResourcesDropdown.value = visible
     return
@@ -280,12 +305,24 @@ const setDesktopDropdown = (type, visible) => {
 const toggleDropdown = (type) => {
   if (!isMobileViewport()) return
 
-  if (type === 'resources') {
+  if (type === 'toolbox') {
+    showToolboxDropdown.value = !showToolboxDropdown.value
+    if (showToolboxDropdown.value) {
+      showResourcesDropdown.value = false
+      showOthersDropdown.value = false
+    }
+  } else if (type === 'resources') {
     showResourcesDropdown.value = !showResourcesDropdown.value
-    if (showResourcesDropdown.value) showOthersDropdown.value = false
+    if (showResourcesDropdown.value) {
+      showToolboxDropdown.value = false
+      showOthersDropdown.value = false
+    }
   } else {
     showOthersDropdown.value = !showOthersDropdown.value
-    if (showOthersDropdown.value) showResourcesDropdown.value = false
+    if (showOthersDropdown.value) {
+      showToolboxDropdown.value = false
+      showResourcesDropdown.value = false
+    }
   }
 
   nextTick(updateNavHeight)
@@ -302,6 +339,7 @@ const handleResize = () => {
   if (!isMobileViewport()) {
     mobileMenuOpen.value = false
   }
+  showToolboxDropdown.value = false
   showResourcesDropdown.value = false
   showOthersDropdown.value = false
   updateNavHeight()
