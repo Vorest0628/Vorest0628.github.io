@@ -103,7 +103,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // 静态文件服务 - 在Vercel中禁用
 if (!isVercel) {
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d' }))
 } else {
   console.log('⚠️ Vercel环境禁用静态文件服务')
 }

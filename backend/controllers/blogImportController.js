@@ -1,13 +1,13 @@
 // backend/controllers/blogImportController.js
 const fs = require('fs')
 const multer = require('multer')
-const sharp = require('sharp')
 const JSZip = require('jszip')
 const mongoose = require('mongoose')
 const path = require('path')
 const { marked } = require('marked')
 const { uploadBufferToBlob } = require('../utils/uploader')
 const { getStorageDriver } = require('../utils/storage')
+const { optimizeImage, toWebpFilename, isOptimizableImage } = require('../utils/imageProcessor')
 const Blog = require('../models/Blog')
 const BlogAsset = require('../models/BlogAsset')
 const { MARKDOWN_IMAGE_REGEX, normalizeMarkdownImageDestinations } = require('../utils/markdown')
@@ -69,16 +69,17 @@ const uploadImage = [
     try {
       if (!req.file) return res.status(400).json({ success: false, message: '请选择图片' })
       const { buffer, mimetype, originalname } = req.file
-      const meta = await sharp(buffer).metadata()
       // 将文件名限制在 ASCII 安全字符，避免 Blob 存储对特殊字符路径返回 400
       const sanitizedName = String(originalname || 'image')
         .toLowerCase()
         .replace(/[^a-z0-9_.-]/g, '-')
-      const key = `blog-images/${Date.now()}-${sanitizedName}`
-      const url = await uploadBufferToBlob(key, buffer, mimetype)
+      // 等比压缩到 1600px 以内并转 WebP（GIF 保留动画）
+      const optimized = await optimizeImage(buffer, { maxEdge: 1600, quality: 80 })
+      const key = `blog-images/${Date.now()}-${toWebpFilename(sanitizedName)}`
+      const url = await uploadBufferToBlob(key, optimized.buffer, optimized.contentType)
       return res.json({
         success: true,
-        data: { url, width: meta.width || 0, height: meta.height || 0, contentType: mimetype }
+        data: { url, width: optimized.width, height: optimized.height, contentType: optimized.contentType }
       })
     } catch (err) { next(err) }
   }
@@ -200,10 +201,23 @@ const importMarkdown = [
         
         const safeFilename = norm.split('/').pop() || `asset-${Date.now()}`
         console.log(`  - 安全文件名: "${safeFilename}"`)
+
+        // 图片资源：等比压缩到 1600px 以内并转 WebP（GIF 保留动画），文件名随之改为 .webp
+        let finalFilename = safeFilename
+        if (isOptimizableImage(safeFilename)) {
+          try {
+            const optimized = await optimizeImage(buf, { maxEdge: 1600, quality: 80 })
+            buf = optimized.buffer
+            finalFilename = toWebpFilename(safeFilename)
+            console.log(`  - 已优化为 WebP: "${finalFilename}"`)
+          } catch (optErr) {
+            warnings.push(`图片优化失败，按原样上传: ${safeFilename} (${optErr.message})`)
+          }
+        }
         
         // 先检查是否已存在相同资源（编辑模式下复用）
         const blogObjectId = new mongoose.Types.ObjectId(blogId)
-        let existingAsset = await BlogAsset.findOne({ blogId: blogObjectId, filename: safeFilename })
+        let existingAsset = await BlogAsset.findOne({ blogId: blogObjectId, filename: finalFilename })
         let blobUrl
         
         const needsAssetRefresh = shouldRefreshExistingAsset(existingAsset)
@@ -211,34 +225,34 @@ const importMarkdown = [
         if (existingAsset && !needsAssetRefresh) {
           // 复用现有资源
           blobUrl = existingAsset.blobUrl
-          console.log(`🔄 复用现有资源: ${safeFilename} -> ${blobUrl}`)
+          console.log(`🔄 复用现有资源: ${finalFilename} -> ${blobUrl}`)
         } else {
           if (existingAsset && needsAssetRefresh) {
-            console.log(`♻️ 发现旧资源映射不可用，重新写入: ${safeFilename} -> ${existingAsset.blobUrl}`)
+            console.log(`♻️ 发现旧资源映射不可用，重新写入: ${finalFilename} -> ${existingAsset.blobUrl}`)
           }
 
           // 上传新资源
-          const ext = (safeFilename.split('.').pop() || 'bin').toLowerCase()
+          const ext = (finalFilename.split('.').pop() || 'bin').toLowerCase()
           const mime = ext === 'png' ? 'image/png'
                     : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
                     : ext === 'gif' ? 'image/gif'
                     : ext === 'webp' ? 'image/webp'
                     : 'application/octet-stream'
-          const key = `blogs/${blogId}/images/${safeFilename}`
+          const key = `blogs/${blogId}/images/${finalFilename}`
           console.log(`📤 上传新资源: ${key} (${mime})`)
           blobUrl = await uploadBufferToBlob(key, buf, mime, true) // 允许覆盖
-          console.log(`📤 上传完成: ${safeFilename} -> ${blobUrl}`)
+          console.log(`📤 上传完成: ${finalFilename} -> ${blobUrl}`)
         }
 
-        console.log(`💾 保存资源映射: blogId=${blogId}, filename=${safeFilename}`)
+        console.log(`💾 保存资源映射: blogId=${blogId}, filename=${finalFilename}`)
         const savedAsset = await BlogAsset.findOneAndUpdate(
-          { blogId: blogObjectId, filename: safeFilename },
-          { blogId: blogObjectId, filename: safeFilename, title: altText || '', blobUrl },
+          { blogId: blogObjectId, filename: finalFilename },
+          { blogId: blogObjectId, filename: finalFilename, title: altText || '', blobUrl },
           { upsert: true, new: true }
         )
         console.log(`💾 保存结果:`, savedAsset ? `SUCCESS - ${savedAsset._id}` : 'FAILED')
 
-        const routeUrl = `/api/blog/${blogId}/${encodeURIComponent(safeFilename)}`
+        const routeUrl = `/api/blog/${blogId}/${encodeURIComponent(finalFilename)}`
         const publicUrl = typeof blobUrl === 'string' && blobUrl.startsWith('/uploads/')
           ? blobUrl
           : routeUrl

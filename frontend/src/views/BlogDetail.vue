@@ -204,7 +204,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { blogApi } from '@/api/blog'
 import { commentApi } from '@/api/comment'
@@ -229,6 +229,18 @@ const isLiked = ref(false)
 const comments = ref([])
 const commentsLoading = ref(false)
 const commentsSection = ref(null)
+
+const updateDocumentTitle = (title = '') => {
+  const normalizedTitle = String(title || '').trim()
+  document.title = normalizedTitle
+    ? `${normalizedTitle} - Vorest's Website`
+    : '博客详情 - Vorest\'s Website'
+}
+
+// 详情数据加载完成后，将博客标题同步到浏览器标签页。
+watch(article, (currentArticle) => {
+  updateDocumentTitle(currentArticle?.title)
+}, { immediate: true })
 
 // 评论相关
 const newComment = ref({

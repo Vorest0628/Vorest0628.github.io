@@ -14,6 +14,7 @@ const Gallery = require('../models/Gallery');
 const { ApiError, catchAsync } = require('../utils/error');
 const { imageUpload } = require('../utils/fileUpload');
 const { uploadBuffer, deleteStoredFile } = require('../utils/storage');
+const { optimizeImage, toWebpFilename } = require('../utils/imageProcessor');
 
 // PUBLIC: Get image list with filters
 exports.getImages = catchAsync(async (req, res) => {
@@ -96,16 +97,21 @@ exports.uploadImage = catchAsync(async (req, res) => {
       const fileBuffer = req.file.buffer;
       const originalName = req.file.originalname;
 
-      // 1. Process and upload the full-size image
-      const imageInfo = await sharp(fileBuffer).metadata();
-      const fullSizeBlob = await uploadBuffer(`gallery/full/${Date.now()}-${originalName}`, fileBuffer, {
-        contentType: req.file.mimetype
+      // 1. Optimize and upload the full-size image (等比压缩到 1600px 以内并转 WebP，GIF 保留动画)
+      const optimized = await optimizeImage(fileBuffer, { maxEdge: 1600, quality: 80 });
+      const webpName = toWebpFilename(originalName);
+      const fullSizeBlob = await uploadBuffer(`gallery/full/${Date.now()}-${webpName}`, optimized.buffer, {
+        contentType: optimized.contentType
       });
 
-      // 2. Create, process, and upload the thumbnail
-      const thumbnailBuffer = await sharp(fileBuffer).resize(400).toBuffer();
-      const thumbnailBlob = await uploadBuffer(`gallery/thumbnails/${Date.now()}-${originalName}`, thumbnailBuffer, {
-        contentType: req.file.mimetype
+      // 2. Create, process, and upload the thumbnail (400px WebP)
+      const thumbnailBuffer = await sharp(fileBuffer, { animated: true })
+        .rotate()
+        .resize(400)
+        .webp({ quality: 75 })
+        .toBuffer();
+      const thumbnailBlob = await uploadBuffer(`gallery/thumbnails/${Date.now()}-${webpName}`, thumbnailBuffer, {
+        contentType: 'image/webp'
       });
 
       // 3. Create a new document in the database with Blob URLs
@@ -118,8 +124,8 @@ exports.uploadImage = catchAsync(async (req, res) => {
         secondaryTags,
         isPublic: isPublic === 'true',
         status: status || 'published',
-        width: imageInfo.width,
-        height: imageInfo.height,
+        width: optimized.width,
+        height: optimized.height,
         date: new Date()
       });
 

@@ -213,8 +213,11 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
-  // 设置页面标题
-  document.title = to.meta.title ? `${to.meta.title} - Vorest's Website` : "Vorest's Website"
+  // 博客标题需要等详情接口返回后由 BlogDetail 更新，路由切换时先显示兜底标题。
+  const routeTitle = to.name === 'blog-detail'
+    ? (to.meta.title || '博客详情')
+    : to.meta.title
+  document.title = routeTitle ? `${routeTitle} - Vorest's Website` : "Vorest's Website"
   
   // 检查是否需要认证
   if (to.meta.requiresAuth || to.meta.requiresAdmin) {
