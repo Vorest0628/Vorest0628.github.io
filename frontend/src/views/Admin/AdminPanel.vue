@@ -3,19 +3,29 @@
     <!-- 管理员欢迎头部 -->
     <div class="admin-header">
       <div class="welcome-section">
+        <span class="header-kicker">CONTROL CENTER</span>
         <h1>管理员控制台</h1>
         <p class="welcome-text">
           欢迎回来，{{ userInfo?.username }}！
         </p>
+      </div>
+      <div class="header-status">
+        <span
+          class="status-dot"
+          aria-hidden="true"
+        />
+        <span>系统运行正常</span>
+        <span class="role-chip">管理员</span>
       </div>
     </div>
 
     <!-- 管理功能导航 -->
     <div class="admin-nav">
       <div class="nav-grid">
-        <div 
+        <button
           v-for="navItem in adminNavItems" 
           :key="navItem.key"
+          type="button"
           class="nav-card"
           :class="{ active: currentView === navItem.key }"
           @click="currentView = navItem.key"
@@ -31,7 +41,7 @@
           >
             {{ navItem.pending }}
           </div>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -42,10 +52,33 @@
         v-if="currentView === 'overview'"
         class="overview-content"
       >
-        <h2>系统总览</h2>
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">OVERVIEW</span>
+            <h2>系统总览</h2>
+          </div>
+          <span class="section-date">{{ formatDate(new Date()) }}</span>
+        </div>
+
+        <div class="stats-grid">
+          <div
+            v-for="stat in overviewStats"
+            :key="stat.key"
+            class="stat-card"
+          >
+            <span class="stat-icon">{{ stat.icon }}</span>
+            <div>
+              <span class="stat-label">{{ stat.label }}</span>
+              <strong>{{ stats[stat.key] ?? 0 }}</strong>
+            </div>
+          </div>
+        </div>
         
         <div class="recent-activities">
-          <h3>最近活动</h3>
+          <div class="subsection-heading">
+            <h3>最近活动</h3>
+            <span>{{ recentActivities.length }} 条记录</span>
+          </div>
           <div
             v-if="recentActivities.length > 0"
             class="activity-list"
@@ -88,8 +121,6 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/store/modules/auth'
-import { useRouter } from 'vue-router'
 import { authStorage } from '@/utils/auth'
 import { adminApi } from '@/api/admin'
 
@@ -102,34 +133,49 @@ import AdminCommentReview from './components/AdminCommentReview.vue'
 import AdminUserManager from './components/AdminUserManager.vue'
 import UserPanel from '../User/UserPanel.vue'
 
-const router = useRouter()
-
 const currentView = ref('overview')
 const userInfo = ref(null)
 const stats = reactive({
+  users: 0,
   blogs: 0,
-  images: 0,
+  galleryItems: 0,
   documents: 0,
+  friendLinks: 0,
   comments: 0
 })
 
 const recentActivities = ref([])
+const pending = reactive({ blogs: 0, comments: 0, galleryItems: 0 })
+
+const overviewStats = [
+  { key: 'blogs', label: '博客文章', icon: '📝' },
+  { key: 'galleryItems', label: '图库资源', icon: '🖼️' },
+  { key: 'documents', label: '文档资源', icon: '📄' },
+  { key: 'users', label: '注册用户', icon: '👥' }
+]
 
 // 管理导航项目
 const adminNavItems = computed(() => [
+  {
+    key: 'overview',
+    icon: '📊',
+    label: '系统总览',
+    description: '查看站点运行概况',
+    pending: 0
+  },
   {
     key: 'blogs',
     icon: '📝',
     label: '博客管理',
     description: '创建和编辑博客文章',
-    pending: 0
+    pending: pending.blogs
   },
   {
     key: 'gallery',
     icon: '🖼️',
     label: '图库管理',
     description: '管理图片和分类',
-    pending: 0
+    pending: pending.galleryItems
   },
   {
     key: 'documents',
@@ -157,7 +203,7 @@ const adminNavItems = computed(() => [
     icon: '💬',
     label: '评论管理',
     description: '管理用户评论',
-    pending: 0
+    pending: pending.comments
   },
   {
     key: 'user-panel',
@@ -191,21 +237,42 @@ const getUserInfo = () => {
 // 获取统计数据
 const getStats = async () => {
   try {
-    const response = await adminApi.getStats()
+    const response = await adminApi.getDashboard()
     if (response.success) {
       Object.assign(stats, response.data.stats)
-      // 限制最近活动为最多3条
-      recentActivities.value = (response.data.recentActivities || []).slice(0, 3)
+      Object.assign(pending, response.data.pending || {})
+
+      const recent = response.data.recent || {}
+      recentActivities.value = [
+        ...(recent.blogs || []).map(item => ({
+          id: `blog-${item._id || item.id}`,
+          icon: '📝',
+          text: `新增博客：${item.title}`,
+          time: item.createdAt
+        })),
+        ...(recent.comments || []).map(item => ({
+          id: `comment-${item._id || item.id}`,
+          icon: '💬',
+          text: `收到新评论${item.author?.username ? `：${item.author.username}` : ''}`,
+          time: item.createdAt
+        })),
+        ...(recent.users || []).map(item => ({
+          id: `user-${item._id || item.id}`,
+          icon: '👤',
+          text: `新用户加入：${item.username}`,
+          time: item.createdAt
+        }))
+      ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 3)
     }
   } catch (error) {
     console.error('获取统计数据失败:', error)
     // 使用模拟数据
     Object.assign(stats, {
       blogs: 15,
-      images: 128,
       documents: 25,
-      playlists: 45,
-      comments: 89
+      galleryItems: 128,
+      comments: 89,
+      users: 45
     })
     // 设置模拟的最近活动数据，限制为3条
     recentActivities.value = [
@@ -238,6 +305,14 @@ const formatTime = (time) => {
   return new Date(time).toLocaleString('zh-CN')
 }
 
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
 onMounted(() => {
   getUserInfo()
   getStats()
@@ -246,85 +321,146 @@ onMounted(() => {
 
 <style scoped>
 .admin-panel {
-  padding: 20px;
-  max-width: 100%;
+  width: 100%;
+  padding: 18px 0 28px;
 }
 
 .admin-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 30px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  color: var(--summer-text-main);
+  padding: 24px 28px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 12px 28px rgba(32, 94, 137, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.header-kicker,
+.section-kicker {
+  display: block;
+  color: var(--color-primary-dark);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
 }
 
 .admin-header h1 {
-  margin: 0 0 10px 0;
-  font-size: 2.2rem;
-  font-weight: 600;
+  margin: 6px 0 4px;
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-family: var(--summer-font-display);
+  letter-spacing: 0.01em;
+  color: var(--summer-text-main);
 }
 
 .welcome-text {
   margin: 0;
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 0.92rem;
+  color: var(--summer-text-subtle);
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: var(--summer-text-subtle);
+  font-size: 0.78rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 4px rgba(0, 200, 83, 0.12);
+}
+
+.role-chip {
+  margin-left: 8px;
+  padding: 4px 9px;
+  border: 1px solid rgba(45, 180, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(45, 180, 255, 0.1);
+  color: var(--color-primary-dark);
+  font-weight: 700;
 }
 
 .admin-nav {
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 }
 
 .nav-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .nav-card {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 20px;
+  appearance: none;
+  font: inherit;
+  min-height: 112px;
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 10px;
+  padding: 15px 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   position: relative;
-  text-align: center;
+  text-align: left;
+  box-shadow: 0 7px 18px rgba(40, 101, 140, 0.09);
+  color: var(--summer-text-main);
 }
 
 .nav-card:hover {
-  border-color: #667eea;
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+  border-color: rgba(45, 180, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(45, 180, 255, 0.17);
 }
 
 .nav-card.active {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: var(--color-primary-dark);
+  background: var(--color-primary-dark);
   color: white;
+  box-shadow: 0 10px 22px rgba(0, 153, 238, 0.25);
 }
 
 .nav-icon {
-  font-size: 2.5rem;
-  margin-bottom: 15px;
+  font-size: 1.55rem;
+  line-height: 1;
+  margin-bottom: 11px;
 }
 
 .nav-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.2rem;
+  margin: 0 0 4px;
+  font-size: 0.95rem;
 }
 
 .nav-card p {
   margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--summer-text-subtle);
+}
+
+.nav-card.active p {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .pending-badge {
   position: absolute;
   top: -10px;
   right: -10px;
-  background: #ff4757;
+  background: #e63946;
   color: white;
   border-radius: 50%;
   width: 25px;
@@ -334,20 +470,86 @@ onMounted(() => {
   justify-content: center;
   font-size: 0.8rem;
   font-weight: bold;
+  box-shadow: 0 3px 10px rgba(230, 57, 70, 0.35);
 }
 
 .admin-content {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 30px;
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 14px;
+  padding: 26px;
   min-height: 400px;
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.1);
+}
+
+.section-heading,
+.subsection-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-heading {
+  margin-bottom: 20px;
+}
+
+.section-heading h2 {
+  margin: 5px 0 0;
+}
+
+.section-date,
+.subsection-heading > span {
+  color: var(--summer-text-muted);
+  font-size: 0.76rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid rgba(45, 180, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.stat-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(45, 180, 255, 0.13);
+  font-size: 1.1rem;
+}
+
+.stat-label {
+  display: block;
+  margin-bottom: 1px;
+  color: var(--summer-text-subtle);
+  font-size: 0.72rem;
+}
+
+.stat-card strong {
+  display: block;
+  color: var(--summer-text-main);
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 .overview-content h2 {
-  color: #333;
-  margin-bottom: 30px;
-  font-size: 1.8rem;
+  color: var(--summer-text-main);
+  font-size: 1.45rem;
 }
 
 .recent-activities {
@@ -355,25 +557,27 @@ onMounted(() => {
 }
 
 .recent-activities h3 {
-  color: #333;
-  margin-bottom: 20px;
-  font-size: 1.3rem;
+  color: var(--summer-text-main);
+  margin: 0;
+  font-size: 1.05rem;
 }
 
 .activity-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 15px;
-  background: #f8f9fa;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(45, 180, 255, 0.12);
+  border-left: 3px solid var(--color-primary);
   border-radius: 8px;
-  border-left: 4px solid #667eea;
 }
 
 .activity-icon {
@@ -386,19 +590,19 @@ onMounted(() => {
 
 .activity-text {
   font-weight: 500;
-  color: #333;
+  color: var(--summer-text-main);
   margin-bottom: 5px;
 }
 
 .activity-time {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.78rem;
+  color: var(--summer-text-muted);
 }
 
 .empty-activity {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .empty-activity p {
@@ -409,23 +613,42 @@ onMounted(() => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .admin-panel {
-    padding: 15px;
+    padding: 12px 0 20px;
   }
 
   .admin-header {
+    align-items: flex-start;
+    flex-direction: column;
     padding: 20px;
   }
 
   .admin-header h1 {
-    font-size: 1.8rem;
+    font-size: 1.65rem;
   }
 
   .nav-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-content {
-    padding: 20px;
+    padding: 20px 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-</style> 
+
+@media (max-width: 480px) {
+  .nav-grid,
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+</style>

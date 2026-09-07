@@ -861,23 +861,25 @@ onMounted(() => {
 }
 
 .manager-header h2 {
-  color: #333;
+  color: var(--summer-text-main);
+  font-family: var(--summer-font-display);
   margin: 0;
 }
 
 .create-btn {
   padding: 0.5rem 1rem;
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .create-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .filter-bar {
@@ -890,8 +892,17 @@ onMounted(() => {
 .filter-bar select,
 .filter-bar input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-main);
+}
+
+.filter-bar select:focus,
+.filter-bar input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
 }
 
 .filter-bar input {
@@ -905,10 +916,13 @@ onMounted(() => {
 }
 
 .document-card {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
   display: flex;
   align-items: center;
   gap: 1.5rem;
@@ -921,7 +935,7 @@ onMounted(() => {
 
 .doc-icon {
   font-size: 2.5rem;
-  color: #e67e22;
+  color: var(--color-secondary);
   min-width: 60px;
   text-align: center;
 }
@@ -932,12 +946,13 @@ onMounted(() => {
 
 .document-info h3 {
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: var(--summer-text-main);
+  font-family: var(--summer-font-display);
   font-size: 1.3rem;
 }
 
 .document-info p {
-  color: #666;
+  color: var(--summer-text-subtle);
   margin-bottom: 1rem;
   line-height: 1.5;
 }
@@ -951,40 +966,49 @@ onMounted(() => {
 }
 
 .doc-category {
-  background: #e67e22;
-  color: white;
+  background: rgba(255, 170, 51, 0.18);
+  color: #b26a00;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: bold;
   font-size: 0.8rem;
 }
 
 .doc-type {
-  background: #3498db;
-  color: white;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: bold;
   font-size: 0.8rem;
 }
 
 .doc-size,
 .doc-date {
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .status.published {
-  color: #28a745;
+  background: rgba(0, 200, 83, 0.15);
+  color: #00913f;
+  padding: 2px 8px;
+  border-radius: 12px;
   font-weight: bold;
 }
 
 .status.draft {
-  color: #ffc107;
+  background: rgba(255, 170, 51, 0.18);
+  color: #b26a00;
+  padding: 2px 8px;
+  border-radius: 12px;
   font-weight: bold;
 }
 
 .status.pinned {
-  color: #dc3545;
+  background: rgba(230, 57, 70, 0.15);
+  color: #d62839;
+  padding: 2px 8px;
+  border-radius: 12px;
   font-weight: bold;
 }
 
@@ -995,8 +1019,8 @@ onMounted(() => {
 }
 
 .tag {
-  background: #f39c12;
-  color: white;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
   padding: 2px 6px;
   border-radius: 8px;
   font-size: 0.75rem;
@@ -1014,7 +1038,7 @@ onMounted(() => {
 .download-btn {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
@@ -1023,30 +1047,33 @@ onMounted(() => {
 }
 
 .edit-btn {
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .edit-btn:hover {
-  background: #0056b3;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .delete-btn {
-  background: #dc3545;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
 }
 
 .delete-btn:hover {
-  background: #c82333;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.35);
+  transform: translateY(-1px);
 }
 
 .download-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .download-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .modal-overlay {
@@ -1055,7 +1082,9 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(26, 58, 92, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1063,8 +1092,12 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-surface-solid);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(40, 101, 140, 0.2);
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
@@ -1076,12 +1109,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(45, 180, 255, 0.15);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--summer-text-main);
+  font-family: var(--summer-font-display);
 }
 
 .close-btn {
@@ -1089,7 +1123,7 @@ onMounted(() => {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .modal-body {
@@ -1103,7 +1137,7 @@ onMounted(() => {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--summer-text-main);
   font-weight: 500;
 }
 
@@ -1112,17 +1146,27 @@ onMounted(() => {
 .form-group select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-main);
   box-sizing: border-box;
 }
 
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
+}
+
 .file-upload-area {
-  border: 2px dashed #ddd;
-  border-radius: 8px;
+  border: 2px dashed rgba(45, 180, 255, 0.4);
+  border-radius: 12px;
   padding: 2rem;
   text-align: center;
-  background: #f8f9fa;
+  background: rgba(45, 180, 255, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
   min-height: 120px;
@@ -1132,8 +1176,8 @@ onMounted(() => {
 }
 
 .file-upload-area:hover {
-  border-color: #007bff;
-  background: #f0f7ff;
+  border-color: var(--color-primary);
+  background: rgba(45, 180, 255, 0.15);
 }
 
 .upload-placeholder {
@@ -1145,24 +1189,24 @@ onMounted(() => {
 
 .upload-icon {
   font-size: 3rem;
-  color: #007bff;
+  color: var(--color-primary);
   margin-bottom: 0.5rem;
 }
 
 .upload-placeholder p {
   margin: 0;
-  color: #333;
+  color: var(--summer-text-main);
   font-weight: 500;
 }
 
 .upload-hint {
-  color: #666 !important;
+  color: var(--summer-text-subtle) !important;
   font-size: 0.9rem !important;
   font-weight: normal !important;
 }
 
 .size-limit {
-  color: #999 !important;
+  color: var(--summer-text-muted) !important;
   font-size: 0.8rem !important;
   font-weight: normal !important;
 }
@@ -1171,17 +1215,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: white;
+  background: rgba(255, 255, 255, 0.65);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(45, 180, 255, 0.3);
   width: 100%;
   max-width: 400px;
 }
 
 .file-icon {
   font-size: 2rem;
-  color: #e67e22;
+  color: var(--color-secondary);
   min-width: 40px;
 }
 
@@ -1195,18 +1239,18 @@ onMounted(() => {
 
 .file-name {
   font-weight: 500;
-  color: #333;
+  color: var(--summer-text-main);
   word-break: break-all;
 }
 
 .file-size {
-  color: #666;
+  color: var(--summer-text-subtle);
   font-size: 0.9rem;
 }
 
 .remove-file-btn {
-  background: #dc3545;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
   border: none;
   border-radius: 50%;
   width: 24px;
@@ -1216,11 +1260,11 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .remove-file-btn:hover {
-  background: #c82333;
+  box-shadow: 0 4px 10px rgba(230, 57, 70, 0.35);
 }
 
 .current-file-info {
@@ -1228,19 +1272,19 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  background: rgba(45, 180, 255, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(45, 180, 255, 0.2);
 }
 
 .current-file-info i {
   font-size: 1.5rem;
-  color: #e67e22;
+  color: var(--color-secondary);
 }
 
 .file-note {
   margin: 0.5rem 0 0 0;
-  color: #666;
+  color: var(--summer-text-subtle);
   font-size: 0.9rem;
   font-style: italic;
 }
@@ -1255,15 +1299,15 @@ onMounted(() => {
 .upload-progress {
   margin: 1rem 0;
   padding: 1rem;
-  background: #f8f9fa;
+  background: rgba(45, 180, 255, 0.08);
   border-radius: 8px;
-  border: 1px solid #dee2e6;
+  border: 1px solid rgba(45, 180, 255, 0.2);
 }
 
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #e9ecef;
+  background: rgba(45, 180, 255, 0.15);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.5rem;
@@ -1271,7 +1315,7 @@ onMounted(() => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #28a745, #20c997);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
   transition: width 0.3s ease;
   border-radius: 4px;
 }
@@ -1279,7 +1323,7 @@ onMounted(() => {
 .progress-text {
   text-align: center;
   margin: 0;
-  color: #495057;
+  color: var(--summer-text-subtle);
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -1288,7 +1332,7 @@ onMounted(() => {
 .save-btn {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.3s;
@@ -1300,21 +1344,23 @@ onMounted(() => {
 }
 
 .cancel-btn {
-  background: #6c757d;
-  color: white;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-subtle);
+  border: 1px solid rgba(45, 180, 255, 0.3);
 }
 
 .cancel-btn:hover:not(:disabled) {
-  background: #5a6268;
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .save-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .save-btn:hover:not(:disabled) {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .cancel-btn:disabled,
@@ -1368,23 +1414,24 @@ onMounted(() => {
 }
 
 .error-state h3 {
-  color: #dc3545;
+  color: #e63946;
   margin-bottom: 1rem;
 }
 
 .retry-btn {
   padding: 0.5rem 1rem;
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .retry-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .empty-state {
@@ -1396,12 +1443,12 @@ onMounted(() => {
 }
 
 .empty-state h3 {
-  color: #666;
+  color: var(--summer-text-subtle);
   margin-bottom: 1rem;
 }
 
 .empty-state p {
-  color: #999;
+  color: var(--summer-text-muted);
 }
 
 /* 自定义分类输入框样式 */
@@ -1412,19 +1459,21 @@ onMounted(() => {
 .form-control {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-main);
   font-size: 0.9rem;
   transition: border-color 0.3s;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
 }
 
 .form-control::placeholder {
-  color: #999;
+  color: var(--summer-text-muted);
 }
 </style> 

@@ -513,7 +513,8 @@ onMounted(() => {
 }
 
 .manager-header h2 {
-  color: #333;
+  color: var(--summer-text-main);
+  font-family: var(--summer-font-display);
   margin: 0;
 }
 
@@ -529,19 +530,36 @@ onMounted(() => {
 .filter-bar select,
 .filter-bar input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
+  color: var(--summer-text-main);
+  transition: all 0.3s;
+}
+
+.filter-bar select:focus,
+.filter-bar input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
 }
 
 .filter-bar input {
   min-width: 300px;
 }
 
+.filter-bar input::placeholder {
+  color: var(--summer-text-muted);
+}
+
 .users-table {
-  background: white;
-  border-radius: 8px;
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
 }
 
 .users-table table {
@@ -553,27 +571,32 @@ onMounted(() => {
 .users-table td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(45, 180, 255, 0.15);
+  color: var(--summer-text-subtle);
 }
 
 .users-table th {
-  background: #f8f9fa;
+  background: rgba(45, 180, 255, 0.12);
   font-weight: 600;
-  color: #333;
+  color: var(--summer-text-main);
+}
+
+.users-table tbody tr:hover {
+  background: rgba(45, 180, 255, 0.08);
 }
 
 /* 待审核用户行高亮 */
 .pending-user {
-  background-color: #fff3cd !important;
+  background-color: rgba(255, 170, 51, 0.18) !important;
 }
 
 .pending-user:hover {
-  background-color: #ffeaa7 !important;
+  background-color: rgba(255, 170, 51, 0.28) !important;
 }
 
 .user-info .username {
   font-weight: 600;
-  color: #333;
+  color: var(--summer-text-main);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -582,7 +605,7 @@ onMounted(() => {
 .pending-dot {
   width: 8px;
   height: 8px;
-  background-color: #dc3545;
+  background-color: #e63946;
   border-radius: 50%;
   display: inline-block;
   animation: pulse 1.5s infinite;
@@ -596,7 +619,7 @@ onMounted(() => {
 
 .user-info .user-id {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--summer-text-muted);
   margin-top: 2px;
 }
 
@@ -608,13 +631,13 @@ onMounted(() => {
 }
 
 .role-badge.admin {
-  background: #dc3545;
-  color: white;
+  background: rgba(230, 57, 70, 0.15);
+  color: #c1121f;
 }
 
 .role-badge.user {
-  background: #007bff;
-  color: white;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
 }
 
 .status-badge {
@@ -625,13 +648,13 @@ onMounted(() => {
 }
 
 .status-badge.approved {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 200, 83, 0.15);
+  color: #00913f;
 }
 
 .status-badge.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 51, 0.18);
+  color: #b26a00;
 }
 
 .action-buttons {
@@ -643,37 +666,40 @@ onMounted(() => {
 .action-buttons button {
   padding: 4px 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.8rem;
   transition: all 0.3s;
 }
 
 .edit-btn {
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .edit-btn:hover {
-  background: #0056b3;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .approve-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-success), #00913f);
+  color: #fff;
 }
 
 .approve-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(0, 200, 83, 0.35);
+  transform: translateY(-1px);
 }
 
 .delete-btn {
-  background: #dc3545;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
 }
 
 .delete-btn:hover {
-  background: #c82333;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.35);
+  transform: translateY(-1px);
 }
 
 .loading-state,
@@ -684,21 +710,27 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   height: 200px;
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .error-state h3 {
-  color: #dc3545;
+  color: #e63946;
   margin-bottom: 1rem;
 }
 
 .retry-btn {
   padding: 0.5rem 1rem;
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s;
+}
+
+.retry-btn:hover {
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .modal-overlay {
@@ -707,7 +739,9 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(26, 58, 92, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -715,8 +749,12 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-surface-solid);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
@@ -728,12 +766,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(45, 180, 255, 0.15);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--summer-text-main);
+  font-family: var(--summer-font-display);
 }
 
 .close-btn {
@@ -741,7 +780,12 @@ onMounted(() => {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: var(--summer-text-subtle);
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: var(--summer-text-main);
 }
 
 .modal-body {
@@ -755,7 +799,7 @@ onMounted(() => {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--summer-text-main);
   font-weight: 500;
 }
 
@@ -763,9 +807,23 @@ onMounted(() => {
 .form-group select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
+  color: var(--summer-text-main);
   box-sizing: border-box;
+  transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
+}
+
+.form-group input::placeholder {
+  color: var(--summer-text-muted);
 }
 
 .password-input-group {
@@ -780,18 +838,19 @@ onMounted(() => {
 
 .reset-password-btn {
   padding: 0.5rem 1rem;
-  background: #ffc107;
-  color: #212529;
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-light));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.8rem;
   white-space: nowrap;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .reset-password-btn:hover {
-  background: #e0a800;
+  box-shadow: 0 6px 16px rgba(255, 170, 51, 0.35);
+  transform: translateY(-1px);
 }
 
 .form-actions {
@@ -805,28 +864,31 @@ onMounted(() => {
 .save-btn {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .cancel-btn {
-  background: #6c757d;
-  color: white;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-subtle);
+  border: 1px solid rgba(45, 180, 255, 0.3);
 }
 
 .cancel-btn:hover {
-  background: #545b62;
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
 }
 
 .save-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .save-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {

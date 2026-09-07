@@ -610,23 +610,24 @@ onMounted(() => {
 }
 
 .manager-header h2 {
-  color: #333;
+  color: var(--summer-text-main);
   margin: 0;
 }
 
 .create-btn {
   padding: 0.5rem 1rem;
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .create-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .filter-bar {
@@ -638,8 +639,18 @@ onMounted(() => {
 .filter-bar select,
 .filter-bar input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
+  color: var(--summer-text-main);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.filter-bar select:focus,
+.filter-bar input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
 }
 
 .filter-bar input {
@@ -653,10 +664,13 @@ onMounted(() => {
 }
 
 .link-card {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
   transition: transform 0.3s;
 }
 
@@ -669,7 +683,7 @@ onMounted(() => {
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(45, 180, 255, 0.15);
 }
 
 .link-logo {
@@ -685,12 +699,12 @@ onMounted(() => {
 
 .link-name {
   font-weight: 600;
-  color: #333;
+  color: var(--summer-text-main);
   margin-bottom: 0.25rem;
 }
 
 .link-url a {
-  color: #007bff;
+  color: var(--color-primary-dark);
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -704,7 +718,7 @@ onMounted(() => {
 }
 
 .link-description {
-  color: #666;
+  color: var(--summer-text-subtle);
   font-size: 0.9rem;
   margin-bottom: 1rem;
   line-height: 1.5;
@@ -718,8 +732,8 @@ onMounted(() => {
 }
 
 .category {
-  background: #e9ecef;
-  color: #495057;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -733,17 +747,17 @@ onMounted(() => {
 }
 
 .status.approved {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 200, 83, 0.15);
+  color: #00913f;
 }
 
 .status.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 51, 0.18);
+  color: #b26a00;
 }
 
 .date {
-  color: #999;
+  color: var(--summer-text-muted);
   font-size: 0.8rem;
 }
 
@@ -751,40 +765,41 @@ onMounted(() => {
   display: flex;
   gap: 0.5rem;
   padding: 1rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid rgba(45, 180, 255, 0.15);
 }
 
 .link-actions button {
   padding: 4px 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .edit-btn {
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .approve-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-success), #00913f);
+  color: #fff;
 }
 
 .reject-btn {
-  background: #ffc107;
-  color: #212529;
+  background: linear-gradient(135deg, var(--color-secondary-light), var(--color-secondary));
+  color: #fff;
 }
 
 .delete-btn {
-  background: #dc3545;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
 }
 
 .link-actions button:hover {
-  opacity: 0.8;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .loading-state,
@@ -798,17 +813,23 @@ onMounted(() => {
 }
 
 .error-state h3 {
-  color: #dc3545;
+  color: #e63946;
   margin-bottom: 1rem;
 }
 
 .retry-btn {
   padding: 0.5rem 1rem;
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s;
+}
+
+.retry-btn:hover {
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .modal-overlay {
@@ -817,7 +838,9 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(26, 58, 92, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -825,8 +848,12 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-surface-solid);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
@@ -838,12 +865,12 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(45, 180, 255, 0.15);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--summer-text-main);
 }
 
 .close-btn {
@@ -851,7 +878,7 @@ onMounted(() => {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .modal-body {
@@ -865,7 +892,7 @@ onMounted(() => {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--summer-text-main);
   font-weight: 500;
 }
 
@@ -874,9 +901,20 @@ onMounted(() => {
 .form-group select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
+  color: var(--summer-text-main);
   box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
 }
 
 .form-actions {
@@ -890,20 +928,26 @@ onMounted(() => {
 .save-btn {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .cancel-btn {
-  background: #6c757d;
-  color: white;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-subtle);
+  border: 1px solid rgba(45, 180, 255, 0.3);
 }
 
 .save-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
+}
+
+.save-btn:hover {
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
@@ -936,22 +980,23 @@ onMounted(() => {
 
 .fetch-favicon-btn {
   padding: 0.5rem 1rem;
-  background: #17a2b8;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.8rem;
   white-space: nowrap;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .fetch-favicon-btn:hover:not(:disabled) {
-  background: #138496;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .fetch-favicon-btn:disabled {
-  background: #6c757d;
+  background: rgba(107, 155, 191, 0.45);
   cursor: not-allowed;
 }
 
@@ -974,11 +1019,11 @@ onMounted(() => {
   height: 48px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(45, 180, 255, 0.35);
 }
 
 .form-hint {
-  color: #666;
+  color: var(--summer-text-muted);
   font-size: 0.8rem;
   margin-top: 0.25rem;
   display: block;

@@ -307,7 +307,8 @@ onMounted(() => {
 }
 
 .manager-header h2 {
-  color: #333;
+  color: var(--summer-text-main);
+  font-family: var(--summer-font-display);
   margin: 0;
 }
 
@@ -324,13 +325,13 @@ onMounted(() => {
 }
 
 .total-count {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
 }
 
 .pending-count {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 51, 0.18);
+  color: #b26a00;
 }
 
 .filter-bar {
@@ -343,9 +344,22 @@ onMounted(() => {
 .filter-bar select,
 .filter-bar input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(45, 180, 255, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
   font-size: 0.9rem;
+  color: var(--summer-text-main);
+}
+
+.filter-bar select:focus,
+.filter-bar input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 180, 255, 0.18);
+  outline: none;
+}
+
+.filter-bar input::placeholder {
+  color: var(--summer-text-muted);
 }
 
 .filter-bar input {
@@ -355,17 +369,23 @@ onMounted(() => {
 .loading-state, .error-state, .empty-state {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .retry-btn {
   padding: 0.5rem 1rem;
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   margin-top: 1rem;
+  transition: all 0.3s;
+}
+
+.retry-btn:hover {
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .comment-list {
@@ -375,10 +395,13 @@ onMounted(() => {
 }
 
 .comment-card {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 24px rgba(40, 101, 140, 0.11);
   transition: transform 0.2s;
 }
 
@@ -403,7 +426,7 @@ onMounted(() => {
 
 .commenter {
   font-weight: 600;
-  color: #333;
+  color: var(--summer-text-main);
 }
 
 .comment-source {
@@ -414,13 +437,13 @@ onMounted(() => {
 
 .source-label {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--summer-text-subtle);
 }
 
 .source-link {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--color-primary-dark);
   text-decoration: underline;
   cursor: pointer;
   font-size: 0.9rem;
@@ -428,7 +451,7 @@ onMounted(() => {
 }
 
 .source-link:hover {
-  color: #0056b3;
+  color: var(--color-primary);
 }
 
 .status-badge {
@@ -439,63 +462,63 @@ onMounted(() => {
 }
 
 .status-badge.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 51, 0.18);
+  color: #b26a00;
 }
 
 .status-badge.approved {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 200, 83, 0.15);
+  color: #00913f;
 }
 
 .status-badge.rejected {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(230, 57, 70, 0.15);
+  color: #c1121f;
 }
 
 .comment-meta {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
-  color: #666;
+  color: var(--summer-text-subtle);
   font-size: 0.9rem;
   flex-wrap: wrap;
 }
 
 .reply-indicator {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
   padding: 0.1rem 0.5rem;
   border-radius: 10px;
   font-size: 0.8rem;
 }
 
 .comment-content {
-  color: #333;
+  color: var(--summer-text-main);
   line-height: 1.5;
   margin-bottom: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 6px;
-  border-left: 3px solid #007bff;
+  background: rgba(45, 180, 255, 0.08);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-primary);
 }
 
 .parent-comment {
-  background: #fff3cd;
+  background: rgba(255, 170, 51, 0.15);
   padding: 0.75rem;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 1rem;
-  border-left: 3px solid #ffc107;
+  border-left: 3px solid var(--color-secondary);
 }
 
 .parent-label {
   font-weight: 600;
-  color: #856404;
+  color: #b26a00;
   margin-right: 0.5rem;
 }
 
 .parent-content {
-  color: #856404;
+  color: #b26a00;
   font-style: italic;
 }
 
@@ -503,13 +526,13 @@ onMounted(() => {
   display: flex;
   gap: 0.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid rgba(45, 180, 255, 0.15);
   flex-wrap: wrap;
   align-items: center;
 }
 
 .like-count {
-  color: #e74c3c;
+  color: #e63946;
   font-weight: 500;
   font-size: 0.9rem;
   margin-right: 0.5rem;
@@ -518,7 +541,7 @@ onMounted(() => {
 .approve-btn, .reject-btn, .jump-btn, .delete-btn {
   padding: 0.4rem 0.8rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   font-size: 0.8rem;
@@ -526,56 +549,68 @@ onMounted(() => {
 }
 
 .approve-btn {
-  background: #28a745;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .approve-btn:hover {
-  background: #218838;
+  box-shadow: 0 6px 16px rgba(45, 180, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .reject-btn {
-  background: #dc3545;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
 }
 
 .reject-btn:hover {
-  background: #c82333;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.35);
+  transform: translateY(-1px);
 }
 
 .jump-btn {
-  background: #17a2b8;
-  color: white;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-subtle);
+  border: 1px solid rgba(45, 180, 255, 0.3);
 }
 
 .jump-btn:hover {
-  background: #138496;
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .delete-btn {
-  background: #6c757d;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
 }
 
 .delete-btn:hover {
-  background: #545b62;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.35);
+  transform: translateY(-1px);
 }
 
 .visibility-btn {
-  background: #17a2b8;
-  color: white;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--summer-text-subtle);
+  border: 1px solid rgba(45, 180, 255, 0.3);
 }
 
 .visibility-btn:hover {
-  background: #138496;
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .visibility-btn.private {
-  background: #ff6b6b;
+  background: linear-gradient(135deg, #ff6b6b, #e63946);
+  color: #fff;
+  border: none;
 }
 
 .visibility-btn.private:hover {
-  background: #ff5252;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.35);
+  transform: translateY(-1px);
 }
 
 /* 响应式设计 */
