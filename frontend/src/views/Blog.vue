@@ -12,7 +12,7 @@
 
     <section class="filter-card">
       <div class="search-box">
-        <i class="fas fa-magnifying-glass" />
+        <AppIcon name="magnifying-glass" />
         <input
           v-model="searchQuery"
           type="text"
@@ -107,7 +107,7 @@
                 >
               </div>
               <div class="read-more">
-                阅读更多 <i class="fas fa-arrow-right" />
+                阅读更多 <AppIcon name="arrow-right" />
               </div>
             </aside>
           </div>

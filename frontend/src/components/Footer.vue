@@ -20,7 +20,7 @@
           rel="noopener"
           aria-label="Github"
         >
-          <i class="fab fa-github" />
+          <AppIcon name="github" />
         </a>
         <a
           href="https://space.bilibili.com/276555959"
@@ -28,7 +28,7 @@
           rel="noopener"
           aria-label="Bilibili"
         >
-          <i class="fab fa-bilibili" />
+          <AppIcon name="bilibili" />
         </a>
       </div>
     </div>

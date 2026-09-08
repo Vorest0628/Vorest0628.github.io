@@ -99,7 +99,7 @@
             target="_blank"
             class="contact-item"
           >
-            <i class="fab fa-github" />
+            <AppIcon name="github" />
             <span>GitHub</span>
           </a>
           <a
@@ -107,7 +107,7 @@
             target="_blank"
             class="contact-item"
           >
-            <i class="fab fa-bilibili" />
+            <AppIcon name="bilibili" />
             <span>哔哩哔哩</span>
           </a>
         </div>

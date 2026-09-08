@@ -92,7 +92,7 @@
         class="document-card"
       >
         <div class="doc-icon">
-          <i :class="getDocIcon(doc.type)" />
+          <AppIcon :name="getDocIcon(doc.type)" />
         </div>
         
         <div class="document-info">
@@ -199,7 +199,7 @@
                     v-if="!selectedFile"
                     class="upload-placeholder"
                   >
-                    <i class="fas fa-cloud-upload-alt upload-icon" />
+                    <AppIcon name="cloud-upload-alt" class="upload-icon" />
                     <p>点击选择文件或拖拽文件到此处</p>
                     <p class="upload-hint">
                       支持 PDF、Word、PowerPoint、Excel、TXT、Markdown 文件
@@ -213,8 +213,8 @@
                     v-else
                     class="selected-file"
                   >
-                    <i
-                      :class="getDocIcon(getFileType(selectedFile.name))"
+                    <AppIcon
+                      :name="getDocIcon(getFileType(selectedFile.name))"
                       class="file-icon"
                     />
                     <div class="file-details">
@@ -299,7 +299,7 @@
               >
                 <label>当前文件</label>
                 <div class="current-file-info">
-                  <i :class="getDocIcon(currentDocument.type)" />
+                  <AppIcon :name="getDocIcon(currentDocument.type)" />
                   <span>{{ currentDocument.title }}.{{ currentDocument.type?.toLowerCase() }}</span>
                   <span class="file-size">({{ currentDocument.size }})</span>
                 </div>
@@ -352,7 +352,7 @@
                   class="save-btn"
                 >
                   <span v-if="uploading">
-                    <i class="fas fa-spinner fa-spin" />
+                    <AppIcon name="spinner" spin />
                     {{ showCreateModal ? '上传中...' : '保存中...' }}
                   </span>
                   <span v-else>
@@ -814,13 +814,13 @@ const closeModal = () => {
 
 const getDocIcon = (type) => {
   const iconMap = {
-    'PDF': 'fas fa-file-pdf',
-    'DOCX': 'fas fa-file-word',
-    'PPT': 'fas fa-file-powerpoint',
-    'XLSX': 'fas fa-file-excel',
-    'TXT': 'fas fa-file-alt'
+    'PDF': 'file-pdf',
+    'DOCX': 'file-word',
+    'PPT': 'file-powerpoint',
+    'XLSX': 'file-excel',
+    'TXT': 'file-alt'
   }
-  return iconMap[type] || 'fas fa-file'
+  return iconMap[type] || 'file'
 }
 
 const formatDate = (dateString) => {
@@ -1369,9 +1369,6 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.fa-spinner {
-  animation: spin 1s linear infinite;
-}
 
 @keyframes spin {
   from { transform: rotate(0deg); }

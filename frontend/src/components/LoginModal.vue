@@ -25,7 +25,7 @@
           title="关闭"
           @click="$emit('close')"
         >
-          <i class="fas fa-times" />
+          <AppIcon name="times" />
         </button>
       </div>
 
@@ -37,7 +37,7 @@
           :disabled="loading"
           @click="isLoginMode = true"
         >
-          <i class="fas fa-sign-in-alt" />
+          <AppIcon name="sign-in-alt" />
           登录
         </button>
         <button 
@@ -46,7 +46,7 @@
           :disabled="loading"
           @click="isLoginMode = false"
         >
-          <i class="fas fa-user-plus" />
+          <AppIcon name="user-plus" />
           注册
         </button>
       </div>
@@ -93,7 +93,7 @@
               title="显示/隐藏密码"
               @click="showPassword = !showPassword"
             >
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" />
+              <AppIcon :name="showPassword ? 'eye-slash' : 'eye'" />
             </button>
           </div>
           <span
@@ -106,7 +106,7 @@
           v-if="errorMessage"
           class="error-banner"
         >
-          <i class="fas fa-exclamation-triangle" />
+          <AppIcon name="exclamation-triangle" />
           {{ errorMessage }}
         </div>
 
@@ -124,9 +124,10 @@
             :disabled="loading || !isLoginFormValid"
             class="submit-btn"
           >
-            <i
+            <AppIcon
               v-if="loading"
-              class="fas fa-spinner fa-spin"
+              name="spinner"
+              spin
             />
             {{ loading ? '登录中...' : '登录' }}
           </button>
@@ -192,7 +193,7 @@
               title="显示/隐藏密码"
               @click="showPassword = !showPassword"
             >
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" />
+              <AppIcon :name="showPassword ? 'eye-slash' : 'eye'" />
             </button>
           </div>
           <span
@@ -220,7 +221,7 @@
               title="显示/隐藏密码"
               @click="showConfirmPassword = !showConfirmPassword"
             >
-              <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" />
+              <AppIcon :name="showConfirmPassword ? 'eye-slash' : 'eye'" />
             </button>
           </div>
           <span
@@ -233,7 +234,7 @@
           v-if="errorMessage"
           class="error-banner"
         >
-          <i class="fas fa-exclamation-triangle" />
+          <AppIcon name="exclamation-triangle" />
           {{ errorMessage }}
         </div>
 
@@ -251,9 +252,10 @@
             :disabled="loading || !isRegisterFormValid"
             class="submit-btn"
           >
-            <i
+            <AppIcon
               v-if="loading"
-              class="fas fa-spinner fa-spin"
+              name="spinner"
+              spin
             />
             {{ loading ? '注册中...' : '注册' }}
           </button>
@@ -264,7 +266,7 @@
       <div class="auth-tips">
         <div v-if="isLoginMode" />
         <div v-else>
-          <p><i class="fas fa-info-circle" /> 注册后自动登录</p>
+          <p><AppIcon name="info-circle" /> 注册后自动登录</p>
           <p>请使用真实邮箱地址，方便找回密码</p>
         </div>
       </div>
@@ -839,4 +841,4 @@ watch(isLoginMode, () => {
     font-size: 0.85rem;
   }
 }
-</style> 
+</style>

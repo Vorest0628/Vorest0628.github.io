@@ -20,7 +20,7 @@
           :aria-label="mobileMenuOpen ? '收起菜单' : '展开菜单'"
           @click="toggleMobileMenu"
         >
-          <i :class="mobileMenuOpen ? 'fas fa-xmark' : 'fas fa-bars'" />
+          <AppIcon :name="mobileMenuOpen ? 'xmark' : 'bars'" />
         </button>
       </div>
 
@@ -57,7 +57,7 @@
               @click="toggleDropdown('toolbox')"
             >
               工具箱
-              <i class="fas fa-angle-down" />
+              <AppIcon name="angle-down" />
             </button>
             <transition name="dropdown">
               <ul
@@ -89,7 +89,7 @@
               @click="toggleDropdown('resources')"
             >
               资源库
-              <i class="fas fa-angle-down" />
+              <AppIcon name="angle-down" />
             </button>
             <transition name="dropdown">
               <ul
@@ -127,7 +127,7 @@
               @click="toggleDropdown('others')"
             >
               其他
-              <i class="fas fa-angle-down" />
+              <AppIcon name="angle-down" />
             </button>
             <transition name="dropdown">
               <ul
@@ -171,7 +171,7 @@
               :title="authStore.isAdmin ? '管理员控制台' : '用户面板'"
               @click="goToUserPanel"
             >
-              <i class="fas fa-sliders" />
+              <AppIcon name="sliders" />
               {{ authStore.isAdmin ? '控制台' : '用户面板' }}
             </button>
             <button
@@ -180,7 +180,7 @@
               title="退出登录"
               @click="handleLogout"
             >
-              <i class="fas fa-right-from-bracket" />
+              <AppIcon name="right-from-bracket" />
             </button>
           </template>
           <template v-else>
@@ -190,7 +190,7 @@
               title="用户登录"
               @click="handleShowLogin"
             >
-              <i class="fas fa-user" />
+              <AppIcon name="user" />
               登录
             </button>
           </template>
@@ -205,7 +205,7 @@
               placeholder="搜索博客或文档..."
             >
             <button type="submit">
-              <i class="fas fa-magnifying-glass" />
+              <AppIcon name="magnifying-glass" />
             </button>
           </form>
         </div>

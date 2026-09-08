@@ -70,6 +70,9 @@
 
 <script setup>
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { ElBadge, ElTabPane, ElTabs } from 'element-plus'
+import 'element-plus/es/components/badge/style/css'
+import 'element-plus/es/components/tabs/style/css'
 import { useAuthStore } from '@/store/modules/auth'
 import { useRouter } from 'vue-router'
 import { userApi } from '@/api/user'
@@ -217,4 +220,4 @@ onMounted(async () => {
     padding: 15px;
   }
 }
-</style> 
+</style>

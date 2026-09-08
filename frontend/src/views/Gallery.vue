@@ -133,7 +133,7 @@
             class="lightbox-close"
             @click="closeLightbox"
           >
-            <i class="fas fa-xmark" />
+            <AppIcon name="xmark" />
           </button>
 
           <div class="lightbox-image">
@@ -172,14 +172,14 @@
             class="lightbox-nav prev"
             @click="previousImage"
           >
-            <i class="fas fa-chevron-left" />
+            <AppIcon name="chevron-left" />
           </button>
           <button
             v-if="currentImageIndex < filteredImages.length - 1"
             class="lightbox-nav next"
             @click="nextImage"
           >
-            <i class="fas fa-chevron-right" />
+            <AppIcon name="chevron-right" />
           </button>
         </div>
       </div>

@@ -221,6 +221,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { searchApi } from '@/api/index';
+import DOMPurify from 'dompurify';
 
 export default {
   name: 'SearchView',
@@ -284,9 +285,23 @@ export default {
         }
 
         const response = await searchApi.searchAll(params);
-        
+
+        // 后端返回的标题/摘要/snippet 可能含 <mark> 高亮标签，消毒后再交给 v-html
+        const sanitizeResult = (item) => ({
+          ...item,
+          title: item.title ? DOMPurify.sanitize(item.title) : item.title,
+          excerpt: item.excerpt ? DOMPurify.sanitize(item.excerpt) : item.excerpt,
+          snippet: item.snippet ? DOMPurify.sanitize(item.snippet) : item.snippet
+        });
+        const sanitizedData = response.data || { blogs: [], documents: [], combined: [] };
+        ['blogs', 'documents', 'combined'].forEach((key) => {
+          if (Array.isArray(sanitizedData[key])) {
+            sanitizedData[key] = sanitizedData[key].map(sanitizeResult);
+          }
+        });
+
         // 修复：数据直接在response中，不需要.data.data
-        searchResults.value = response.data || { blogs: [], documents: [], combined: [] };
+        searchResults.value = sanitizedData;
         total.value = response.total || 0;
         totalPages.value = response.totalPages || 0;
         currentPage.value = response.page || 1;

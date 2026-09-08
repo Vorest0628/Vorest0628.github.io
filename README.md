@@ -1,5 +1,9 @@
 # 🌟 Vorest's Personal Website
 
+## 前端性能测试
+
+在 `frontend` 目录执行 `npm run test:lcp`，会构建前端、启动本地预览并以 Lighthouse 的移动端配置审计首页 LCP。默认预算为 2.5 秒；可通过 `LCP_BUDGET_MS=3000 npm run test:lcp` 调整。若要审计已部署站点，可设置 `LCP_URL`，例如 `LCP_URL=https://example.com npm run test:lcp`。
+
 一个功能全面、技术现代化的全栈个人网站项目，集成了博客、文档库、图库、评论系统、用户中心和强大的管理面板。项目采用前后端分离架构，并支持传统服务器部署。
 
 ## ✨ 功能特性

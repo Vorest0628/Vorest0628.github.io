@@ -83,7 +83,7 @@
         class="document-item"
       >
         <div class="doc-icon">
-          <i :class="getDocIcon(doc.type)" />
+          <AppIcon :name="getDocIcon(doc.type)" />
         </div>
 
         <div class="doc-info">
@@ -218,7 +218,7 @@
                 class="no-preview-content"
               >
                 <div class="no-preview-icon">
-                  <i :class="getDocIcon(previewDoc?.type)" />
+                  <AppIcon :name="getDocIcon(previewDoc?.type)" />
                 </div>
                 <h4>无法预览此文档</h4>
                 <p>{{ previewDoc?.type }} 格式暂不支持在线预览。</p>
@@ -398,17 +398,17 @@ const filterDocuments = () => {
 
 const getDocIcon = (type) => {
   const iconMap = {
-    PDF: 'fas fa-file-pdf',
-    DOCX: 'fas fa-file-word',
-    DOC: 'fas fa-file-word',
-    PPTX: 'fas fa-file-powerpoint',
-    PPT: 'fas fa-file-powerpoint',
-    XLSX: 'fas fa-file-excel',
-    XLS: 'fas fa-file-excel',
-    TXT: 'fas fa-file-lines',
-    MD: 'fab fa-markdown'
+    PDF: 'file-pdf',
+    DOCX: 'file-word',
+    DOC: 'file-word',
+    PPTX: 'file-powerpoint',
+    PPT: 'file-powerpoint',
+    XLSX: 'file-excel',
+    XLS: 'file-excel',
+    TXT: 'file-lines',
+    MD: 'markdown'
   }
-  return iconMap[type] || 'fas fa-file'
+  return iconMap[type] || 'file'
 }
 
 const previewDocument = async (doc) => {

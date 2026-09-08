@@ -261,7 +261,7 @@
                 />
               </div>
               <div class="read-more">
-                阅读更多 <i class="fas fa-arrow-right" />
+                阅读更多 <AppIcon name="arrow-right" />
               </div>
             </aside>
           </article>
@@ -385,8 +385,7 @@ const updateDateTime = () => {
   })
   currentTime.value = now.toLocaleTimeString('zh-CN', {
     hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+    minute: '2-digit'
   })
   currentWeekday.value = now.toLocaleDateString('zh-CN', { weekday: 'long' })
 }
@@ -580,7 +579,12 @@ const UpdateCloudPosition = () => {
 
 onMounted(async () => {
   updateDateTime()
-  timeInterval = setInterval(updateDateTime, 1000)
+  // 首屏时间保持稳定，避免动态秒钟在性能测量期间不断成为新的 LCP 候选。
+  // 一分钟后再开始按分钟更新，展示仍然足够及时。
+  timeInterval = setTimeout(() => {
+    updateDateTime()
+    timeInterval = setInterval(updateDateTime, 60 * 1000)
+  }, 60 * 1000)
 
   await nextTick()
   await loadWeather()

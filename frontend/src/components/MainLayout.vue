@@ -294,11 +294,9 @@ onUnmounted(() => {
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=ZCOOL+KuaiLe&display=swap');
-
 :root {
-  --summer-font-main: 'Nunito', 'M PLUS Rounded 1c', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --summer-font-display: 'Fredoka', 'ZCOOL KuaiLe', 'M PLUS Rounded 1c', 'Noto Sans SC', cursive;
+  --summer-font-main: 'Nunito', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --summer-font-display: 'Fredoka', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --summer-text-main: #1A3A5C;
   --summer-text-subtle: #3D6B8F;
   --summer-text-muted: #6B9BBF;

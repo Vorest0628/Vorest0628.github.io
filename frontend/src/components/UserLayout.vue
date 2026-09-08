@@ -17,7 +17,7 @@
             v-if="!Component"
             class="loading"
           >
-            <el-loading-spinner style="margin-right: 10px" />
+            <span class="loading-spinner" aria-label="加载中" />
             <span>用户面板加载中...</span>
           </div>
         </router-view>
@@ -91,6 +91,19 @@ onMounted(() => {
   color: #5b7c95;
   font-size: 16px;
   gap: 10px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
