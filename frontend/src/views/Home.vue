@@ -544,7 +544,6 @@ const formatDate = (dateString) => {
 const prefetchCommonRoutes = () => {
   const routesToPrefetch = [
     () => import('../views/Blog.vue'),
-    () => import('../views/DocumentLibrary.vue'),
     () => import('../views/Gallery.vue'),
     () => import('../views/FriendLinks.vue')
   ]

@@ -19,7 +19,7 @@
     :class="{ 'app-loaded': !isInitialLoading }"
   >
     <!-- Anime Summer Sky Background Layers -->
-    <div class="page-bg" />
+    <div class="page-bg" :class="{ 'page-bg-ready': isBackgroundReady }" />
     <div class="page-bg-overlay" />
     <AnimatedDecorations v-if="showParticles" />
     <ParticlesBackground v-if="showParticles" />
@@ -83,15 +83,16 @@ import { useAuthStore } from '@/store/modules/auth'
 import Footer from './Footer.vue'
 import Navigation from './Navigation.vue'
 import LoginModal from './LoginModal.vue'
-import backgroundImageUrl from '../assets/image/background-bottom.jpg?url'
 
 const ParticlesBackground = defineAsyncComponent(() => import('./ParticlesBackground.vue'))
 const AnimatedDecorations = defineAsyncComponent(() => import('./AnimatedDecorations.vue'))
 
 const showParticles = ref(false)
+const isBackgroundReady = ref(false)
 const showLoginModal = ref(false)
 const authStore = useAuthStore()
 const isInitialLoading = ref(true)
+let decorationsTimer = null
 
 const handleLoginSuccess = () => {
   if (authStore.user?.username) {
@@ -109,23 +110,20 @@ onMounted(() => {
 
   setTimeout(() => {
     isInitialLoading.value = false
-  }, 760)
+  }, 300)
 
   const enableDecorations = () => {
+    isBackgroundReady.value = true
     showParticles.value = true
-    document.documentElement.classList.add('with-background-image')
-    document.documentElement.style.setProperty('--summer-bg-image', `url(${backgroundImageUrl})`)
   }
 
-  if (typeof requestIdleCallback !== 'undefined') {
-    requestIdleCallback(enableDecorations, { timeout: 1800 })
-  } else {
-    setTimeout(enableDecorations, 1200)
-  }
+  // 将纯装饰性的图片和粒子效果移出首屏关键路径。
+  decorationsTimer = setTimeout(enableDecorations, 5000)
 })
 
 onUnmounted(() => {
   window.removeEventListener('show-login', handleGlobalLogin)
+  if (decorationsTimer) clearTimeout(decorationsTimer)
 })
 </script>
 
@@ -137,7 +135,7 @@ onUnmounted(() => {
   background-color: transparent;
   position: relative;
   opacity: 0;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.25s ease;
 }
 
 .app-loaded {
@@ -295,8 +293,8 @@ onUnmounted(() => {
 
 <style>
 :root {
-  --summer-font-main: 'Nunito', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --summer-font-display: 'Fredoka', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --summer-font-main: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --summer-font-display: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --summer-text-main: #1A3A5C;
   --summer-text-subtle: #3D6B8F;
   --summer-text-muted: #6B9BBF;
@@ -346,10 +344,14 @@ body {
   width: 100%;
   height: 100%;
   z-index: -3;
-  background-image: url('/assets/scenery-bg.jpg');
+  background: linear-gradient(180deg, #b8e8ff 0%, #e8f8ff 52%, #f6fcff 100%);
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;
+}
+
+.page-bg-ready {
+  background-image: url('/assets/scenery-bg.jpg');
 }
 
 .page-bg-overlay {
